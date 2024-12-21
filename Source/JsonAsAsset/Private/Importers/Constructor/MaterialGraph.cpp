@@ -18,6 +18,21 @@
 
 static TWeakPtr<SNotificationItem> MaterialGraphNotification;
 
+TArray<FString> IMaterialGraph::IgnoredExpressions;
+
+IMaterialGraph::IMaterialGraph(const FString& FileName, const FString& FilePath, const TSharedPtr<FJsonObject>& JsonObject, UPackage* Package, UPackage* OutermostPkg, const TArray<TSharedPtr<FJsonValue>>& AllJsonObjects):
+	IImporter(FileName, FilePath, JsonObject, Package, OutermostPkg, AllJsonObjects)
+{
+	/* Handled manually by IMaterialGraph */
+	IgnoredExpressions = {
+		"MaterialExpressionComposite",
+		"MaterialExpressionPinBase",
+		"MaterialExpressionComment",
+		"MaterialFunction",
+		"Material"
+	};
+}
+
 TSharedPtr<FJsonObject> IMaterialGraph::FindEditorOnlyData(const FString& Type, const FString& Outer, TMap<FName, FExportData>& OutExports, TArray<FName>& ExpressionNames, bool bFilterByOuter) {
 	TSharedPtr<FJsonObject> EditorOnlyData;
 

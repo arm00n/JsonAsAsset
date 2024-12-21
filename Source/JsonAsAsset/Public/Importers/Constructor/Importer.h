@@ -18,52 +18,7 @@ public:
 
     IImporter(const FString& FileName, const FString& FilePath, 
               const TSharedPtr<FJsonObject>& JsonObject, UPackage* Package, 
-              UPackage* OutermostPkg, const TArray<TSharedPtr<FJsonValue>>& AllJsonObjects = {})
-        : FileName(FileName), FilePath(FilePath), JsonObject(JsonObject),
-          Package(Package), OutermostPkg(OutermostPkg), AllJsonObjects(AllJsonObjects) 
-    {
-        PropertySerializer = NewObject<UPropertySerializer>();
-        GObjectSerializer = NewObject<UObjectSerializer>();
-        GObjectSerializer->SetPropertySerializer(PropertySerializer);
-
-        AcceptedTypes = {
-            "Texture2D",
-            // "TextureCube",
-            // "VolumeTexture",
-            "TextureRenderTarget2D",
-
-            "", // separator
-
-            "Material",
-            "MaterialFunction",
-            "MaterialInstanceConstant",
-
-            "", // separator
-
-            "CurveFloat",
-            "CurveTable",
-            "CurveVector",
-            "CurveLinearColorAtlas",
-            "CurveLinearColor",
-
-            "", // separator
-
-            "SoundWave",
-            "ReverbEffect",
-            "SoundAttenuation",
-            "SoundConcurrency",
-            "SoundClass",
-            "SoundMix",
-            "SoundModulationPatch",
-
-            "", // separator
-
-            "PhysicalMaterial",
-            "SubsurfaceProfile",
-            "LandscapeGrassType",
-            "DataTable",
-        };
-    }
+              UPackage* OutermostPkg, const TArray<TSharedPtr<FJsonValue>>& AllJsonObjects = {});
 
     virtual ~IImporter() {}
 

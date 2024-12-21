@@ -11,18 +11,7 @@
 // Handles everything needed to create a material graph from JSON.
 class IMaterialGraph : public IImporter {
 public:
-	IMaterialGraph(const FString& FileName, const FString& FilePath, const TSharedPtr<FJsonObject>& JsonObject, UPackage* Package, UPackage* OutermostPkg, const TArray<TSharedPtr<FJsonValue>>& AllJsonObjects):
-		IImporter(FileName, FilePath, JsonObject, Package, OutermostPkg, AllJsonObjects)
-	{
-		/* Handled manually by IMaterialGraph */
-		IgnoredExpressions = {
-			"MaterialExpressionComposite",
-			"MaterialExpressionPinBase",
-			"MaterialExpressionComment",
-			"MaterialFunction",
-			"Material"
-		};
-	}
+	IMaterialGraph(const FString& FileName, const FString& FilePath, const TSharedPtr<FJsonObject>& JsonObject, UPackage* Package, UPackage* OutermostPkg, const TArray<TSharedPtr<FJsonValue>>& AllJsonObjects);
 
 	// UMaterialExpression, Properties
 	UPROPERTY()
