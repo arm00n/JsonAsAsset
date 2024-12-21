@@ -43,7 +43,10 @@ public:
     TArray<TObjectPtr<T>> LoadObject(const TArray<TSharedPtr<FJsonValue>>& PackageArray, TArray<TObjectPtr<T>> Array);
 
     static bool CanImport(const FString& ImporterType) {
-        return ImporterAcceptedTypes.Contains(ImporterType); 
+        return ImporterAcceptedTypes.Contains(ImporterType)
+        
+        // All Sound Types work
+        || ImporterType.StartsWith("Sound"); 
     }
 
     static bool CanImportAny(TArray<FString>& Types) {
