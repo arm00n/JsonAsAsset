@@ -71,7 +71,6 @@ TArray<FString> ImporterAcceptedTypes = {
 	"", // separator
 
 	"SoundCue",
-	"SoundWave",
 	"ReverbEffect",
 	"SoundAttenuation",
 	"SoundConcurrency",
