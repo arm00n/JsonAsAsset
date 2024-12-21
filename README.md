@@ -153,9 +153,9 @@ If you would like to contribute to JsonAsAsset, here's some key information:
 >
 > `Local Fetch`'s API is located at [JsonAsAsset/LocalFetch](https://github.com/JsonAsAsset/LocalFetch)
 > 
-> Normal Asset types are found in [`JsonAsAsset/Public/Importers/Constructor/Importer.h`](https://github.com/JsonAsAsset/JsonAsAsset/tree/main/Source/JsonAsAsset/Public/Importers/Constructor/Importer.h)
+> Normal Asset types are found in [`JsonAsAsset/Public/Importers/Constructor/Importer.h`](https://github.com/JsonAsAsset/JsonAsAsset/blob/main/Source/JsonAsAsset/Private/Importers/Constructor/Importer.cpp#L51)
 > 
-> Adding support for Local Fetch of asset types [`JsonAsAsset/Public/Importers/Utilities/AssetUtilities.h`](https://github.com/JsonAsAsset/JsonAsAsset/tree/main/Source/JsonAsAsset/Public/Utilities/AssetUtilities.h)
+> Adding support for Local Fetch of asset types [`JsonAsAsset/Public/Importers/Utilities/AssetUtilities.h`](https://github.com/JsonAsAsset/JsonAsAsset/blob/main/Source/JsonAsAsset/Private/Utilities/AssetUtilities.cpp#L28)
 >
 > + Asset types without manual code will use **basic** importing, meaning it will only take the properties of the base object and import them.
 >
