@@ -48,6 +48,7 @@ TArray<FString> LocalFetchAcceptedTypes = {
 	"", // separator
 
 	"SoundWave",
+	"SoundCue",
 	"ReverbEffect",
 	"SoundAttenuation",
 	"SoundConcurrency",

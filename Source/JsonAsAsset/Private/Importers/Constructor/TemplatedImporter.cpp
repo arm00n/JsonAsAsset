@@ -2,6 +2,9 @@
 
 #include "Importers/Constructor/TemplatedImporter.h"
 
+// Explicit instantiation of TemplatedImporter for UObject
+template class TemplatedImporter<UObject>;
+
 template <typename AssetType>
 bool TemplatedImporter<AssetType>::ImportData() {
 	try {
