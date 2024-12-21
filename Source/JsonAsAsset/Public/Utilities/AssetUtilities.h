@@ -3,13 +3,9 @@
 #pragma once
 #include "AppStyleCompatibility.h"
 
+extern TArray<FString> LocalFetchAcceptedTypes;
+
 class FAssetUtilities {
-public:
-	FAssetUtilities();
-	
-	// Local Fetch Allowed Types
-	static TArray<FString> AcceptedTypes;
-	
 public:
 	/*
 	* Creates a UPackage to create assets in the Content Browser.

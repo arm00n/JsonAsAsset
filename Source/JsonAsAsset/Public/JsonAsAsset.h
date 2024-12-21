@@ -32,4 +32,8 @@ private:
     // Creates a dialog for a file
     TArray<FString> OpenFileDialog(FString Title, FString Type);
     bool IsProcessRunning(const FString& ProcessName);
+
+#if ENGINE_MAJOR_VERSION == 4
+    void AddToolbarExtension(FToolBarBuilder& Builder);
+#endif
 };

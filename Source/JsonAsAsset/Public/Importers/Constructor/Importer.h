@@ -9,6 +9,8 @@
 #include "Utilities/AppStyleCompatibility.h"
 #include "Widgets/Notifications/SNotificationList.h"
 
+extern TArray<FString> ImporterAcceptedTypes;
+
 // Global handler for converting JSON to assets
 class IImporter {
 public:
@@ -29,11 +31,10 @@ protected:
     UPropertySerializer* PropertySerializer;
     UObjectSerializer* GObjectSerializer;
 
-private:
-	static TArray<FString> AcceptedTypes;
-
 public:
-    static TArray<FString> GetAcceptedTypes() { return AcceptedTypes; }
+    static TArray<FString> GetAcceptedTypes() {
+        return ImporterAcceptedTypes;
+    }
 
     template <class T = UObject>
     void LoadObject(const TSharedPtr<FJsonObject>* PackageIndex, TObjectPtr<T>& Object);
@@ -41,8 +42,10 @@ public:
     template <class T = UObject>
     TArray<TObjectPtr<T>> LoadObject(const TArray<TSharedPtr<FJsonValue>>& PackageArray, TArray<TObjectPtr<T>> Array);
 
-    static bool CanImport(const FString& ImporterType) { 
-        return AcceptedTypes.Contains(ImporterType); 
+    static bool CanImport(const FString& ImporterType) {
+        IImporter Importer = IImporter();
+
+        return ImporterAcceptedTypes.Contains(ImporterType); 
     }
 
     static bool CanImportAny(TArray<FString>& Types) {

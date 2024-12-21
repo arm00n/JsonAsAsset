@@ -48,7 +48,43 @@
 // -----------------------------------------------------------------------------------------------
 #define LOCTEXT_NAMESPACE "IImporter"
 
-TArray<FString> IImporter::AcceptedTypes;
+TArray<FString> ImporterAcceptedTypes = {
+	"Texture2D",
+	// "TextureCube",
+	// "VolumeTexture",
+	"TextureRenderTarget2D",
+
+	"", // separator
+
+	"Material",
+	"MaterialFunction",
+	"MaterialInstanceConstant",
+
+	"", // separator
+
+	"CurveFloat",
+	"CurveTable",
+	"CurveVector",
+	"CurveLinearColorAtlas",
+	"CurveLinearColor",
+
+	"", // separator
+
+	"SoundWave",
+	"ReverbEffect",
+	"SoundAttenuation",
+	"SoundConcurrency",
+	"SoundClass",
+	"SoundMix",
+	"SoundModulationPatch",
+
+	"", // separator
+
+	"PhysicalMaterial",
+	"SubsurfaceProfile",
+	"LandscapeGrassType",
+	"DataTable",
+};
 
 IImporter::IImporter(const FString& FileName, const FString& FilePath, 
 		  const TSharedPtr<FJsonObject>& JsonObject, UPackage* Package, 
@@ -59,44 +95,6 @@ IImporter::IImporter(const FString& FileName, const FString& FilePath,
 	PropertySerializer = NewObject<UPropertySerializer>();
 	GObjectSerializer = NewObject<UObjectSerializer>();
 	GObjectSerializer->SetPropertySerializer(PropertySerializer);
-
-	AcceptedTypes = {
-		"Texture2D",
-		// "TextureCube",
-		// "VolumeTexture",
-		"TextureRenderTarget2D",
-
-		"", // separator
-
-		"Material",
-		"MaterialFunction",
-		"MaterialInstanceConstant",
-
-		"", // separator
-
-		"CurveFloat",
-		"CurveTable",
-		"CurveVector",
-		"CurveLinearColorAtlas",
-		"CurveLinearColor",
-
-		"", // separator
-
-		"SoundWave",
-		"ReverbEffect",
-		"SoundAttenuation",
-		"SoundConcurrency",
-		"SoundClass",
-		"SoundMix",
-		"SoundModulationPatch",
-
-		"", // separator
-
-		"PhysicalMaterial",
-		"SubsurfaceProfile",
-		"LandscapeGrassType",
-		"DataTable",
-	};
 }
 
 // Handles the JSON of a file.

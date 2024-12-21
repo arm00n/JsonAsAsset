@@ -25,46 +25,42 @@
 #include "Utilities/RemoteUtilities.h"
 #include "PluginUtils.h"
 
-TArray<FString> FAssetUtilities::AcceptedTypes;
+TArray<FString> LocalFetchAcceptedTypes = {
+	"Texture2D",
+	// "TextureCube",
+	// "VolumeTexture",
+	"TextureRenderTarget2D",
 
-inline FAssetUtilities::FAssetUtilities() {
-	AcceptedTypes = {
-		"Texture2D",
-		// "TextureCube",
-		// "VolumeTexture",
-		"TextureRenderTarget2D",
+	"", // separator
 
-		"", // separator
+	"Material",
+	"MaterialFunction",
+	"MaterialInstanceConstant",
 
-		"Material",
-		"MaterialFunction",
-		"MaterialInstanceConstant",
+	"", // separator
 
-		"", // separator
+	"CurveFloat",
+	"CurveTable",
+	"CurveVector",
+	"CurveLinearColorAtlas",
+	"CurveLinearColor",
 
-		"CurveFloat",
-		"CurveTable",
-		"CurveVector",
-		"CurveLinearColorAtlas",
-		"CurveLinearColor",
+	"", // separator
 
-		"", // separator
-
-		"SoundWave",
-		"ReverbEffect",
-		"SoundAttenuation",
-		"SoundConcurrency",
-		"SoundClass",
-		"SoundMix",
-		"SoundModulationPatch",
+	"SoundWave",
+	"ReverbEffect",
+	"SoundAttenuation",
+	"SoundConcurrency",
+	"SoundClass",
+	"SoundMix",
+	"SoundModulationPatch",
 		
-		"", // separator
+	"", // separator
 
-		"PhysicalMaterial",
-		"SubsurfaceProfile",
-		"LandscapeGrassType",
-		"DataTable",
-	};
+	"PhysicalMaterial",
+	"SubsurfaceProfile",
+	"LandscapeGrassType",
+	"DataTable",
 };
 
 UPackage* FAssetUtilities::CreateAssetPackage(const FString& FullPath)
@@ -194,7 +190,7 @@ bool FAssetUtilities::ConstructAsset(const FString& Path, const FString& Type, T
 	}
 	
 	// Supported Assets
-	if (AcceptedTypes.Contains(Type))
+	if (LocalFetchAcceptedTypes.Contains(Type))
 	{
 		//		Manually supported asset types
 		// (ex: textures have to be handled separately)
