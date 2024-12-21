@@ -208,12 +208,7 @@ void UPropertySerializer::DeserializePropertyValueInner(FProperty* Property, con
 		// Use IImporter to import the object
 		IImporter* Importer = new IImporter();
 		Importer->LoadObject(&NewJsonValue->AsObject(), Object);
-
-#if ENGINE_MAJOR_VERSION >= 5
 		ObjectProperty->SetObjectPropertyValue(Value, Object);
-#else
-		ObjectProperty->SetObjectPropertyValue(Value, Object.Get());
-#endif
 	}
 	else if (const FStructProperty* StructProperty = CastField<const FStructProperty>(Property)) {
 		// JSON for FGuids are FStrings

@@ -6,11 +6,7 @@
 #include "Materials/MaterialParameterCollection.h"
 
 void UNiagaraParameterCollectionDerived::SetSourceMaterialCollection(TObjectPtr<UMaterialParameterCollection> MaterialParameterCollection) {
-#if ENGINE_MAJOR_VERSION >= 5
     this->SourceMaterialCollection = MaterialParameterCollection;
-#else
-    this->SourceMaterialCollection = MaterialParameterCollection.Get();
-#endif
 }
 
 void UNiagaraParameterCollectionDerived::SetCompileId(FGuid Guid) {

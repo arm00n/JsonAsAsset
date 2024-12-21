@@ -240,11 +240,7 @@ TObjectPtr<T> IImporter::DownloadWrapper(TObjectPtr<T> InObject, FString Type, F
 	const UJsonAsAssetSettings* Settings = GetDefault<UJsonAsAssetSettings>();
 
 	// If the asset can be found locally
-#if ENGINE_MAJOR_VERSION >= 5
 	if (InObject == nullptr && ImportAssetReference(Path)) {
-#else
-	if (InObject.Get() == nullptr && ImportAssetReference(Path)) {
-#endif
 		TObjectPtr<T> Object = Cast<T>(StaticLoadObject(T::StaticClass(), nullptr, *(Path + "." + Name)));
 
 		return Object;
@@ -254,11 +250,7 @@ TObjectPtr<T> IImporter::DownloadWrapper(TObjectPtr<T> InObject, FString Type, F
 	FMessageLog MessageLogger = FMessageLog(FName("JsonAsAsset"));
 
 	if (bEnableLocalFetch && (
-#if ENGINE_MAJOR_VERSION >= 5
 		InObject == nullptr ||
-#else
-		InObject.Get() == nullptr ||
-#endif
 			Settings->bDownloadExistingTextures &&
 			Type == "Texture2D"
 		)
@@ -336,11 +328,7 @@ void IImporter::LoadObject(const TSharedPtr<FJsonObject>* PackageIndex, TObjectP
 	TObjectPtr<T> LoadedObject = Cast<T>(StaticLoadObject(T::StaticClass(), nullptr, *(ObjectPath + "." + ObjectName)));
 
 	// Material Expression case
-#if ENGINE_MAJOR_VERSION >= 5
 	if (!LoadedObject && ObjectName.Contains("MaterialExpression")) {
-#else
-	if (!LoadedObject.Get() && ObjectName.Contains("MaterialExpression")) {
-#endif
 		FString AssetName;
 		ObjectPath.Split("/", nullptr, &AssetName, ESearchCase::IgnoreCase, ESearchDir::FromEnd);
 		LoadedObject = Cast<T>(StaticLoadObject(T::StaticClass(), nullptr, *(ObjectPath + "." + AssetName + ":" + ObjectName)));

@@ -38,5 +38,21 @@ public:
 
 	// Additional constructor to allow raw pointer conversion
 	TObjectPtr(TObjectType* InObject, bool bRawPointer) : WeakPtr(InObject) {}
+
+	// Implicit conversion to raw pointer
+	operator TObjectType*() const { return Get(); }
+
+	// Overload address-of operator
+	TObjectPtr<TObjectType>* operator&() { return this; }
+
+	// Assignment operator for TObjectType*
+	TObjectPtr& operator=(TObjectType* InObject) {
+		WeakPtr = InObject;
+		return *this;
+	}
+
+	// Comparison operator for nullptr
+	bool operator==(std::nullptr_t) const { return Get() == nullptr; }
+	bool operator!=(std::nullptr_t) const { return Get() != nullptr; }
 };
 #endif
