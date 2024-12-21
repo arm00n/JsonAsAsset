@@ -13,6 +13,10 @@
 #include "Dom/JsonObject.h"
 #include "HttpModule.h"
 
+#if ENGINE_MAJOR_VERSION == 4
+#include "DetailCategoryBuilder.h"
+#endif
+
 #define LOCTEXT_NAMESPACE "JsonAsAssetSettingsDetails"
 
 TSharedRef<IDetailCustomization> FJsonAsAssetSettingsDetails::MakeInstance()
@@ -52,10 +56,13 @@ void FJsonAsAssetSettingsDetails::CustomizeDetails(IDetailLayoutBuilder& DetailB
             FString AppDataPath = FPlatformMisc::GetEnvironmentVariable(TEXT("APPDATA"));
             AppDataPath = FPaths::Combine(AppDataPath, TEXT("FModel/AppSettings.json"));
 
-            if (FString JsonContent; FFileHelper::LoadFileToString(JsonContent, *AppDataPath)) {
+        	FString JsonContent;
+        	
+            if (FFileHelper::LoadFileToString(JsonContent, *AppDataPath)) {
                 TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(JsonContent);
+            	TSharedPtr<FJsonObject> JsonObject;
 
-                if (TSharedPtr<FJsonObject> JsonObject; FJsonSerializer::Deserialize(Reader, JsonObject) && JsonObject.IsValid()) {
+                if (FJsonSerializer::Deserialize(Reader, JsonObject) && JsonObject.IsValid()) {
                     // Load the PropertiesDirectory and GameDirectory
                     PluginSettings->ExportDirectory.Path = JsonObject->GetStringField("PropertiesDirectory").Replace(TEXT("\\"), TEXT("/"));
                     PluginSettings->ArchiveDirectory.Path = JsonObject->GetStringField("GameDirectory").Replace(TEXT("\\"), TEXT("/"));
@@ -98,7 +105,9 @@ void FJsonAsAssetSettingsDetails::CustomizeDetails(IDetailLayoutBuilder& DetailB
             }
 
             PluginSettings->SaveConfig();
+#if ENGINE_MAJOR_VERSION >= 5
             PluginSettings->TryUpdateDefaultConfigFile();
+#endif
             PluginSettings->LoadConfig();
 
             return FReply::Handled();
@@ -129,17 +138,28 @@ void FJsonAsAssetSettingsDetails::CustomizeDetails(IDetailLayoutBuilder& DetailB
 			UJsonAsAssetSettings* PluginSettings = GetMutableDefault<UJsonAsAssetSettings>();
 			FHttpModule* HttpModule = &FHttpModule::Get();
 
-			const TSharedRef<IHttpRequest> Request = HttpModule->CreateRequest();
+#if ENGINE_MAJOR_VERSION >= 5
+		const TSharedRef<IHttpRequest> Request = HttpModule->CreateRequest();
+#else
+		TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = HttpModule->CreateRequest();
+#endif
+			
 			Request->SetURL("https://fortnitecentral.genxgames.gg/api/v1/aes");
 			Request->SetVerb(TEXT("GET"));
 
+#if ENGINE_MAJOR_VERSION >= 5
 			const TSharedPtr<IHttpResponse> Response = FRemoteUtilities::ExecuteRequestSync(Request);
+#else
+			const TSharedPtr<IHttpResponse, ESPMode::ThreadSafe> Response = FRemoteUtilities::ExecuteRequestSync(Request);
+#endif
 			if (!Response.IsValid()) return FReply::Handled();
 
 			PluginSettings->DynamicKeys.Empty();
 
 			TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
-			if (TSharedPtr<FJsonObject> JsonObject; FJsonSerializer::Deserialize(JsonReader, JsonObject))
+			TSharedPtr<FJsonObject> JsonObject;
+			
+			if (FJsonSerializer::Deserialize(JsonReader, JsonObject))
 			{
 				PluginSettings->ArchiveKey = JsonObject->GetStringField("mainKey");
 
@@ -155,7 +175,9 @@ void FJsonAsAssetSettingsDetails::CustomizeDetails(IDetailLayoutBuilder& DetailB
 			}
 
 			PluginSettings->SaveConfig();
+#if ENGINE_MAJOR_VERSION >= 5
 			PluginSettings->TryUpdateDefaultConfigFile();
+#endif
 			PluginSettings->LoadConfig();
 
 			FString LocalExportDirectory = PluginSettings->ExportDirectory.Path;
@@ -173,15 +195,27 @@ void FJsonAsAssetSettingsDetails::CustomizeDetails(IDetailLayoutBuilder& DetailB
 					}
 				}
 
+#if ENGINE_MAJOR_VERSION >= 5
 				const TSharedRef<IHttpRequest> MappingsURLRequest = HttpModule->CreateRequest();
+#else
+				TSharedRef<IHttpRequest, ESPMode::ThreadSafe> MappingsURLRequest = HttpModule->CreateRequest();
+#endif
+
 				MappingsURLRequest->SetURL("https://fortnitecentral.genxgames.gg/api/v1/mappings");
 				MappingsURLRequest->SetVerb(TEXT("GET"));
-
+				
+#if ENGINE_MAJOR_VERSION >= 5
 				const TSharedPtr<IHttpResponse> MappingsURLResponse = FRemoteUtilities::ExecuteRequestSync(MappingsURLRequest);
+#else
+				const TSharedPtr<IHttpResponse, ESPMode::ThreadSafe> MappingsURLResponse = FRemoteUtilities::ExecuteRequestSync(MappingsURLRequest);
+#endif
+
 				if (!MappingsURLResponse.IsValid()) return FReply::Handled();
 
 				JsonReader = TJsonReaderFactory<>::Create(MappingsURLResponse->GetContentAsString());
-				if (TArray<TSharedPtr<FJsonValue>> JsonArray; FJsonSerializer::Deserialize(JsonReader, JsonArray))
+				TArray<TSharedPtr<FJsonValue>> JsonArray;
+				
+				if (FJsonSerializer::Deserialize(JsonReader, JsonArray))
 				{
 					TSharedPtr<FJsonValue> Value;
 					{
@@ -205,7 +239,9 @@ void FJsonAsAssetSettingsDetails::CustomizeDetails(IDetailLayoutBuilder& DetailB
 								UJsonAsAssetSettings>();
 							PluginSettings->MappingFilePath.FilePath = DataFolder + "/" + FileName;
 							PluginSettings->SaveConfig();
+#if ENGINE_MAJOR_VERSION >= 5
 							PluginSettings->TryUpdateDefaultConfigFile();
+#endif
 							PluginSettings->LoadConfig();
 						}
 					};
@@ -218,7 +254,9 @@ void FJsonAsAssetSettingsDetails::CustomizeDetails(IDetailLayoutBuilder& DetailB
 					MappingsRequest->ProcessRequest();
 
 					PluginSettings->SaveConfig();
+#if ENGINE_MAJOR_VERSION >= 5
 					PluginSettings->TryUpdateDefaultConfigFile();
+#endif
 					PluginSettings->LoadConfig();
 				}
 			}

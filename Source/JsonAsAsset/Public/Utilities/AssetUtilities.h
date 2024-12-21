@@ -5,7 +5,7 @@
 
 class FAssetUtilities {
 public:
-	FAssetUtilities::FAssetUtilities();
+	FAssetUtilities();
 	
 	// Local Fetch Allowed Types
 	static TArray<FString> AcceptedTypes;

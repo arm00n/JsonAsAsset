@@ -262,7 +262,11 @@ bool FAssetUtilities::Construct_TypeTexture(const FString& Path, const FString& 
 		HttpRequest->SetHeader("content-type", "application/octet-stream");
 		HttpRequest->SetVerb(TEXT("GET"));
 
+#if ENGINE_MAJOR_VERSION >= 5
 		const TSharedPtr<IHttpResponse> HttpResponse = FRemoteUtilities::ExecuteRequestSync(HttpRequest);
+#else
+		const TSharedPtr<IHttpResponse, ESPMode::ThreadSafe> HttpResponse = FRemoteUtilities::ExecuteRequestSync(HttpRequest);
+#endif
 		if (!HttpResponse.IsValid() || HttpResponse->GetResponseCode() != 200)
 			return false;
 
@@ -321,7 +325,11 @@ bool FAssetUtilities::Construct_TypeTexture(const FString& Path, const FString& 
 
 		const FString PackageName = Package->GetName();
 		const FString PackageFileName = FPackageName::LongPackageNameToFilename(PackageName, FPackageName::GetAssetPackageExtension());
+#if ENGINE_MAJOR_VERSION >= 5
 		UPackage::SavePackage(Package, nullptr, *PackageFileName, SaveArgs);
+#else
+		UPackage::SavePackage(Package, nullptr, RF_Standalone, *PackageFileName);
+#endif
 	}
 
 	OutTexture = Texture;
@@ -331,6 +339,8 @@ bool FAssetUtilities::Construct_TypeTexture(const FString& Path, const FString& 
 
 void FAssetUtilities::CreatePlugin(FString PluginName)
 {
+	// Plugin creation not in UE4?
+#if ENGINE_MAJOR_VERSION >= 5
 	FPluginUtils::FNewPluginParamsWithDescriptor CreationParams;
 	CreationParams.Descriptor.bCanContainContent = true;
 
@@ -346,6 +356,7 @@ void FAssetUtilities::CreatePlugin(FString PluginName)
 	LoadParams.bSelectInContentBrowser = false;
 
 	FPluginUtils::CreateAndLoadNewPlugin(PluginName, FPaths::ProjectPluginsDir(), CreationParams, LoadParams);
+#endif
 
 #define LOCTEXT_NAMESPACE "UMG"
 #if WITH_EDITOR
@@ -372,7 +383,12 @@ void FAssetUtilities::CreatePlugin(FString PluginName)
 const TSharedPtr<FJsonObject> FAssetUtilities::API_RequestExports(const FString& Path)
 {
 	FHttpModule* HttpModule = &FHttpModule::Get();
+
+#if ENGINE_MAJOR_VERSION >= 5
 	const TSharedRef<IHttpRequest> HttpRequest = HttpModule->CreateRequest();
+#else
+	const TSharedRef<IHttpRequest, ESPMode::ThreadSafe> HttpRequest = HttpModule->CreateRequest();
+#endif
 
 	FString PackagePath;
 	FString AssetName;
@@ -380,11 +396,19 @@ const TSharedPtr<FJsonObject> FAssetUtilities::API_RequestExports(const FString&
 
 	const UJsonAsAssetSettings* Settings = GetDefault<UJsonAsAssetSettings>();
 
+#if ENGINE_MAJOR_VERSION >= 5
 	const TSharedRef<IHttpRequest> NewRequest = HttpModule->CreateRequest();
+#else
+	const TSharedRef<IHttpRequest, ESPMode::ThreadSafe> NewRequest = HttpModule->CreateRequest();
+#endif
 	NewRequest->SetURL(Settings->Url + "/api/v1/export?raw=true&path=" + Path);
 	NewRequest->SetVerb(TEXT("GET"));
 
+#if ENGINE_MAJOR_VERSION >= 5
 	const TSharedPtr<IHttpResponse> NewResponse = FRemoteUtilities::ExecuteRequestSync(NewRequest);
+#else
+	const TSharedPtr<IHttpResponse, ESPMode::ThreadSafe> NewResponse = FRemoteUtilities::ExecuteRequestSync(NewRequest);
+#endif
 	if (!NewResponse.IsValid()) return TSharedPtr<FJsonObject>();
 
 	const TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(NewResponse->GetContentAsString());
