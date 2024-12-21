@@ -145,14 +145,11 @@ void IMaterialGraph::PropagateExpressions(UObject* Parent, TArray<FName>& Expres
 #if ENGINE_MAJOR_VERSION == 4
 				TObjectPtr<UMaterialFunctionInterface> MaterialFunctionObjectPtr;
 				MaterialFunctionObjectPtr = MaterialFunctionCall->MaterialFunction;
-#else
-				// For UE5, we use TObjectPtr
-				TObjectPtr<UMaterialFunctionInterface> MaterialFunctionObjectPtr;
-				MaterialFunctionObjectPtr.Set(MaterialFunctionCall->MaterialFunction);
-#endif
-
-				// Load the object using the appropriate pointer type
+				
 				LoadObject(MaterialFunctionPtr, MaterialFunctionObjectPtr);
+#else
+				LoadObject(MaterialFunctionPtr, MaterialFunctionCall->MaterialFunction);
+#endif
 
 				// Notify material function is missing
 				if (MaterialFunctionCall->MaterialFunction == nullptr) {
@@ -232,9 +229,6 @@ void IMaterialGraph::PropagateExpressions(UObject* Parent, TArray<FName>& Expres
 		if (!bSubgraph) {
 			// Adding expressions is different between UE4 and UE5
 #if ENGINE_MAJOR_VERSION >= 5
-			TWeakObjectPtr<UMaterialFunctionInterface> MaterialFunctionObjectPtr;
-			MaterialFunctionObjectPtr = MaterialFunctionCall->MaterialFunction;
-
 			if (UMaterialFunction* FuncCasted = Cast<UMaterialFunction>(Parent)) {
 				FuncCasted->GetExpressionCollection().AddExpression(Expression);
 			}

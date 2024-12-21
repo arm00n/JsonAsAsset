@@ -139,9 +139,9 @@ void FJsonAsAssetSettingsDetails::CustomizeDetails(IDetailLayoutBuilder& DetailB
 			FHttpModule* HttpModule = &FHttpModule::Get();
 
 #if ENGINE_MAJOR_VERSION >= 5
-		const TSharedRef<IHttpRequest> Request = HttpModule->CreateRequest();
+			const TSharedRef<IHttpRequest> Request = HttpModule->CreateRequest();
 #else
-		TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = HttpModule->CreateRequest();
+			TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = HttpModule->CreateRequest();
 #endif
 			
 			Request->SetURL("https://fortnitecentral.genxgames.gg/api/v1/aes");

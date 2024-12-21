@@ -43,8 +43,6 @@ public:
     TArray<TObjectPtr<T>> LoadObject(const TArray<TSharedPtr<FJsonValue>>& PackageArray, TArray<TObjectPtr<T>> Array);
 
     static bool CanImport(const FString& ImporterType) {
-        IImporter Importer = IImporter();
-
         return ImporterAcceptedTypes.Contains(ImporterType); 
     }
 
