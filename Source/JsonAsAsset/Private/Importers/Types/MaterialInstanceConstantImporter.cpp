@@ -27,12 +27,26 @@ bool UMaterialInstanceConstantImporter::ImportData() {
 		}
 
 		const TSharedPtr<FJsonObject>* ParentPtr;
-		if (Properties->TryGetObjectField("Parent", ParentPtr))
+		if (Properties->TryGetObjectField("Parent", ParentPtr)) {
+#if ENGINE_MAJOR_VERSION >= 5
 			LoadObject(ParentPtr, MaterialInstanceConstant->Parent);
+#else
+			TObjectPtr<UMaterialInterface> ParentObjectPtr;
+			LoadObject(ParentPtr, ParentObjectPtr);
+			MaterialInstanceConstant->Parent = ParentObjectPtr.Get();
+#endif
+		}
 
 		const TSharedPtr<FJsonObject>* SubsurfaceProfilePtr;
-		if (Properties->TryGetObjectField("SubsurfaceProfile", SubsurfaceProfilePtr))
+		if (Properties->TryGetObjectField("SubsurfaceProfile", SubsurfaceProfilePtr)) {
+#if ENGINE_MAJOR_VERSION >= 5
 			LoadObject(SubsurfaceProfilePtr, MaterialInstanceConstant->SubsurfaceProfile);
+#else
+			TObjectPtr<USubsurfaceProfile> SubsurfaceProfilObjectPtr;
+			LoadObject(SubsurfaceProfilePtr, SubsurfaceProfilObjectPtr);
+			MaterialInstanceConstant->SubsurfaceProfile = SubsurfaceProfilObjectPtr.Get();
+#endif
+		}
 
 		bool bOverrideSubsurfaceProfile;
 		if (Properties->TryGetBoolField("bOverrideSubsurfaceProfile", bOverrideSubsurfaceProfile))
@@ -115,7 +129,13 @@ bool UMaterialInstanceConstantImporter::ImportData() {
 
 			const TSharedPtr<FJsonObject>* TexturePtr = nullptr;
 			if (Texture->TryGetObjectField("ParameterValue", TexturePtr) && TexturePtr != nullptr) {
+#if ENGINE_MAJOR_VERSION >= 5
 				LoadObject(TexturePtr, Parameter.ParameterValue);
+#else
+				TObjectPtr<UTexture> TextureObjectPtr;
+				LoadObject(TexturePtr, TextureObjectPtr);
+				Parameter.ParameterValue = TextureObjectPtr.Get();
+#endif
 			}
 
 			const TSharedPtr<FJsonObject>* ParameterInfoPtr;

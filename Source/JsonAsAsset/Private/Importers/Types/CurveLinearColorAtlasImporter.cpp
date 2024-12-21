@@ -83,9 +83,21 @@ bool UCurveLinearColorAtlasImporter::ImportData() {
 		const TArray<TSharedPtr<FJsonValue>> GradientCurves = Properties->GetArrayField("GradientCurves");
 		TArray<TObjectPtr<UCurveLinearColor>> CurvesLocal;
 
+#if ENGINE_MAJOR_VERSION >= 5
 		CurvesLocal = LoadObject(GradientCurves, CurvesLocal);
 		Object->GradientCurves = CurvesLocal;
 		Object->PostEditChangeProperty(PropertyChangedEvent);
+#else
+		CurvesLocal = LoadObject(GradientCurves, CurvesLocal);
+
+		// Convert TObjectPtr<UCurveLinearColor> to UCurveLinearColor* and assign to Object->GradientCurves
+		TArray<UCurveLinearColor*> RawCurves;
+		for (const TObjectPtr<UCurveLinearColor>& Curve : CurvesLocal) {
+			RawCurves.Add(Curve.Get());
+		}
+
+		Object->GradientCurves = RawCurves;
+#endif
 
 		// Handle edit changes, and add it to the content browser
 		return OnAssetCreation(Object);

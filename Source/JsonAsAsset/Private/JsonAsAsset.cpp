@@ -15,7 +15,7 @@
 #include "MainFrame/Public/Interfaces/IMainFrameModule.h"
 #endif
 
-#if ENGINE_MAJOR_VERSION = 4
+#if ENGINE_MAJOR_VERSION == 4
 #include "ToolMenus.h"
 #include "Logging/MessageLog.h"
 #endif

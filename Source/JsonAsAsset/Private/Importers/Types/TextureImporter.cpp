@@ -17,10 +17,20 @@ bool UTextureImporter::ImportTexture2D(UTexture*& OutTexture2D, TArray<uint8>& D
 
 	// NEW: .bin support
 	UTexture2D* Texture2D = NewObject<UTexture2D>(OutermostPkg, UTexture2D::StaticClass(), *FileName, RF_Standalone | RF_Public);
+
+#if ENGINE_MAJOR_VERSION >= 5
 	Texture2D->SetPlatformData(new FTexturePlatformData());
+#else
+	Texture2D->PlatformData = new FTexturePlatformData();
+#endif
 
 	ImportTexture2D_Data(Texture2D, SubObjectProperties);
+
+#if ENGINE_MAJOR_VERSION >= 5
 	FTexturePlatformData* PlatformData = Texture2D->GetPlatformData();
+#else
+	FTexturePlatformData* PlatformData = Texture2D->PlatformData;
+#endif
 
 	const int SizeX = Properties->GetNumberField(TEXT("SizeX"));
 	const int SizeY = Properties->GetNumberField(TEXT("SizeY"));
@@ -56,10 +66,19 @@ bool UTextureImporter::ImportTexture2D(UTexture*& OutTexture2D, TArray<uint8>& D
 bool UTextureImporter::ImportTextureCube(UTexture*& OutTextureCube, TArray<uint8>& Data, const TSharedPtr<FJsonObject>& Properties) const {
 	UTextureCube* TextureCube = NewObject<UTextureCube>(Package, UTextureCube::StaticClass(), *FileName, RF_Public | RF_Standalone);
 
+#if ENGINE_MAJOR_VERSION >= 5
 	TextureCube->SetPlatformData(new FTexturePlatformData());
+#else
+	TextureCube->PlatformData = new FTexturePlatformData();
+#endif
 
 	ImportTexture_Data(TextureCube, Properties);
+
+#if ENGINE_MAJOR_VERSION >= 5
 	FTexturePlatformData* PlatformData = TextureCube->GetPlatformData();
+#else
+	FTexturePlatformData* PlatformData = TextureCube->PlatformData;
+#endif
 
 	const int SizeX = Properties->GetNumberField(TEXT("SizeX"));
 	const int SizeY = Properties->GetNumberField(TEXT("SizeY")) / 6;
@@ -91,11 +110,19 @@ bool UTextureImporter::ImportTextureCube(UTexture*& OutTextureCube, TArray<uint8
 bool UTextureImporter::ImportVolumeTexture(UTexture*& OutVolumeTexture, TArray<uint8>& Data, const TSharedPtr<FJsonObject>& Properties) const {
 	UVolumeTexture* VolumeTexture = NewObject<UVolumeTexture>(Package, UVolumeTexture::StaticClass(), *FileName, RF_Public | RF_Standalone);
 
+#if ENGINE_MAJOR_VERSION >= 5
 	VolumeTexture->SetPlatformData(new FTexturePlatformData());
+#endif
 	FString PixelFormat;
+
+#if ENGINE_MAJOR_VERSION >= 5
+	FTexturePlatformData* PlatformData = VolumeTexture->GetPlatformData();
+#else
+	FTexturePlatformData* PlatformData = VolumeTexture->PlatformData;
+#endif
 	
 	if (Properties->TryGetStringField(TEXT("PixelFormat"), PixelFormat))
-		VolumeTexture->GetPlatformData()->PixelFormat = static_cast<EPixelFormat>(VolumeTexture->GetPixelFormatEnum()->GetValueByNameString(PixelFormat));
+		PlatformData->PixelFormat = static_cast<EPixelFormat>(VolumeTexture->GetPixelFormatEnum()->GetValueByNameString(PixelFormat));
 
 	ImportTexture_Data(VolumeTexture, Properties);
 
@@ -107,7 +134,7 @@ bool UTextureImporter::ImportVolumeTexture(UTexture*& OutVolumeTexture, TArray<u
 
 	// Decompression
 	uint8* DecompressedData = static_cast<uint8*>(FMemory::Malloc(Size));
-	GetDecompressedTextureData(Data.GetData(), DecompressedData, SizeX, SizeY, SizeZ, Size, VolumeTexture->GetPlatformData()->PixelFormat);
+	GetDecompressedTextureData(Data.GetData(), DecompressedData, SizeX, SizeY, SizeZ, Size, PlatformData->PixelFormat);
 
 	VolumeTexture->Source.Init(SizeX, SizeY, SizeZ, 1, TSF_BGRA8);
 
@@ -178,7 +205,11 @@ bool UTextureImporter::ImportTexture2D_Data(UTexture2D* InTexture2D, const TShar
 	if (Properties->TryGetBoolField(TEXT("bHasBeenPaintedInEditor"), bHasBeenPaintedInEditor)) InTexture2D->bHasBeenPaintedInEditor = bHasBeenPaintedInEditor;
 
 	// --------- Platform Data --------- //
+#if ENGINE_MAJOR_VERSION >= 5
 	FTexturePlatformData* PlatformData = InTexture2D->GetPlatformData();
+#else
+	FTexturePlatformData* PlatformData = InTexture2D->PlatformData;
+#endif
 	int SizeX;
 	int SizeY;
 	uint32 PackedData;

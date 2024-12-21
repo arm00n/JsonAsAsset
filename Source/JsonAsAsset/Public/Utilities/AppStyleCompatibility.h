@@ -17,7 +17,6 @@ public:
 		return FEditorStyle::GetStyleSetName();
 	}
 };
-#endif
 
 template <typename TObjectType>
 class TObjectPtr
@@ -40,3 +39,4 @@ public:
 	// Additional constructor to allow raw pointer conversion
 	TObjectPtr(TObjectType* InObject, bool bRawPointer) : WeakPtr(InObject) {}
 };
+#endif
