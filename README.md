@@ -40,6 +40,8 @@ JsonAsAsset is a plugin to create assets from JSON data obtained from [FModel](h
 <details>
   <summary>Supported Asset Types</summary>
 
+##### *All Sound Asset Types
+
 ###### Materials
  - Material
  - MaterialFunction
@@ -57,11 +59,7 @@ JsonAsAsset is a plugin to create assets from JSON data obtained from [FModel](h
 ###### Skeleton/Animation Asset Types
  - SkeletalMeshLODSettings
  - Animation (curves, sync markers)
-
-###### Sound Asset Types
- - SoundAttenuation
- - SoundConcurrency
- - ReverbEffect
+ - Blendspace
 
 ###### Data Asset Types
 - DataAsset
