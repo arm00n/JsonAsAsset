@@ -6,7 +6,11 @@
 #include "HttpModule.h"
 #include "Serialization/JsonSerializer.h"
 
+#if ENGINE_MAJOR_VERSION >= 5
 TSharedPtr<IHttpResponse> FRemoteUtilities::ExecuteRequestSync(TSharedRef<IHttpRequest> HttpRequest, float LoopDelay)
+#else
+TSharedPtr<IHttpResponse, ESPMode::ThreadSafe> ExecuteRequestSync(TSharedRef<IHttpRequest> HttpRequest, float LoopDelay);
+#endif
 {
 	const bool bStartedRequest = HttpRequest->ProcessRequest();
 	if (!bStartedRequest)

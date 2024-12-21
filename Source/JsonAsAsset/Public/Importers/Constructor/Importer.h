@@ -6,6 +6,7 @@
 #include "Dom/JsonObject.h"
 #include "../../Utilities/ObjectUtilities.h"
 #include "../../Utilities/PropertyUtilities.h"
+#include "Utilities/AppStyleCompatibility.h"
 #include "Widgets/Notifications/SNotificationList.h"
 
 // Global handler for converting JSON to assets
@@ -24,6 +25,44 @@ public:
         PropertySerializer = NewObject<UPropertySerializer>();
         GObjectSerializer = NewObject<UObjectSerializer>();
         GObjectSerializer->SetPropertySerializer(PropertySerializer);
+
+        AcceptedTypes = {
+            "Texture2D",
+            // "TextureCube",
+            // "VolumeTexture",
+            "TextureRenderTarget2D",
+
+            "", // separator
+
+            "Material",
+            "MaterialFunction",
+            "MaterialInstanceConstant",
+
+            "", // separator
+
+            "CurveFloat",
+            "CurveTable",
+            "CurveVector",
+            "CurveLinearColorAtlas",
+            "CurveLinearColor",
+
+            "", // separator
+
+            "SoundWave",
+            "ReverbEffect",
+            "SoundAttenuation",
+            "SoundConcurrency",
+            "SoundClass",
+            "SoundMix",
+            "SoundModulationPatch",
+
+            "", // separator
+
+            "PhysicalMaterial",
+            "SubsurfaceProfile",
+            "LandscapeGrassType",
+            "DataTable",
+        };
     }
 
     virtual ~IImporter() {}
@@ -36,60 +75,7 @@ protected:
     UObjectSerializer* GObjectSerializer;
 
 private:
-    inline static TArray<FString> AcceptedTypes = {
-        "CurveTable",
-        "CurveFloat",
-        "CurveVector",
-        "CurveLinearColor",
-        "CurveLinearColorAtlas",
-
-        "", // separator
-
-        "SkeletalMeshLODSettings",
-        "Skeleton",
-
-        "", // separator
-
-        "AnimSequence",
-        "AnimMontage",
-
-        "", // separator
-
-        "Material",
-        "MaterialFunction",
-        "MaterialInstanceConstant",
-        "MaterialParameterCollection",
-        "NiagaraParameterCollection",
-
-        "", // separator
-
-        "DataAsset",
-        "LandscapeGrassType",
-        "DataTable",
-
-        "", // separator
-		
-        "PhysicsAsset",
-        "PhysicalMaterial",
-
-        "", // separator
-
-        "SoundCue",
-        "ReverbEffect",
-        "SoundAttenuation",
-        "SoundConcurrency",
-        "SoundClass",
-        "SoundMix",
-        "SoundModulationPatch",
-
-        "", // separator
-
-        "SubsurfaceProfile",
-
-        "", // separator
-
-        "TextureRenderTarget2D"
-    };
+	static TArray<FString> AcceptedTypes;
 
 public:
     static TArray<FString> GetAcceptedTypes() { return AcceptedTypes; }

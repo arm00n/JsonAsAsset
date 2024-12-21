@@ -239,7 +239,7 @@ bool FAssetUtilities::Construct_TypeTexture(const FString& Path, const FString& 
 		return false;
 
 	TArray<TSharedPtr<FJsonValue>> Response = JsonObject->GetArrayField("jsonOutput");
-	if (Response.IsEmpty())
+	if (Response.Num() == 0)
 		return false;
 
 	const UJsonAsAssetSettings* Settings = GetDefault<UJsonAsAssetSettings>();
@@ -252,7 +252,11 @@ bool FAssetUtilities::Construct_TypeTexture(const FString& Path, const FString& 
 	if (Type != "TextureRenderTarget2D")
 	{
 		FHttpModule* HttpModule = &FHttpModule::Get();
+#if ENGINE_MAJOR_VERSION >= 5
 		const TSharedRef<IHttpRequest> HttpRequest = HttpModule->CreateRequest();
+#else
+		const TSharedRef<IHttpRequest, ESPMode::ThreadSafe> HttpRequest = HttpModule->CreateRequest();
+#endif
 
 		HttpRequest->SetURL(Settings->Url + "/api/v1/export?path=" + RealPath);
 		HttpRequest->SetHeader("content-type", "application/octet-stream");
@@ -355,8 +359,10 @@ void FAssetUtilities::CreatePlugin(FString PluginName)
 	Info.bUseLargeFont = true;
 	Info.bUseSuccessFailIcons = false;
 	Info.WidthOverride = FOptionalSize(350);
+#if ENGINE_MAJOR_VERSION >= 5
 	Info.SubText = FText::FromString(FString("Created successfully"));
-
+#endif
+	
 	TSharedPtr<SNotificationItem> NotificationPtr = FSlateNotificationManager::Get().AddNotification(Info);
 	NotificationPtr->SetCompletionState(SNotificationItem::CS_Success);
 #endif

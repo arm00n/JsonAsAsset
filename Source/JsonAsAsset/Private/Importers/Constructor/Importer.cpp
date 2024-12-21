@@ -370,7 +370,11 @@ void IImporter::SavePackage() {
 
 	// User option to save packages on import
 	if (Settings->AssetSettings.bSavePackagesOnImport) {
+#if ENGINE_MAJOR_VERSION >= 5
 		UPackage::SavePackage(Package, nullptr, *PackageFileName, SaveArgs);
+#else
+		UPackage::SavePackage(Package, nullptr, RF_Standalone, *PackageFileName);
+#endif
 	}
 }
 
@@ -417,17 +421,18 @@ TArray<TSharedPtr<FJsonValue>> IImporter::FilterExportsByOuter(const FString& Ou
 	TArray<TSharedPtr<FJsonValue>> ReturnValue = TArray<TSharedPtr<FJsonValue>>();
 
 	for (const TSharedPtr<FJsonValue> Value : AllJsonObjects) {
-		const TSharedPtr<FJsonObject> ValueObject = TSharedPtr(Value->AsObject());
+		const TSharedPtr<FJsonObject> ValueObject = TSharedPtr<FJsonObject>(Value->AsObject());
 
-		if (FString ExOuter; ValueObject->TryGetStringField(TEXT("Outer"), ExOuter) && ExOuter == Outer) 
-			ReturnValue.Add(TSharedPtr(Value));
+		FString ExOuter;
+		if (ValueObject->TryGetStringField(TEXT("Outer"), ExOuter) && ExOuter == Outer) 
+			ReturnValue.Add(TSharedPtr<FJsonValue>(Value));
 	}
 
 	return ReturnValue;
 }
 
 TSharedPtr<FJsonValue> IImporter::GetExportByObjectPath(const TSharedPtr<FJsonObject>& Object) {
-	const TSharedPtr<FJsonObject> ValueObject = TSharedPtr(Object);
+	const TSharedPtr<FJsonObject> ValueObject = TSharedPtr<FJsonObject>(Object);
 
 	FString StringIndex; {
 		ValueObject->GetStringField(TEXT("ObjectPath")).Split(".", nullptr, &StringIndex);
@@ -443,7 +448,10 @@ void IImporter::AppendNotification(const FText& Text, const FText& SubText, floa
 	Info.bUseLargeFont = true;
 	Info.bUseSuccessFailIcons = bUseSuccessFailIcons;
 	Info.WidthOverride = FOptionalSize(WidthOverride);
+
+#if ENGINE_MAJOR_VERSION >= 5
 	Info.SubText = SubText;
+#endif
 
 	const TSharedPtr<SNotificationItem> NotificationPtr = FSlateNotificationManager::Get().AddNotification(Info);
 	NotificationPtr->SetCompletionState(CompletionState);
@@ -456,7 +464,9 @@ void IImporter::AppendNotification(const FText& Text, const FText& SubText, floa
 	Info.bUseLargeFont = true;
 	Info.bUseSuccessFailIcons = bUseSuccessFailIcons;
 	Info.WidthOverride = FOptionalSize(WidthOverride);
+#if ENGINE_MAJOR_VERSION >= 5
 	Info.SubText = SubText;
+#endif
 	Info.Image = SlateBrush;
 
 	const TSharedPtr<SNotificationItem> NotificationPtr = FSlateNotificationManager::Get().AddNotification(Info);
@@ -464,7 +474,7 @@ void IImporter::AppendNotification(const FText& Text, const FText& SubText, floa
 }
 
 TSharedPtr<FJsonObject> IImporter::RemovePropertiesShared(TSharedPtr<FJsonObject> Input, TArray<FString> RemovedProperties) const {
-	const TSharedPtr<FJsonObject> RawSharedPtrData = TSharedPtr(Input);
+	const TSharedPtr<FJsonObject> RawSharedPtrData = TSharedPtr<FJsonObject>(Input);
 	
 	for (FString Property : RemovedProperties) {
 		if (RawSharedPtrData->HasField(Property))

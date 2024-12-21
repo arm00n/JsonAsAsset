@@ -5,6 +5,7 @@
 
 #include "Interfaces/IPluginManager.h"
 #include "Styling/StyleColors.h"
+#include "Utilities/AppStyleCompatibility.h"
 
 #define LOCTEXT_NAMESPACE "AboutJsonAsAsset"
 

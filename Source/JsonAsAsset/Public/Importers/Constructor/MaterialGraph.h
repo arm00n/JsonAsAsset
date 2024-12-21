@@ -12,7 +12,16 @@
 class IMaterialGraph : public IImporter {
 public:
 	IMaterialGraph(const FString& FileName, const FString& FilePath, const TSharedPtr<FJsonObject>& JsonObject, UPackage* Package, UPackage* OutermostPkg, const TArray<TSharedPtr<FJsonValue>>& AllJsonObjects):
-		IImporter(FileName, FilePath, JsonObject, Package, OutermostPkg, AllJsonObjects) {
+		IImporter(FileName, FilePath, JsonObject, Package, OutermostPkg, AllJsonObjects)
+	{
+		/* Handled manually by IMaterialGraph */
+		IgnoredExpressions = {
+			"MaterialExpressionComposite",
+			"MaterialExpressionPinBase",
+			"MaterialExpressionComment",
+			"MaterialFunction",
+			"Material"
+		};
 	}
 
 	// UMaterialExpression, Properties
@@ -20,14 +29,7 @@ public:
 		TMap<FString, FJsonObject*> MissingNodeClasses;
 
 protected:
-	/* Handled manually by IMaterialGraph */
-	inline static TArray<FString> IgnoredExpressions = {
-		"MaterialExpressionComposite",
-		"MaterialExpressionPinBase",
-		"MaterialExpressionComment",
-		"MaterialFunction",
-		"Material"
-	};
+	static TArray<FString> IgnoredExpressions;
 
 	struct FExportData {
 		FExportData(const FName Type, const FName Outer, const TSharedPtr<FJsonObject>& Json) {
@@ -66,6 +68,7 @@ protected:
 
 	// Modifies Graph Nodes (copies over properties from FJsonObject)
 	void PropagateExpressions(UObject* Parent, TArray<FName>& ExpressionNames, TMap<FName, FExportData>& Exports, TMap<FName, UMaterialExpression*>& CreatedExpressionMap, bool bCheckOuter = false, bool bSubgraph = false);
+	void MaterialGraphNode_AddComment(UObject* Parent, UMaterialExpressionComment* Comment);
 	// ----------------------------------------------------
 
 	// Functions to Handle Node Connections ------------

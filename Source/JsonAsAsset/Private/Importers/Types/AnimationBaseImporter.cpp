@@ -52,7 +52,9 @@ bool UAnimationBaseImporter::ImportData()
 #endif
 
 		// Some FModel versions have different named objects for curves
-		if (const TSharedPtr<FJsonObject>* RawCurveData; Properties->TryGetObjectField("RawCurveData", RawCurveData)) FloatCurves = Properties->GetObjectField("RawCurveData")->GetArrayField("FloatCurves");
+		const TSharedPtr<FJsonObject>* RawCurveData;
+		
+		if (Properties->TryGetObjectField("RawCurveData", RawCurveData)) FloatCurves = Properties->GetObjectField("RawCurveData")->GetArrayField("FloatCurves");
 		else if (JsonObject->TryGetObjectField("CompressedCurveData", RawCurveData)) FloatCurves = JsonObject->GetObjectField("CompressedCurveData")->GetArrayField("FloatCurves");
 
 		for (TSharedPtr<FJsonValue> FloatCurveObject : FloatCurves)
@@ -70,7 +72,15 @@ bool UAnimationBaseImporter::ImportData()
 			//  if a curve is metadata
 			//  or not.
 			int CurveTypeFlags = FloatCurveObject->AsObject()->GetIntegerField("CurveTypeFlags");
-			// Unreal Engine 5 uses the controller, while Unreal Engine 4 directly uses RawCurveData
+
+#if ENGINE_MAJOR_VERSION == 4
+			FSmartName NewTrackName;
+
+			// Included to add the curve's name to the skeleton's data
+			Skeleton->AddSmartNameAndModify(USkeleton::AnimCurveMappingName, FName(*DisplayName), NewTrackName);
+			ensureAlways(Skeleton->GetSmartNameByUID(USkeleton::AnimCurveMappingName, NewTrackName.UID, NewTrackName));
+#endif
+			
 #if ENGINE_MAJOR_VERSION == 5
 #if ENGINE_MINOR_VERSION <= 3
 			FSmartName NewTrackName;
@@ -140,63 +150,11 @@ bool UAnimationBaseImporter::ImportData()
 #endif
 		}
 
-		for (TSharedPtr<FJsonValue> FloatCurveObject : FloatCurves)
-		{
-			FString DisplayName = "";
-			if (FloatCurveObject->AsObject()->HasField("Name")) {
-				DisplayName = FloatCurveObject->AsObject()->GetObjectField("Name")->GetStringField("DisplayName");
-			} else {
-				DisplayName = FloatCurveObject->AsObject()->GetStringField("CurveName");
-			}
-
-			TArray<TSharedPtr<FJsonValue>> Keys = FloatCurveObject->AsObject()->GetObjectField("FloatCurve")->GetArrayField("Keys");
-			TArray<FRichCurveKey> _Keys;
-
-			for (int32 key_index = 0; key_index < Keys.Num(); key_index++)
-			{
-				TSharedPtr<FJsonObject> Key = Keys[key_index]->AsObject();
-
-				FRichCurveKey RichKey = FMathUtilities::ObjectToRichCurveKey(Keys[key_index]->AsObject());
-
-				// Unreal Engine 5 and Unreal Engine 4
-				// have different ways of adding curves
-				//
-				// Unreal Engine 4: Simply adding curves to RawCurveData
-				// Unreal Engine 5: Using a AnimDataController to handle adding curves
-#if ENGINE_MAJOR_VERSION == 5
-				_Keys.Add(RichKey);
-#endif
-#if ENGINE_MAJOR_VERSION == 4
-				AnimSequenceBase->RawCurveData.AddFloatCurveKey(NewTrackName, CurveTypeFlags, RichKey.Time, RichKey.Value);
-				AnimSequenceBase->RawCurveData.FloatCurves.Last().FloatCurve.Keys.Last().ArriveTangent = RichKey.ArriveTangent;
-				AnimSequenceBase->RawCurveData.FloatCurves.Last().FloatCurve.Keys.Last().LeaveTangent = RichKey.LeaveTangent;
-				AnimSequenceBase->RawCurveData.FloatCurves.Last().FloatCurve.Keys.Last().InterpMode = RichKey.InterpMode;
-#endif
-			}
-
-#if ENGINE_MAJOR_VERSION == 5
-#if ENGINE_MINOR_VERSION <= 3
-			FSmartName NewTrackName;
-			{
-				// Create SmartName
-				Skeleton->AddSmartNameAndModify(USkeleton::AnimCurveMappingName, FName(*DisplayName), NewTrackName);
-			}
-#elif  ENGINE_MINOR_VERSION >= 4
-			FName NewTrackName = FName(*DisplayName);
-#endif
-			AnimSequenceBase->Modify(true);
-
-			FAnimationCurveIdentifier CurveId(NewTrackName, ERawCurveTrackTypes::RCT_Float);
-			IAnimationDataController& LocalController = AnimSequenceBase->GetController();
-			LocalController.SetCurveKeys(CurveId, _Keys);
-			AnimSequenceBase->PostEditChange();
-			GLog->Log("JsonAsAsset: Added animation curve: " + DisplayName);
-#endif
-		}
-
 		UAnimSequence* CastedAnimSequence = Cast<UAnimSequence>(AnimSequenceBase);
 
-		if (const TArray<TSharedPtr<FJsonValue>>* AuthoredSyncMarkers1; Properties->TryGetArrayField("AuthoredSyncMarkers", AuthoredSyncMarkers1) && CastedAnimSequence)
+		const TArray<TSharedPtr<FJsonValue>>* AuthoredSyncMarkers1;
+		
+		if (Properties->TryGetArrayField("AuthoredSyncMarkers", AuthoredSyncMarkers1) && CastedAnimSequence)
 		{
 			TArray<TSharedPtr<FJsonValue>> AuthoredSyncMarkers = Properties->GetArrayField("AuthoredSyncMarkers");
 

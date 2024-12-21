@@ -8,7 +8,18 @@
 // ------------------------------------------------------------------------------------------------------------>
 #include "Developer/DesktopPlatform/Public/IDesktopPlatform.h"
 #include "Developer/DesktopPlatform/Public/DesktopPlatformModule.h"
+
+#if ENGINE_MAJOR_VERSION >= 5
 #include "Interfaces/IMainFrameModule.h"
+#else
+#include "MainFrame/Public/Interfaces/IMainFrameModule.h"
+#endif
+
+#if ENGINE_MAJOR_VERSION = 4
+#include "ToolMenus.h"
+#include "Logging/MessageLog.h"
+#endif
+
 #include "Windows/WindowsHWrapper.h"
 
 #include "Interfaces/IPluginManager.h"
@@ -22,6 +33,7 @@
 #include <TlHelp32.h>
 
 #include "Modules/AboutJsonAsAsset.h"
+#include "Utilities/AppStyleCompatibility.h"
 #include "Utilities/AssetUtilities.h"
 // <------------------------------------------------------------------------------------------------------------
 
@@ -44,9 +56,11 @@ void FJsonAsAssetModule::PluginButtonClicked() {
 	// Invalid Export Directory
 	if (Settings->ExportDirectory.Path.Contains("\\")) {
 		FNotificationInfo Info(LOCTEXT("JsonAsAssetNotificationTitle", "Export Directory Invalid"));
+#if ENGINE_MAJOR_VERSION >= 5
 		Info.SubText = LOCTEXT("JsonAsAssetNotificationText",
 			"Please fix your export directory in the plugin settings, as it is invalid and contains the character \"\\\"."
 		);
+#endif
 
 		Info.HyperlinkText = LOCTEXT("UnrealSoftwareRequirements", "JsonAsAsset Plugin Settings");
 		Info.Hyperlink = FSimpleDelegate::CreateStatic([]() {
@@ -81,9 +95,11 @@ void FJsonAsAssetModule::PluginButtonClicked() {
 
 		if (!IsProcessRunning("LocalFetch.exe") && bIsLocalHost) {
 			FNotificationInfo Info(LOCTEXT("JsonAsAssetNotificationTitle", "Local Fetch API"));
+#if ENGINE_MAJOR_VERSION >= 5
 			Info.SubText = LOCTEXT("JsonAsAssetNotificationText",
 				"Please start the Local Fetch API to use JsonAsAsset with no issues, if you need any assistance figuring out Local Fetch and the settings, please take a look at the documentation:"
 			);
+#endif
 
 			Info.HyperlinkText = LOCTEXT("UnrealSoftwareRequirements", "JsonAsAsset Docs");
 			Info.Hyperlink = FSimpleDelegate::CreateStatic([]() {
@@ -178,7 +194,9 @@ void FJsonAsAssetModule::StartupModule() {
         );
 
         FNotificationInfo Info(TitleText);
+#if ENGINE_MAJOR_VERSION >= 5
         Info.SubText = MessageText;
+#endif
 
         // Set up hyperlink for documentation
         Info.HyperlinkText = LOCTEXT("UnrealSoftwareRequirements", "JsonAsAsset Docs");
@@ -274,7 +292,9 @@ void FJsonAsAssetModule::RegisterMenus() {
 		"JsonAsAsset"
 	));
 
+#if ENGINE_MAJOR_VERSION >= 5
 	Entry.StyleNameOverride = "CalloutToolbar";
+#endif
 	Entry.SetCommandList(PluginCommands);
 }
 

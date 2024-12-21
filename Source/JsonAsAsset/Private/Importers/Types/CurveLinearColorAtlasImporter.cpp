@@ -30,15 +30,47 @@ bool UCurveLinearColorAtlasImporter::ImportData() {
 
 		Object->UpdateResource();
 
-		if (bool bHasAnyDirtyTextures; Properties->TryGetBoolField("bHasAnyDirtyTextures", bHasAnyDirtyTextures)) Object->bHasAnyDirtyTextures = bHasAnyDirtyTextures;
-		if (bool bIsDirty; Properties->TryGetBoolField("bIsDirty", bIsDirty)) Object->bIsDirty = bIsDirty;
-		if (bool bShowDebugColorsForNullGradients; Properties->TryGetBoolField("bShowDebugColorsForNullGradients", bShowDebugColorsForNullGradients)) Object->bShowDebugColorsForNullGradients = bShowDebugColorsForNullGradients;
-		if (bool bSquareResolution; Properties->TryGetBoolField("bSquareResolution", bSquareResolution)) Object->bSquareResolution = bSquareResolution;
+		bool bHasAnyDirtyTextures = false;
+		if (Properties->TryGetBoolField("bHasAnyDirtyTextures", bHasAnyDirtyTextures))
+		{
+			Object->bHasAnyDirtyTextures = bHasAnyDirtyTextures;
+		}
 
-		if (float TextureSize; Properties->TryGetNumberField("TextureSize", TextureSize))
-			Object->TextureSize = Properties->GetNumberField("TextureSize");
-		if (float TextureHeight; Properties->TryGetNumberField("TextureHeight", TextureHeight))
-			Object->TextureHeight = Properties->GetNumberField("TextureHeight");
+		bool bIsDirty = false;
+		if (Properties->TryGetBoolField("bIsDirty", bIsDirty))
+		{
+			Object->bIsDirty = bIsDirty;
+		}
+
+		bool bShowDebugColorsForNullGradients = false;
+		if (Properties->TryGetBoolField("bShowDebugColorsForNullGradients", bShowDebugColorsForNullGradients))
+		{
+			Object->bShowDebugColorsForNullGradients = bShowDebugColorsForNullGradients;
+		}
+
+		bool bSquareResolution = false;
+		if (Properties->TryGetBoolField("bSquareResolution", bSquareResolution))
+		{
+			Object->bSquareResolution = bSquareResolution;
+		}
+
+#if ENGINE_MAJOR_VERSION == 5
+		float TextureSize = 0.0f;
+		float TextureHeight = 0.0f;
+#else
+		double TextureSize = 0.0f;
+		double TextureHeight = 0.0f;
+#endif
+		
+		if (Properties->TryGetNumberField("TextureSize", TextureSize))
+		{
+			Object->TextureSize = TextureSize;
+		}
+
+		if (Properties->TryGetNumberField("TextureHeight", TextureHeight))
+		{
+			Object->TextureHeight = TextureHeight;
+		}
 
 		FProperty* TextureSizeProperty = FindFProperty<FProperty>(Object->GetClass(), "TextureSize");
 		FPropertyChangedEvent TextureSizePropertyPropertyChangedEvent(TextureSizeProperty, EPropertyChangeType::ValueSet);

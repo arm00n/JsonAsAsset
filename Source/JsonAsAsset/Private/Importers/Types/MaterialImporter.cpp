@@ -14,11 +14,13 @@
 
 #include "Factories/MaterialFactoryNew.h"
 #include "MaterialGraph/MaterialGraph.h"
-#include <Editor/UnrealEd/Classes/MaterialGraph/MaterialGraphNode_Composite.h>
 #include <Editor/UnrealEd/Classes/MaterialGraph/MaterialGraphSchema.h>
 
 #include "Editor/MaterialEditor/Private/MaterialEditor.h"
 #include "Settings/JsonAsAssetSettings.h"
+
+#if ENGINE_MAJOR_VERSION >= 5
+#include <Editor/UnrealEd/Classes/MaterialGraph/MaterialGraphNode_Composite.h>
 
 void UMaterialImporter::ComposeExpressionPinBase(UMaterialExpressionPinBase* Pin, TMap<FName, UMaterialExpression*>& CreatedExpressionMap, const TSharedPtr<FJsonObject>& _JsonObject, TMap<FName, FExportData>& Exports) {
 	FJsonObject* Expression = (Exports.Find(GetExportNameOfSubobject(_JsonObject->GetStringField("ObjectName")))->Json)->GetObjectField("Properties").Get();
@@ -68,6 +70,7 @@ void UMaterialImporter::ComposeExpressionPinBase(UMaterialExpressionPinBase* Pin
 
 	Pin->Modify();
 }
+#endif
 
 bool UMaterialImporter::ImportData() {
 	try {
@@ -80,7 +83,11 @@ bool UMaterialImporter::ImportData() {
 		Material->GetReferencedTextures();
 
 		// Clear any default expressions the engine adds
+#if ENGINE_MAJOR_VERSION >= 5
 		Material->GetExpressionCollection().Empty();
+#else
+		Material->Expressions.Empty();
+#endif
 
 		// Define editor only data from the JSON
 		TMap<FName, FExportData> Exports;
@@ -93,14 +100,16 @@ bool UMaterialImporter::ImportData() {
 		const UJsonAsAssetSettings* Settings = GetDefault<UJsonAsAssetSettings>();
 
 		// Missing Material Data
-		if (Exports.IsEmpty()) {
+		if (Exports.Num() == 0) {
 			FNotificationInfo Info = FNotificationInfo(FText::FromString("Material Data Missing (" + FileName + ")"));
 			Info.ExpireDuration = 7.0f;
 			Info.bUseLargeFont = true;
 			Info.bUseSuccessFailIcons = true;
 			Info.WidthOverride = FOptionalSize(350);
+#if ENGINE_MAJOR_VERSION >= 5
 			Info.SubText = FText::FromString(FString("Please use the correct FModel provided in the JsonAsAsset server."));
-
+#endif
+			
 			TSharedPtr<SNotificationItem> NotificationPtr = FSlateNotificationManager::Get().AddNotification(Info);
 			NotificationPtr->SetCompletionState(SNotificationItem::CS_Fail);
 
@@ -118,17 +127,23 @@ bool UMaterialImporter::ImportData() {
 				"CustomizedUVs"
 			};
 
-			const TSharedPtr<FJsonObject> RawConnectionData = TSharedPtr(EdProps);
+			const TSharedPtr<FJsonObject> RawConnectionData = TSharedPtr<FJsonObject>(EdProps);
 			for (FString Property : IgnoredProperties) {
 				if (RawConnectionData->HasField(Property))
 					RawConnectionData->RemoveField(Property);
 			}
 
 			// Connect all pins using deserializer
+#if ENGINE_MAJOR_VERSION >= 5
 			GetObjectSerializer()->DeserializeObjectProperties(RawConnectionData, Material->GetEditorOnlyData());
+#else
+			GetObjectSerializer()->DeserializeObjectProperties(RawConnectionData, Material);
+#endif
 
 			// CustomizedUVs defined here
-			if (const TArray<TSharedPtr<FJsonValue>>* InputsPtr; EdProps->TryGetArrayField("CustomizedUVs", InputsPtr)) {
+			const TArray<TSharedPtr<FJsonValue>>* InputsPtr;
+			
+			if (EdProps->TryGetArrayField("CustomizedUVs", InputsPtr)) {
 				int i = 0;
 				for (const TSharedPtr<FJsonValue> InputValue : *InputsPtr) {
 					FJsonObject* InputObject = InputValue->AsObject().Get();
@@ -136,7 +151,11 @@ bool UMaterialImporter::ImportData() {
 
 					if (CreatedExpressionMap.Contains(InputExpressionName)) {
 						FExpressionInput Input = PopulateExpressionInput(InputObject, *CreatedExpressionMap.Find(InputExpressionName));
+#if ENGINE_MAJOR_VERSION >= 5
 						Material->GetEditorOnlyData()->CustomizedUVs[i] = *reinterpret_cast<FVector2MaterialInput*>(&Input);
+#else
+						Material->CustomizedUVs[i] = *reinterpret_cast<FVector2MaterialInput*>(&Input);
+#endif
 					}
 					i++;
 				}
@@ -159,7 +178,11 @@ bool UMaterialImporter::ImportData() {
 				ParameterGroupData.Add(GroupData);
 			}
 
+#if ENGINE_MAJOR_VERSION >= 5
 			Material->GetEditorOnlyData()->ParameterGroupData = ParameterGroupData;
+#else
+			Material->ParameterGroupData = ParameterGroupData;
+#endif
 		}
 
 		// Handle edit changes, and add it to the content browser
@@ -170,7 +193,7 @@ bool UMaterialImporter::ImportData() {
 
 		// Handle Material Graphs
 		for (const TSharedPtr<FJsonValue> Value : AllJsonObjects) {
-			TSharedPtr<FJsonObject> Object = TSharedPtr(Value->AsObject());
+			TSharedPtr<FJsonObject> Object = TSharedPtr<FJsonObject>(Value->AsObject());
 
 			FString ExType = Object->GetStringField("Type");
 			FString Name = Object->GetStringField("Name");
@@ -208,6 +231,7 @@ bool UMaterialImporter::ImportData() {
 
 				MaterialGraph->Modify();
 
+#if ENGINE_MAJOR_VERSION >= 5
 				// Create the composite node that will serve as the gateway into the subgraph
 				UMaterialGraphNode_Composite* GatewayNode = nullptr;
 				{
@@ -320,20 +344,32 @@ bool UMaterialImporter::ImportData() {
 
 				// Update Original Material
 				AssetEditorInstance->UpdateMaterialAfterGraphChange();
+#endif
 			}
 		}
 
-		if (const TSharedPtr<FJsonObject>* ShadingModelsPtr; Properties->TryGetObjectField("ShadingModels", ShadingModelsPtr))
-			if (int ShadingModelField; ShadingModelsPtr->Get()->TryGetNumberField("ShadingModelField", ShadingModelField))
+		const TSharedPtr<FJsonObject>* ShadingModelsPtr;
+		
+		if (Properties->TryGetObjectField("ShadingModels", ShadingModelsPtr)) {
+			int ShadingModelField;
+			
+			if (ShadingModelsPtr->Get()->TryGetNumberField("ShadingModelField", ShadingModelField)) {
+#if ENGINE_MAJOR_VERSION >= 5
 				Material->GetShadingModels().SetShadingModelField(ShadingModelField);
+#else
+				// Not to sure what to do in UE4, no function exists to override it.
+#endif
+			}
+		}
 
-		TSharedPtr<FJsonObject> SerializerProperties = TSharedPtr(Properties);
+		TSharedPtr<FJsonObject> SerializerProperties = TSharedPtr<FJsonObject>(Properties);
 		if (SerializerProperties->HasField("ShadingModel")) // ShadingModel set manually
 			SerializerProperties->RemoveField("ShadingModel");
 
 		GetObjectSerializer()->DeserializeObjectProperties(SerializerProperties, Material);
 
-		if (FString ShadingModel; Properties->TryGetStringField("ShadingModel", ShadingModel) && ShadingModel != "EMaterialShadingModel::MSM_FromMaterialExpression")
+		FString ShadingModel;
+		if (Properties->TryGetStringField("ShadingModel", ShadingModel) && ShadingModel != "EMaterialShadingModel::MSM_FromMaterialExpression")
 			Material->SetShadingModel(static_cast<EMaterialShadingModel>(StaticEnum<EMaterialShadingModel>()->GetValueByNameString(ShadingModel)));
 
 		Material->ForceRecompileForRendering();
@@ -364,14 +400,14 @@ TArray<TSharedPtr<FJsonValue>> UMaterialImporter::FilterGraphNodesBySubgraphExpr
 	*    to the function
 	*/
 	for (const TSharedPtr<FJsonValue> Value : AllJsonObjects) {
-		const TSharedPtr<FJsonObject> ValueObject = TSharedPtr(Value->AsObject());
-		const TSharedPtr<FJsonObject> Properties = TSharedPtr(ValueObject->GetObjectField("Properties"));
+		const TSharedPtr<FJsonObject> ValueObject = TSharedPtr<FJsonObject>(Value->AsObject());
+		const TSharedPtr<FJsonObject> Properties = TSharedPtr<FJsonObject>(ValueObject->GetObjectField("Properties"));
 
 		const TSharedPtr<FJsonObject>* MaterialExpression;
 		if (Properties->TryGetObjectField("MaterialExpression", MaterialExpression)) {
 			TSharedPtr<FJsonValue> ExpValue = GetExportByObjectPath(*MaterialExpression);
-			TSharedPtr<FJsonObject> Expression = TSharedPtr(ExpValue->AsObject());
-			const TSharedPtr<FJsonObject> _Properties = TSharedPtr(Expression->GetObjectField("Properties"));
+			TSharedPtr<FJsonObject> Expression = TSharedPtr<FJsonObject>(ExpValue->AsObject());
+			const TSharedPtr<FJsonObject> _Properties = TSharedPtr<FJsonObject>(Expression->GetObjectField("Properties"));
 
 			const TSharedPtr<FJsonObject>* _SubgraphExpression;
 			if (_Properties->TryGetObjectField("SubgraphExpression", _SubgraphExpression)) {

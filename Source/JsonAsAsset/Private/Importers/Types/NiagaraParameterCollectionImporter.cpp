@@ -6,7 +6,11 @@
 #include "Materials/MaterialParameterCollection.h"
 
 void UNiagaraParameterCollectionDerived::SetSourceMaterialCollection(TObjectPtr<UMaterialParameterCollection> MaterialParameterCollection) {
+#if ENGINE_MAJOR_VERSION >= 5
     this->SourceMaterialCollection = MaterialParameterCollection;
+#else
+    this->SourceMaterialCollection = MaterialParameterCollection.Get();
+#endif
 }
 
 void UNiagaraParameterCollectionDerived::SetCompileId(FGuid Guid) {
@@ -31,12 +35,15 @@ bool UNiagaraParameterCollectionImporter::ImportData() {
         NiagaraParameterCollection->SetCompileId(FGuid(Properties->GetStringField("CompileId")));
 
         TObjectPtr<UMaterialParameterCollection> MaterialParameterCollection;
-        if (const TSharedPtr<FJsonObject>* SourceMaterialCollection; Properties->TryGetObjectField("SourceMaterialCollection", SourceMaterialCollection))
+        const TSharedPtr<FJsonObject>* SourceMaterialCollection;
+        
+        if (Properties->TryGetObjectField("SourceMaterialCollection", SourceMaterialCollection))
             LoadObject(SourceMaterialCollection, MaterialParameterCollection);
 
         NiagaraParameterCollection->SetSourceMaterialCollection(MaterialParameterCollection);
 
-        if (const TArray<TSharedPtr<FJsonValue>>* ParametersPtr; Properties->TryGetArrayField("Parameters", ParametersPtr)) {
+        const TArray<TSharedPtr<FJsonValue>>* ParametersPtr;
+        if (Properties->TryGetArrayField("Parameters", ParametersPtr)) {
             for (const TSharedPtr<FJsonValue> ParameterPtr : *ParametersPtr) {
                 TSharedPtr<FJsonObject> ParameterObj = ParameterPtr->AsObject();
 

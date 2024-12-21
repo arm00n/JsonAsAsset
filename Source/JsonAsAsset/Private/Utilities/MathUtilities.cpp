@@ -7,6 +7,7 @@ FVector FMathUtilities::ObjectToVector(const FJsonObject* Object) {
 	return FVector(Object->GetNumberField("X"), Object->GetNumberField("Y"), Object->GetNumberField("Z"));
 }
 
+#if ENGINE_MAJOR_VERSION >= 5
 FVector3f FMathUtilities::ObjectToVector3f(const FJsonObject* Object) {
 	return FVector3f(Object->GetNumberField("X"), Object->GetNumberField("Y"), Object->GetNumberField("Z"));
 }
@@ -14,6 +15,15 @@ FVector3f FMathUtilities::ObjectToVector3f(const FJsonObject* Object) {
 FVector4f FMathUtilities::ObjectToVector4f(const FJsonObject* Object) {
 	return FVector4f(Object->GetNumberField("X"), Object->GetNumberField("Y"), Object->GetNumberField("Z"));
 }
+#else
+FVector FMathUtilities::ObjectToVector3f(const FJsonObject* Object) {
+	return FVector(Object->GetNumberField("X"), Object->GetNumberField("Y"), Object->GetNumberField("Z"));
+}
+
+FVector FMathUtilities::ObjectToVector4f(const FJsonObject* Object) {
+	return FVector(Object->GetNumberField("X"), Object->GetNumberField("Y"), Object->GetNumberField("Z"));
+}
+#endif
 
 FRotator FMathUtilities::ObjectToRotator(const FJsonObject* Object) {
 	return FRotator(Object->GetNumberField("Pitch"), Object->GetNumberField("Yaw"), Object->GetNumberField("Roll"));

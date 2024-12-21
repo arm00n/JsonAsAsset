@@ -19,18 +19,23 @@ bool UMaterialInstanceConstantImporter::ImportData() {
 		GetObjectSerializer()->DeserializeObjectProperties(Properties, MaterialInstanceConstant);
 
 		for (const TSharedPtr<FJsonValue> Value : AllJsonObjects) {
-			TSharedPtr<FJsonObject> Object = TSharedPtr(Value->AsObject());
+			TSharedPtr<FJsonObject> Object = TSharedPtr<FJsonObject>(Value->AsObject());
 
 			if (Object->GetStringField("Type") == "MaterialInstanceEditorOnlyData") {
 				EditorOnlyData.Add(Object);
 			}
 		}
 
-		if (const TSharedPtr<FJsonObject>* ParentPtr; Properties->TryGetObjectField("Parent", ParentPtr))
+		const TSharedPtr<FJsonObject>* ParentPtr;
+		if (Properties->TryGetObjectField("Parent", ParentPtr))
 			LoadObject(ParentPtr, MaterialInstanceConstant->Parent);
-		if (const TSharedPtr<FJsonObject>* SubsurfaceProfilePtr; Properties->TryGetObjectField("SubsurfaceProfile", SubsurfaceProfilePtr))
+
+		const TSharedPtr<FJsonObject>* SubsurfaceProfilePtr;
+		if (Properties->TryGetObjectField("SubsurfaceProfile", SubsurfaceProfilePtr))
 			LoadObject(SubsurfaceProfilePtr, MaterialInstanceConstant->SubsurfaceProfile);
-		if (bool bOverrideSubsurfaceProfile; Properties->TryGetBoolField("bOverrideSubsurfaceProfile", bOverrideSubsurfaceProfile))
+
+		bool bOverrideSubsurfaceProfile;
+		if (Properties->TryGetBoolField("bOverrideSubsurfaceProfile", bOverrideSubsurfaceProfile))
 			MaterialInstanceConstant->bOverrideSubsurfaceProfile = bOverrideSubsurfaceProfile;
 
 		TArray<FScalarParameterValue> ScalarParameterValues;
@@ -42,8 +47,9 @@ bool UMaterialInstanceConstantImporter::ImportData() {
 			FScalarParameterValue Parameter;
 			Parameter.ParameterValue = Scalar->GetNumberField("ParameterValue");
 			Parameter.ExpressionGUID = FGuid(Scalar->GetStringField("ExpressionGUID"));
-			
-			if (const TSharedPtr<FJsonObject>* ParameterInfoPtr; Scalar->TryGetObjectField("ParameterInfo", ParameterInfoPtr)) {
+
+			const TSharedPtr<FJsonObject>* ParameterInfoPtr;
+			if (Scalar->TryGetObjectField("ParameterInfo", ParameterInfoPtr)) {
 				TSharedPtr<FJsonObject> ParameterInfoJson = Scalar->GetObjectField("ParameterInfo");
 				FMaterialParameterInfo ParameterInfo;
 				ParameterInfo.Index = ParameterInfoJson->GetIntegerField("Index");
@@ -75,7 +81,9 @@ bool UMaterialInstanceConstantImporter::ImportData() {
 
 			Parameter.ParameterValue = FMathUtilities::ObjectToLinearColor(Vector->GetObjectField("ParameterValue").Get());
 
-			if (const TSharedPtr<FJsonObject>* ParameterInfoPtr; Vector->TryGetObjectField("ParameterInfo", ParameterInfoPtr)) {
+			const TSharedPtr<FJsonObject>* ParameterInfoPtr;
+			
+			if (Vector->TryGetObjectField("ParameterInfo", ParameterInfoPtr)) {
 				TSharedPtr<FJsonObject> ParameterInfoJson = Vector->GetObjectField("ParameterInfo");
 				FMaterialParameterInfo ParameterInfo;
 				ParameterInfo.Index = ParameterInfoJson->GetIntegerField("Index");
@@ -110,7 +118,9 @@ bool UMaterialInstanceConstantImporter::ImportData() {
 				LoadObject(TexturePtr, Parameter.ParameterValue);
 			}
 
-			if (const TSharedPtr<FJsonObject>* ParameterInfoPtr; Texture->TryGetObjectField("ParameterInfo", ParameterInfoPtr)) {
+			const TSharedPtr<FJsonObject>* ParameterInfoPtr;
+			
+			if (Texture->TryGetObjectField("ParameterInfo", ParameterInfoPtr)) {
 				TSharedPtr<FJsonObject> ParameterInfoJson = Texture->GetObjectField("ParameterInfo");
 				FMaterialParameterInfo ParameterInfo;
 				ParameterInfo.Index = ParameterInfoJson->GetIntegerField("Index");
@@ -144,11 +154,11 @@ bool UMaterialInstanceConstantImporter::ImportData() {
 
 				if (Props->TryGetObjectField("StaticParameters", StaticParams)) {
 					for (TSharedPtr<FJsonValue> Parameter : StaticParams->Get()->GetArrayField("StaticSwitchParameters")) {
-						Local_StaticParameterObjects.Add(TSharedPtr(Parameter));
+						Local_StaticParameterObjects.Add(TSharedPtr<FJsonValue>(Parameter));
 					}
 
 					for (TSharedPtr<FJsonValue> Parameter : StaticParams->Get()->GetArrayField("StaticComponentMaskParameters")) {
-						Local_StaticComponentMaskParametersObjects.Add(TSharedPtr(Parameter));
+						Local_StaticComponentMaskParametersObjects.Add(TSharedPtr<FJsonValue>(Parameter));
 					}
 				}
 			}

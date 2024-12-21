@@ -8,7 +8,11 @@ bool UMaterialFunctionImporter::ImportData() {
 		// Create Material Function Factory (factory automatically creates the MF)
 		UMaterialFunctionFactoryNew* MaterialFunctionFactory = NewObject<UMaterialFunctionFactoryNew>();
 		UMaterialFunction* MaterialFunction = Cast<UMaterialFunction>(MaterialFunctionFactory->FactoryCreateNew(UMaterialFunction::StaticClass(), OutermostPkg, *FileName, RF_Standalone | RF_Public, nullptr, GWarn));
+#if ENGINE_MAJOR_VERSION >= 5
 		MaterialFunction->GetExpressionCollection().Empty();
+#else
+		MaterialFunction->FunctionExpressions.Empty();
+#endif
 
 		// Handle edit changes, and add it to the content browser
 		if (!HandleAssetCreation(MaterialFunction)) return false;
@@ -16,9 +20,13 @@ bool UMaterialFunctionImporter::ImportData() {
 		MaterialFunction->StateId = FGuid(JsonObject->GetObjectField("Properties")->GetStringField("StateId"));
 		
 		// Misc properties
-		if (FString Description; JsonObject->GetObjectField("Properties")->TryGetStringField("Description", Description)) MaterialFunction->Description = Description;
-		if (bool bExposeToLibrary; JsonObject->GetObjectField("Properties")->TryGetBoolField("bExposeToLibrary", bExposeToLibrary)) MaterialFunction->bExposeToLibrary = bExposeToLibrary;
-		if (bool bPrefixParameterNames; JsonObject->GetObjectField("Properties")->TryGetBoolField("bPrefixParameterNames", bPrefixParameterNames)) MaterialFunction->bPrefixParameterNames = bPrefixParameterNames;
+		bool bPrefixParameterNames;
+		FString Description;
+		bool bExposeToLibrary;
+		
+		if (JsonObject->GetObjectField("Properties")->TryGetStringField("Description", Description)) MaterialFunction->Description = Description;
+		if (JsonObject->GetObjectField("Properties")->TryGetBoolField("bExposeToLibrary", bExposeToLibrary)) MaterialFunction->bExposeToLibrary = bExposeToLibrary;
+		if (JsonObject->GetObjectField("Properties")->TryGetBoolField("bPrefixParameterNames", bPrefixParameterNames)) MaterialFunction->bPrefixParameterNames = bPrefixParameterNames;
 
 		// Define editor only data from the JSON
 		TMap<FName, FExportData> Exports;
@@ -30,14 +38,16 @@ bool UMaterialFunctionImporter::ImportData() {
 		TMap<FName, UMaterialExpression*> CreatedExpressionMap = ConstructExpressions(MaterialFunction, MaterialFunction->GetName(), ExpressionNames, Exports);
 
 		// Missing Material Data
-		if (Exports.IsEmpty()) {
+		if (Exports.Num() == 0) {
 			FNotificationInfo Info = FNotificationInfo(FText::FromString("Material Data Missing (" + FileName + ")"));
 			Info.ExpireDuration = 7.0f;
 			Info.bUseLargeFont = true;
 			Info.bUseSuccessFailIcons = true;
 			Info.WidthOverride = FOptionalSize(350);
+#if ENGINE_MAJOR_VERSION >= 5
 			Info.SubText = FText::FromString(FString("Please use the correct FModel provided in the JsonAsAsset server."));
-
+#endif
+			
 			TSharedPtr<SNotificationItem> NotificationPtr = FSlateNotificationManager::Get().AddNotification(Info);
 			NotificationPtr->SetCompletionState(SNotificationItem::CS_Fail);
 

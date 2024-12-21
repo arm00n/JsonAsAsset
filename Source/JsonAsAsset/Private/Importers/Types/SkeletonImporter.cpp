@@ -132,14 +132,18 @@ bool USkeletonImporter::ImportData() {
 					}
 
 					if (!bIsAlreadyCreated) {
-						if (const TSharedPtr<FJsonObject>* RelativeRotationObjectRotator; SecondaryPurposeProperties->TryGetObjectField("RelativeRotation", RelativeRotationObjectRotator) == true)
+						const TSharedPtr<FJsonObject>* RelativeLocationObjectVector;
+						const TSharedPtr<FJsonObject>* RelativeScaleObjectVector;
+						const TSharedPtr<FJsonObject>* RelativeRotationObjectRotator;
+						if (SecondaryPurposeProperties->TryGetObjectField("RelativeRotation", RelativeRotationObjectRotator) == true)
 							Socket->RelativeRotation = FMathUtilities::ObjectToRotator(RelativeRotationObjectRotator->Get());
-						if (const TSharedPtr<FJsonObject>* RelativeLocationObjectVector; SecondaryPurposeProperties->TryGetObjectField("RelativeLocation", RelativeLocationObjectVector) == true)
+						if (SecondaryPurposeProperties->TryGetObjectField("RelativeLocation", RelativeLocationObjectVector) == true)
 							Socket->RelativeLocation = FMathUtilities::ObjectToVector(RelativeLocationObjectVector->Get());
-						if (const TSharedPtr<FJsonObject>* RelativeScaleObjectVector; SecondaryPurposeProperties->TryGetObjectField("RelativeScale", RelativeScaleObjectVector) == true)
+						if (SecondaryPurposeProperties->TryGetObjectField("RelativeScale", RelativeScaleObjectVector) == true)
 							Socket->RelativeScale = FMathUtilities::ObjectToVector(RelativeScaleObjectVector->Get());
 
-						if (bool bForceAlwaysAnimated; SecondaryPurposeProperties->TryGetBoolField("RelativeScale", bForceAlwaysAnimated) == true)
+						bool bForceAlwaysAnimated;
+						if (SecondaryPurposeProperties->TryGetBoolField("RelativeScale", bForceAlwaysAnimated) == true)
 							Socket->bForceAlwaysAnimated = bForceAlwaysAnimated;
 
 						Skeleton->Modify();

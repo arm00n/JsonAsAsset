@@ -4,6 +4,10 @@
 
 #include "CoreMinimal.h"
 
+#if ENGINE_MAJOR_VERSION == 4
+#include "Modules/ModuleInterface.h"
+#endif
+
 class FToolBarBuilder;
 class FMenuBuilder;
 class ITableRow;
