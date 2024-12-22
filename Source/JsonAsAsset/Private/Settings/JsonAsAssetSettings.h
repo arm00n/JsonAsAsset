@@ -201,7 +201,7 @@ public:
 	FString GameName;
 };
 
-// An editor plugin to allow JSON files from FModel to an asset in the Content Browser
+// An Unreal Engine plugin for importing assets from packaged games using JSON files
 UCLASS(Config=EditorPerProjectUserSettings, DefaultConfig)
 class UJsonAsAssetSettings : public UDeveloperSettings
 {
