@@ -1,8 +1,8 @@
 # JsonAsAsset
 
 [![Discord](https://img.shields.io/badge/Join%20Discord-Collector?color=7289DA&label=JsonAsAsset&logo=discord&logoColor=7289DA&style=for-the-badge)](https://discord.gg/h9s6qpBnUT)
-[![GitHub Downloads (all assets, latest release)](https://img.shields.io/github/downloads/JsonAsAsset/JsonAsAsset/latest/total?style=for-the-badge&label=DOWNLOADS&color=blue)](https://github.com/JsonAsAsset/JsonAsAsset/releases)
-[![GitHub Repo stars](https://img.shields.io/github/stars/JsonAsAsset/JsonAsAsset?style=for-the-badge&logo=&color=blue)](https://github.com/JsonAsAsset/JsonAsAsset/stargazers)
+[![GitHub Downloads (all assets, latest release)](https://img.shields.io/github/downloads/JsonAsAsset/JsonAsAsset/latest/total?style=for-the-badge&label=DOWNLOADS&color=red)](https://github.com/JsonAsAsset/JsonAsAsset/releases)
+[![GitHub Repo stars](https://img.shields.io/github/stars/JsonAsAsset/JsonAsAsset?style=for-the-badge&logo=&color=yellow)](https://github.com/JsonAsAsset/JsonAsAsset/stargazers)
 
 JsonAsAsset is a user-friendly [Unreal Engine](https://www.unrealengine.com/en-US) plugin for importing assets from packaged games using [JSON](https://www.json.org/json-en.html) files.
 
@@ -18,8 +18,8 @@ JsonAsAsset is a user-friendly [Unreal Engine](https://www.unrealengine.com/en-U
 
 > 1. [Introduction to JsonAsAsset](#intro)
 > 1. [Installing JsonAsAsset](#install)  
->    2.1 [Setting Up JAA Settings](#setup-jaa)  
->    2.2 [Export Directory](#export-directory)  
+>    2.1 [Setup FModel](#setup-fmodel)  
+>    2.2 [Setup Settings](#setup-settings)  
 > 3. [Local Fetch](#setup-local-fetch)
 
 -----------------
@@ -75,8 +75,8 @@ JsonAsAsset is a user-friendly Unreal Engine plugin for importing assets from pa
 6. In the Plugins window, search for `JsonAsAsset` and enable it.
 7. Restart the editor for the changes to take effect.
 
-<a name="setup-jaa"></a>
-#### 2.1 Setting Up JAA Settings
+<a name="setup-fmodel"></a>
+#### 2.1 Setup FModel
 If you haven't already, install FModel and setup it up correctly.
 <img align="left" width="150" height="150" src="./Resources/FModelLogo.png?raw=true">
 The JSON format/file has to be from a program that fits the format of FModel's JSON export files:
@@ -88,12 +88,12 @@ The JSON format/file has to be from a program that fits the format of FModel's J
 
 Now that you've installed FModel and setup it up correctly, we can continue to setting up JsonAsAsset for our own Unreal Engine project.
 
-<a name="export-directory"></a>
-##### 2.2 Setting up Export Directory
+<a name="setup-settings"></a>
+##### 2.2 Setup Settings
 <img align="right" width="300" height="180" src=https://github.com/JsonAsAsset/JsonAsAsset/assets/73559984/aad4e86a-6f0b-4e66-aef1-13d30d8215de)>
 
 > [!NOTE]
-> Upon launching your unreal engine project, you should of seen a notification asking you to change your export directory in the plugin settings, if you've already done that, skip this part.
+> If you have FModel installed and setup correctly, you can now press the FModel Settings button in your Settings to grab it from there!
 
 We need to change the export directory to allow the plugin to differentiate between what's your directory, and what's the game path it should put it in.
 
@@ -107,11 +107,9 @@ That’s the basic setup! To bulk import assets and **what they reference**, you
 
 <a name="setup-local-fetch"></a>
 ## 3. Setting Up *Local Fetch*
-> If you want to contribute to the Local Fetch API, check out the source code at [/JsonAsAsset/LocalFetch](https://github.com/JsonAsAsset/LocalFetch) repository
-
 Running the API requires ASP.NET 8.0 to be installed, please install this [here](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-aspnetcore-8.0.1-windows-x64-installer).
 
-<img align="right" width="461.5" height="164" src=https://github.com/JsonAsAsset/JsonAsAsset/assets/73559984/cddf0ea7-2499-4b39-a7af-e6f27ec5148e>
+<img align="right" width="460" height="156" src=https://github.com/user-attachments/assets/2e3a3680-ccba-4847-9e81-50242085ae63>
 
 > [!TIP]
 > Please make sure you have the plugin in your project's directory and not in the Engine.
@@ -120,19 +118,20 @@ Before we can launch Local Fetch and begin working on automated references, you 
 
 Many of these settings are similar to FModel, but make sure to manually select a file or directory using UE's file selector.
 
+<img align="right" width="220" height="156" src=https://github.com/user-attachments/assets/ede73451-9e69-40d9-b1e2-4ee3a00838c9>
+
 ###### Launching Local Fetch
-<img align="right" width="461.5" height="250" src=https://github.com/JsonAsAsset/JsonAsAsset/assets/73559984/4688482d-0854-4a62-83cf-fc055d657284>
 
 > [!IMPORTANT]
 > You must launch Local Fetch through UE, and not by the executable file. The reason being is that the local host port is different when you launch it through UE, so it's important you do so.
 
-After fully setting up the Local Fetch settings, you can launch the API without any issues.
-
--------------------
-
-Go ahead and click on the JsonAsAsset logo (<img width="25" height="25" src=https://github.com/JsonAsAsset/JsonAsAsset/assets/73559984/b90ab71f-d9ac-4349-96eb-620aadf7812f>) and hover over the list `"Command-line Application"` and press `"Execute Local Fetch API (.EXE)"`.
+Go ahead and click on the JsonAsAsset logo (<img width="25" height="25" src=https://github.com/JsonAsAsset/JsonAsAsset/assets/73559984/b90ab71f-d9ac-4349-96eb-620aadf7812f>) and hover over the list `"Command-line Application"` and press `"Execute Local Fetch (.EXE)"`.
 
 A window should pop-up, and once the console says `[CORE] Running API`, Local Fetch has been successfully started!
+
+-----------------------
+
+Now, onto the contributors who shaped this project.
 
 <a name="contribute"></a>
 ## ⭐ Contributors
