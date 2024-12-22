@@ -4,7 +4,7 @@
 [![GitHub Downloads (all assets, latest release)](https://img.shields.io/github/downloads/JsonAsAsset/JsonAsAsset/latest/total?style=for-the-badge&label=DOWNLOADS&color=red)](https://github.com/JsonAsAsset/JsonAsAsset/releases)
 [![GitHub Repo stars](https://img.shields.io/github/stars/JsonAsAsset/JsonAsAsset?style=for-the-badge&logo=&color=yellow)](https://github.com/JsonAsAsset/JsonAsAsset/stargazers)
 
-JsonAsAsset is a user-friendly [Unreal Engine](https://www.unrealengine.com/en-US) plugin for importing assets from packaged games using [JSON](https://www.json.org/json-en.html) files.
+JsonAsAsset is a user-friendly [Unreal Engine](https://www.unrealengine.com/en-US) plugin designed to import assets from packaged games through [JSON](https://www.json.org/json-en.html) files.
 
 **Editor Only Data**:
 <br> In Unreal Engine 5.2 and above, editor only data has been introduced to Unreal Engine. Allowing us to import materials and material functions into our own project from the pak files of a game.
