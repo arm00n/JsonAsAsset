@@ -201,7 +201,7 @@ public:
 	FString GameName;
 };
 
-// An Unreal Engine plugin for importing assets from packaged games using JSON files
+// A user-friendly Unreal Engine plugin designed to import assets from packaged games through JSON files
 UCLASS(Config=EditorPerProjectUserSettings, DefaultConfig)
 class UJsonAsAssetSettings : public UDeveloperSettings
 {
