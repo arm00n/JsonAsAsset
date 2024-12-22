@@ -21,6 +21,7 @@ JsonAsAsset is a user-friendly [Unreal Engine](https://www.unrealengine.com/en-U
 >    2.1 [Setup FModel](#setup-fmodel)  
 >    2.2 [Setup Settings](#setup-settings)  
 > 3. [Local Fetch](#setup-local-fetch)
+> 4. [Common Errors 🐛](#common-errors)
 
 -----------------
 
@@ -34,7 +35,7 @@ JsonAsAsset is a user-friendly Unreal Engine plugin for importing assets from pa
 <details>
   <summary>Supported Asset Types</summary>
 
-##### *All Sound Asset Types
+##### All Sound Asset Types
 
 ###### Materials
  - Material
@@ -131,28 +132,47 @@ A window should pop-up, and once the console says `[CORE] Running API`, Local Fe
 
 -----------------------
 
-Now, onto the contributors who shaped this project.
+<a name="common-errors"></a>
+## 4. Common Errors 🐛
+
+### ***"Attempted to create a package with name containing double slashes. PackageName: ..."***
+Please set your Export Directory to your actual "Output/Exports" directory
+
+***INCORRECT***: T:/FModel/Output
+
+***CORRECT***: T:/FModel/Output/Exports
+
+### ***"Assertion failed: TextureReferenceIndex != INDEX_NONE"***
+This is a common issue in our code that we haven't fully resolved yet. While previous attempts to fix it have been unsuccessful, here’s a partial solution to reduce its occurrence:
+
+- Re-launch your Unreal Engine project, go to JsonAsAsset's plugin settings and enable ***"Expose Pins"*** or ***"Skip Result Node Connection"***. Also enable ***"Allow Package Saving"***.
+
+-----------------------
 
 <a name="contribute"></a>
-## ⭐ Contributors
+# ⭐ Contributors
 [Tector](https://github.com/Tectors), [GMatrixGames](https://github.com/GMatrixGames), [Tajgames](https://github.com/), [Zylox](https://github.com/0xZylox), and massive thanks to the people who contributed to [UEAssetToolkit](https://github.com/Buckminsterfullerene02/UEAssetToolkit-Fixes)!
 
 - *JsonAsAsset Logo*: *[@Tevtongermany](https://github.com/Tevtongermany)*
 
-### `Key information for contributors:` 🎓
+Thank you all so much for contributing to JsonAsAsset! 
+
+-----------------------
+
+# Key information for contributors: 🎓
 
 Local Fetch's API is located at [JsonAsAsset/LocalFetch](https://github.com/JsonAsAsset/LocalFetch)
 It uses CUE4Parse to read game files, and it interacts with the config files inside of the project.
 
-##### `Adding Asset Types`
+##### Adding Asset Types
 > *Asset types without manual code will use **basic** importing, meaning it will only take the properties of the base object and import them.*
 - Normal Asset types are found in [`JsonAsAsset/Private/Importers/Constructor/Importer.cpp`](https://github.com/JsonAsAsset/JsonAsAsset/blob/main/Source/JsonAsAsset/Private/Importers/Constructor/Importer.cpp#L51)
 - Adding support for Local Fetch of asset types [`JsonAsAsset/Private/Importers/Utilities/AssetUtilities.cpp`](https://github.com/JsonAsAsset/JsonAsAsset/blob/main/Source/JsonAsAsset/Private/Utilities/AssetUtilities.cpp#L28)
 
-##### `Custom Logic for Asset Types`
+##### Custom Logic for Asset Types
 
 Adding **manual** asset type imports is done in the [`JsonAsAsset/Public/Importers/Types`](https://github.com/JsonAsAsset/JsonAsAsset/tree/main/Source/JsonAsAsset/Public/Importers/Types) folder.
 
-##### `Settings`
+##### Settings
 
 JsonAsAsset's settings are in [`Private/Settings/JsonAsAssetSettings.h`](https://github.com/JsonAsAsset/JsonAsAsset/tree/main/Source/JsonAsAsset/Private/Settings/JsonAsAssetSettings.h)
