@@ -9,7 +9,7 @@ JsonAsAsset is a user-friendly [Unreal Engine](https://www.unrealengine.com/en-U
 **Editor Only Data**:
 <br> In Unreal Engine 5.2 and above, editor only data has been introduced to Unreal Engine. Allowing us to import materials and material functions into our own project from the pak files of a game.
 
-⭐ [Contributors](#contribute)
+✨ [Contributors](#contribute)
 
 -----------------
 
@@ -151,10 +151,10 @@ This is a common issue in our code that we haven't fully resolved yet. While pre
 
 - Re-launch your Unreal Engine project, go to JsonAsAsset's plugin settings and enable ***"Expose Pins"*** or ***"Skip Result Node Connection"***. Also enable ***"Allow Package Saving"***.
 
------------------------
+--------------------
 
 <a name="contribute"></a>
-## ⭐ Contributors
+# ✨ Contributors
 
 Thanks go to these wonderful people:
 
@@ -166,6 +166,7 @@ Thanks go to these wonderful people:
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/Tectors"><img src="https://github.com/Tectors.png" width="100px;" alt="Tector"/><br /><sub><b>Tector</b></sub></a><br/></a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/GMatrixGames"><img src="https://github.com/GMatrixGames.png" width="100px;" alt="GMatrixGames"/><br /><sub><b>GMatrixGames</b></sub></a><br/></a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/zyloxmods"><img src="https://github.com/zyloxmods.png" width="100px;" alt="Zylox"/><br /><sub><b>Zylox</b></sub></a><br/></a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/NathanFelipeRH"><img src="https://github.com/NathanFelipeRH.png" width="100px;" alt="Zylox"/><br /><sub><b>NathanFelipeRH</b></sub></a><br/>Sound Cue Importing</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/zyloxmods"><img src="https://github.com/Tevtongermany.png" width="100px;" alt="Tevtongermany"/><br /><sub><b>Tevtongermany</b></sub></a><br/>JsonAsAsset Logo</a></td>
   </tbody>
 </table>
