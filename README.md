@@ -155,10 +155,19 @@ This is a common issue in our code that we haven't fully resolved yet. While pre
 
 <a name="contribute"></a>
 ## ⭐ Contributors
-[Tector](https://github.com/Tectors), [GMatrixGames](https://github.com/GMatrixGames), [Tajgames](https://github.com/), [Zylox](https://github.com/0xZylox), and massive thanks to the people who contributed to [UEAssetToolkit](https://github.com/Buckminsterfullerene02/UEAssetToolkit-Fixes)!
 
-- *JsonAsAsset Logo*: *[@Tevtongermany](https://github.com/Tevtongermany)*
+Thanks go to these wonderful people:
 
-Thank you all so much for contributing to JsonAsAsset! 
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Tectors"><img src="https://github.com/Tectors.png" width="100px;" alt="Tector"/><br /><sub><b>Tector</b></sub></a><br/></a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/GMatrixGames"><img src="https://github.com/GMatrixGames.png" width="100px;" alt="GMatrixGames"/><br /><sub><b>GMatrixGames</b></sub></a><br/></a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/zyloxmods"><img src="https://github.com/zyloxmods.png" width="100px;" alt="Zylox"/><br /><sub><b>Zylox</b></sub></a><br/></a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/zyloxmods"><img src="https://github.com/Tevtongermany.png" width="100px;" alt="Tevtongermany"/><br /><sub><b>Tevtongermany</b></sub></a><br/>JsonAsAsset Logo</a></td>
+  </tbody>
+</table>
 
------------------------
+- Massive thanks to the people who contributed to [UEAssetToolkit](https://github.com/Buckminsterfullerene02/UEAssetToolkit-Fixes)!
