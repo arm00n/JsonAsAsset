@@ -3,7 +3,7 @@
 	"Version": 1,
 	"VersionName": "1.3.6",
 	"FriendlyName": "JsonAsAsset",
-	"Description": "An editor plugin to allow JSON files from FModel to an asset in the Content Browser.",
+	"Description": "JsonAsAsset is a Unreal Engine plugin for importing assets from games using JSON files.",
 	"Category": "Asset Import",
 	"CreatedBy": "Tector, GMatrix",
 	"CreatedByURL": "https://github.com/JsonAsAsset",
