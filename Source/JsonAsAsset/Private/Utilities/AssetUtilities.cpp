@@ -36,6 +36,8 @@ TArray<FString> LocalFetchAcceptedTypes = {
 	"Material",
 	"MaterialFunction",
 	"MaterialInstanceConstant",
+	"MaterialParameterCollection",
+	"NiagaraParameterCollection",
 
 	"", // separator
 

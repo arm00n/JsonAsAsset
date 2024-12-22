@@ -49,24 +49,40 @@
 #define LOCTEXT_NAMESPACE "IImporter"
 
 TArray<FString> ImporterAcceptedTypes = {
-	"Texture2D",
-	// "TextureCube",
-	// "VolumeTexture",
-	"TextureRenderTarget2D",
+	"CurveTable",
+	"CurveFloat",
+	"CurveVector",
+	"CurveLinearColor",
+	"CurveLinearColorAtlas",
+
+	"", // separator
+
+	"SkeletalMeshLODSettings",
+	"Skeleton",
+
+	"", // separator
+
+	"AnimSequence",
+	"AnimMontage",
 
 	"", // separator
 
 	"Material",
 	"MaterialFunction",
 	"MaterialInstanceConstant",
+	"MaterialParameterCollection",
+	"NiagaraParameterCollection",
 
 	"", // separator
 
-	"CurveFloat",
-	"CurveTable",
-	"CurveVector",
-	"CurveLinearColorAtlas",
-	"CurveLinearColor",
+	"DataAsset",
+	"LandscapeGrassType",
+	"DataTable",
+
+	"", // separator
+
+	"PhysicsAsset",
+	"PhysicalMaterial",
 
 	"", // separator
 
@@ -80,10 +96,11 @@ TArray<FString> ImporterAcceptedTypes = {
 
 	"", // separator
 
-	"PhysicalMaterial",
 	"SubsurfaceProfile",
-	"LandscapeGrassType",
-	"DataTable",
+
+	"", // separator
+
+	"TextureRenderTarget2D"
 };
 
 IImporter::IImporter(const FString& FileName, const FString& FilePath, 
