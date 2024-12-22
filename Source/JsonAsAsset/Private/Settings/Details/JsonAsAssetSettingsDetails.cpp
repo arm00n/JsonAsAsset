@@ -104,11 +104,7 @@ void FJsonAsAssetSettingsDetails::CustomizeDetails(IDetailLayoutBuilder& DetailB
                 }
             }
 
-            PluginSettings->SaveConfig();
-#if ENGINE_MAJOR_VERSION >= 5
-            PluginSettings->TryUpdateDefaultConfigFile();
-#endif
-            PluginSettings->LoadConfig();
+        	SaveConfig(PluginSettings);
 
             return FReply::Handled();
         })
@@ -174,11 +170,7 @@ void FJsonAsAssetSettingsDetails::CustomizeDetails(IDetailLayoutBuilder& DetailB
 				}
 			}
 
-			PluginSettings->SaveConfig();
-#if ENGINE_MAJOR_VERSION >= 5
-			PluginSettings->TryUpdateDefaultConfigFile();
-#endif
-			PluginSettings->LoadConfig();
+			SaveConfig(PluginSettings);
 
 			FString LocalExportDirectory = PluginSettings->ExportDirectory.Path;
 
@@ -235,14 +227,9 @@ void FJsonAsAssetSettingsDetails::CustomizeDetails(IDetailLayoutBuilder& DetailB
 						{
 							FFileHelper::SaveArrayToFile(Response->GetContent(), *(DataFolder + "/" + FileName));
 
-							UJsonAsAssetSettings* PluginSettings = GetMutableDefault<
-								UJsonAsAssetSettings>();
-							PluginSettings->MappingFilePath.FilePath = DataFolder + "/" + FileName;
-							PluginSettings->SaveConfig();
-#if ENGINE_MAJOR_VERSION >= 5
-							PluginSettings->TryUpdateDefaultConfigFile();
-#endif
-							PluginSettings->LoadConfig();
+							UJsonAsAssetSettings* PluginSettings = GetMutableDefault<UJsonAsAssetSettings>();
+							
+							FJsonAsAssetSettingsDetails::SaveConfig(PluginSettings);
 						}
 					};
 
@@ -253,11 +240,7 @@ void FJsonAsAssetSettingsDetails::CustomizeDetails(IDetailLayoutBuilder& DetailB
 					MappingsRequest->OnProcessRequestComplete().BindLambda(OnRequestComplete);
 					MappingsRequest->ProcessRequest();
 
-					PluginSettings->SaveConfig();
-#if ENGINE_MAJOR_VERSION >= 5
-					PluginSettings->TryUpdateDefaultConfigFile();
-#endif
-					PluginSettings->LoadConfig();
+					SaveConfig(PluginSettings);
 				}
 			}
 
@@ -267,6 +250,20 @@ void FJsonAsAssetSettingsDetails::CustomizeDetails(IDetailLayoutBuilder& DetailB
 			return Settings->bEnableLocalFetch;
 		})
 	];
+}
+
+void FJsonAsAssetSettingsDetails::SaveConfig(UJsonAsAssetSettings* Settings)
+{
+	Settings->SaveConfig();
+	
+#if ENGINE_MAJOR_VERSION >= 5
+	Settings->TryUpdateDefaultConfigFile();
+#else
+	Settings->UpdateDefaultConfigFile();
+	Settings->ReloadConfig(nullptr, nullptr, UE4::LCPF_PropagateToInstances);
+#endif
+        	
+	Settings->LoadConfig();
 }
 
 #undef LOCTEXT_NAMESPACE
