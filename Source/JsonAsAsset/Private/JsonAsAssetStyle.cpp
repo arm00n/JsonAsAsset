@@ -31,13 +31,14 @@ FName FJsonAsAssetStyle::GetStyleSetName() {
 #define OTF_FONT(RelativePath, ...) FSlateFontInfo(Style->RootToContentDir(RelativePath, TEXT(".otf")), __VA_ARGS__)
 
 const FVector2D Icon40x40(40, 40);
+const FVector2D Icon80x80(40, 40);
 
 TSharedRef<FSlateStyleSet> FJsonAsAssetStyle::Create() {
 	TSharedRef<FSlateStyleSet> Style = MakeShareable(new FSlateStyleSet("JsonAsAssetStyle"));
 	Style->SetContentRoot(IPluginManager::Get().FindPlugin("JsonAsAsset")->GetBaseDir() / TEXT("Resources"));
 
 	Style->Set("JsonAsAsset.Logo", new IMAGE_BRUSH(TEXT("Icon40"), Icon40x40));
-	Style->Set("JsonAsAsset.FModelLogo", new IMAGE_BRUSH(TEXT("FModelLogo"), Icon40x40));
+	Style->Set("JsonAsAsset.FModelLogo", new IMAGE_BRUSH(TEXT("FModelButtonIcon"), Icon80x80));
 	Style->Set("JsonAsAsset.GithubLogo", new IMAGE_BRUSH(TEXT("GithubLogo"), Icon40x40));
 
 	return Style;
