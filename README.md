@@ -4,16 +4,12 @@
 [![GitHub Downloads (all assets, latest release)](https://img.shields.io/github/downloads/JsonAsAsset/JsonAsAsset/latest/total?style=for-the-badge&label=DOWNLOADS&color=blue)](https://github.com/JsonAsAsset/JsonAsAsset/releases)
 [![GitHub Repo stars](https://img.shields.io/github/stars/JsonAsAsset/JsonAsAsset?style=for-the-badge&logo=&color=blue)](https://github.com/JsonAsAsset/JsonAsAsset/stargazers)
 
-Unreal Engine plugin to allow conversion between [JSON](https://www.json.org/json-en.html) to [Unreal Engine](https://www.unrealengine.com/en-US).
+JsonAsAsset is a user-friendly [Unreal Engine](https://www.unrealengine.com/en-US) plugin for importing assets from packaged games using [JSON](https://www.json.org/json-en.html) files.
 
 **Editor Only Data**:
 <br> In Unreal Engine 5.2 and above, editor only data has been introduced to Unreal Engine. Allowing us to import materials and material functions into our own project from the pak files of a game.
 
-**Contributors**:
-<br> [Tector](https://github.com/Tectors), [GMatrixGames](https://github.com/GMatrixGames), [Tajgames](https://github.com/), [Zylox](https://github.com/0xZylox), and massive thanks to the people who contributed to [UEAssetToolkit](https://github.com/Buckminsterfullerene02/UEAssetToolkit-Fixes)!
-
-**Artwork**:
-- *JsonAsAsset Logo*: *[@Tevtongermany](https://github.com/Tevtongermany)*
+⭐ [Contributors](#contribute)
 
 -----------------
 
@@ -25,7 +21,6 @@ Unreal Engine plugin to allow conversion between [JSON](https://www.json.org/jso
 >    2.1 [Setting Up JAA Settings](#setup-jaa)  
 >    2.2 [Export Directory](#export-directory)  
 > 3. [Local Fetch](#setup-local-fetch)
-> 4. [Contributions](#contribute)
 
 -----------------
 
@@ -34,7 +29,7 @@ Unreal Engine plugin to allow conversion between [JSON](https://www.json.org/jso
 > [!NOTE]
 > Please note that this plugin is intended solely for **personal and educational use**. Do not use it to create or distribute **commercial products** without obtaining the necessary **licenses and permissions**. It is important to respect **intellectual property rights** and only use assets that you are **authorized to use**. We do not assume any responsibility for the way the created content is used.
 
-JsonAsAsset is a plugin to create assets from JSON data obtained from [FModel](https://fmodel.app). The plugin features a user-friendly interface, allowing to easily import assets in JSON data and map it to appropriate data structures within Unreal Engine to create assets.
+JsonAsAsset is a user-friendly Unreal Engine plugin for importing assets from packaged games using JSON files. With a sleek interface, it simplifies mapping JSON data to Unreal Engine structures, supporting both manual and automated workflows.
 
 <details>
   <summary>Supported Asset Types</summary>
@@ -66,8 +61,6 @@ JsonAsAsset is a plugin to create assets from JSON data obtained from [FModel](h
 
 </details>
 
-In this short documentation, we will learn how to use this powerful Unreal Engine plugin. And we hope you enjoy it!
-
 <a name="install"></a>
 ## 2. Installing JsonAsAsset
 > [!WARNING]
@@ -75,7 +68,7 @@ In this short documentation, we will learn how to use this powerful Unreal Engin
 > *`(See branches for the current available Unreal Engine 4 versions)`*
 
 1. Go to the [Releases page](/../../releases) for the plugin.
-2. **Download the release** that matches your version of Unreal Engine. If there **isn't a release that matches your version**, you will need to **compile the plugin yourself**.
+2. **Download the release** that matches your version of Unreal Engine. If there **isn't a release that matches your version**, you will need to [**compile the plugin yourself**](https://dev.epicgames.com/community/learning/tutorials/qz93/unreal-engine-building-plugins).
 3. Extract the downloaded files to your project's Plugins folder. If there isn't a Plugins folder, create one in the root directory of your project.
 4. Open your Unreal Engine project.
 5. Click on Edit -> Plugins.
@@ -110,7 +103,7 @@ Now open up FModel, and go to your settings. `(Settings -> General)` There will 
 
 -------------------
 
-That’s the basic setup! To bulk import materials or linear curve atlases (e.g., all material functions and textures), you'll need to set up [`Local Fetch`](#setup-local-fetch)!
+That’s the basic setup! To bulk import assets and **what they reference**, you'll need to set up [`Local Fetch`](#setup-local-fetch)!
 
 <a name="setup-local-fetch"></a>
 ## 3. Setting Up *Local Fetch*
@@ -123,7 +116,7 @@ Running the API requires ASP.NET 8.0 to be installed, please install this [here]
 > [!TIP]
 > Please make sure you have the plugin in your project's directory and not in the Engine.
 
-Before we can launch Local Fetch and begin working on automated references, you need to input all the information about your game first. This is necessary because CUE4Parse requires this information to set up file providers and start reading the game files.
+Before we can launch Local Fetch and begin working on automated references, you need to input all the information about your game first.
 
 Many of these settings are similar to FModel, but make sure to manually select a file or directory using UE's file selector.
 
@@ -142,21 +135,25 @@ Go ahead and click on the JsonAsAsset logo (<img width="25" height="25" src=http
 A window should pop-up, and once the console says `[CORE] Running API`, Local Fetch has been successfully started!
 
 <a name="contribute"></a>
-## 4. Contributing to JsonAsAsset
+## ⭐ Contributors
+[Tector](https://github.com/Tectors), [GMatrixGames](https://github.com/GMatrixGames), [Tajgames](https://github.com/), [Zylox](https://github.com/0xZylox), and massive thanks to the people who contributed to [UEAssetToolkit](https://github.com/Buckminsterfullerene02/UEAssetToolkit-Fixes)!
 
-If you would like to contribute to JsonAsAsset, here's some key information:
+- *JsonAsAsset Logo*: *[@Tevtongermany](https://github.com/Tevtongermany)*
 
-> [!NOTE]
->
-> `Local Fetch`'s API is located at [JsonAsAsset/LocalFetch](https://github.com/JsonAsAsset/LocalFetch)
-> 
-> Normal Asset types are found in [`JsonAsAsset/Private/Importers/Constructor/Importer.cpp`](https://github.com/JsonAsAsset/JsonAsAsset/blob/main/Source/JsonAsAsset/Private/Importers/Constructor/Importer.cpp#L51)
-> 
-> Adding support for Local Fetch of asset types [`JsonAsAsset/Private/Importers/Utilities/AssetUtilities.cpp`](https://github.com/JsonAsAsset/JsonAsAsset/blob/main/Source/JsonAsAsset/Private/Utilities/AssetUtilities.cpp#L28)
->
-> + Asset types without manual code will use **basic** importing, meaning it will only take the properties of the base object and import them.
->
-> Adding **manual** asset type imports is done in the [`JsonAsAsset/Public/Importers/Types`](https://github.com/JsonAsAsset/JsonAsAsset/tree/main/Source/JsonAsAsset/Public/Importers/Types) folder.
->
-> JsonAsAsset's settings are in [`Private/Settings/JsonAsAssetSettings.h`](https://github.com/JsonAsAsset/JsonAsAsset/tree/main/Source/JsonAsAsset/Private/Settings/JsonAsAssetSettings.h)
->
+### `Key information for contributors:` 🎓
+
+Local Fetch's API is located at [JsonAsAsset/LocalFetch](https://github.com/JsonAsAsset/LocalFetch)
+It uses CUE4Parse to read game files, and it interacts with the config files inside of the project.
+
+##### `Adding Asset Types`
+> *Asset types without manual code will use **basic** importing, meaning it will only take the properties of the base object and import them.*
+- Normal Asset types are found in [`JsonAsAsset/Private/Importers/Constructor/Importer.cpp`](https://github.com/JsonAsAsset/JsonAsAsset/blob/main/Source/JsonAsAsset/Private/Importers/Constructor/Importer.cpp#L51)
+- Adding support for Local Fetch of asset types [`JsonAsAsset/Private/Importers/Utilities/AssetUtilities.cpp`](https://github.com/JsonAsAsset/JsonAsAsset/blob/main/Source/JsonAsAsset/Private/Utilities/AssetUtilities.cpp#L28)
+
+##### `Custom Logic for Asset Types`
+
+Adding **manual** asset type imports is done in the [`JsonAsAsset/Public/Importers/Types`](https://github.com/JsonAsAsset/JsonAsAsset/tree/main/Source/JsonAsAsset/Public/Importers/Types) folder.
+
+##### `Settings`
+
+JsonAsAsset's settings are in [`Private/Settings/JsonAsAssetSettings.h`](https://github.com/JsonAsAsset/JsonAsAsset/tree/main/Source/JsonAsAsset/Private/Settings/JsonAsAssetSettings.h)
