@@ -21,7 +21,11 @@ JsonAsAsset is a user-friendly [Unreal Engine](https://www.unrealengine.com/en-U
 >    2.1 [Setup FModel](#setup-fmodel)  
 >    2.2 [Setup Settings](#setup-settings)  
 > 3. [Local Fetch](#setup-local-fetch)
-> 4. [Common Errors 🐛](#common-errors)
+
+**Extras**:
+<br> 
+
+> - [Common Errors 🐛](#common-errors)
 
 -----------------
 
@@ -133,7 +137,7 @@ A window should pop-up, and once the console says `[CORE] Running API`, Local Fe
 -----------------------
 
 <a name="common-errors"></a>
-## 4. Common Errors 🐛
+## Common Errors 🐛
 
 ### ***"Attempted to create a package with name containing double slashes. PackageName: ..."***
 Please set your Export Directory to your actual "Output/Exports" directory
@@ -150,10 +154,11 @@ This is a common issue in our code that we haven't fully resolved yet. While pre
 -----------------------
 
 <a name="contribute"></a>
-# ⭐ Contributors
+## ⭐ Contributors
 [Tector](https://github.com/Tectors), [GMatrixGames](https://github.com/GMatrixGames), [Tajgames](https://github.com/), [Zylox](https://github.com/0xZylox), and massive thanks to the people who contributed to [UEAssetToolkit](https://github.com/Buckminsterfullerene02/UEAssetToolkit-Fixes)!
 
 - *JsonAsAsset Logo*: *[@Tevtongermany](https://github.com/Tevtongermany)*
 
 Thank you all so much for contributing to JsonAsAsset! 
 
+-----------------------
