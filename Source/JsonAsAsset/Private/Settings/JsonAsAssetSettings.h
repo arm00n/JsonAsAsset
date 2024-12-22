@@ -154,6 +154,20 @@ struct FSoundImportSettings
 };
 
 USTRUCT()
+struct FJsonAsAssetRedirectsSettings
+{
+	GENERATED_BODY()
+
+	// File Path to replace [Example: /Game/Asset]
+	UPROPERTY(EditAnywhere, Config, meta = (DisplayName = "Original Location"))
+	FString SourceLocation;
+
+	// File Path to replace with [Example: /Game/Asset]
+	UPROPERTY(EditAnywhere, Config, meta = (DisplayName = "Target Location"))
+	FString TargetLocation;
+};
+
+USTRUCT()
 struct FAssetSettings
 {
 	GENERATED_BODY()
@@ -172,6 +186,10 @@ public:
 
 	UPROPERTY(EditAnywhere, Config)
 	FSoundImportSettings SoundImportSettings;
+
+	// TODO:
+	// UPROPERTY(EditAnywhere, Config)
+	// TArray<FJsonAsAssetRedirectsSettings> RedirectsSettings;
 
 	UPROPERTY(EditAnywhere, Config, meta = (DisplayName = "Save Assets On Import"))
 	bool bSavePackagesOnImport;
@@ -204,7 +222,7 @@ public:
 	 *       Avoid manually entering the path or replacing "\" with "/". 
 	 *       The file selector ensures proper formatting.
 	*/
-	UPROPERTY(EditAnywhere, Config, Category="Configuration")
+	UPROPERTY(EditAnywhere, Config, Category = "Configuration")
 	FDirectoryPath ExportDirectory;
 
 	UPROPERTY(EditAnywhere, Config, Category = "Configuration")
@@ -216,7 +234,7 @@ public:
 	 * NOTE: Ensure all settings are correctly configured before starting Local Fetch. 
 	 *       Please refer to the README.md file.
 	 */
-	UPROPERTY(EditAnywhere, Config, Category="Local Fetch")
+	UPROPERTY(EditAnywhere, Config, Category = "Local Fetch")
 	bool bEnableLocalFetch;
 
 	/**
@@ -226,11 +244,11 @@ public:
 	 * NOTE: Use the file selector to choose the folder location. 
 	 *       Avoid manually pasting the path or replacing "\" with "/".
 	 */
-	UPROPERTY(EditAnywhere, Config, Category="Local Fetch - Configuration", meta=(EditCondition="bEnableLocalFetch"))
+	UPROPERTY(EditAnywhere, Config, Category = "Local Fetch - Configuration", meta=(EditCondition="bEnableLocalFetch"))
 	FDirectoryPath ArchiveDirectory;
 
 	// UE Version for the Unreal Engine Game (same as FModel's UE Verisons property)
-	UPROPERTY(EditAnywhere, Config, Category="Local Fetch - Configuration", meta=(EditCondition="bEnableLocalFetch"))
+	UPROPERTY(EditAnywhere, Config, Category = "Local Fetch - Configuration", meta=(EditCondition="bEnableLocalFetch"))
 	TEnumAsByte<EParseVersion> UnrealVersion;
 
 	UFUNCTION(CallInEditor)
@@ -240,18 +258,18 @@ public:
 	//
 	// NOTE: Use the file selector to choose the file location. 
 	//       Avoid manually pasting the path.
-	UPROPERTY(EditAnywhere, Config, Category="Local Fetch - Configuration", meta=(EditCondition="bEnableLocalFetch", FilePathFilter="usmap", RelativeToGameDir))
+	UPROPERTY(EditAnywhere, Config, Category = "Local Fetch - Configuration", meta=(EditCondition="bEnableLocalFetch", FilePathFilter="usmap", RelativeToGameDir))
 	FFilePath MappingFilePath;
 
-	UPROPERTY(EditAnywhere, Config, Category="Local Fetch - Encryption", meta=(EditCondition="bEnableLocalFetch"), AdvancedDisplay)
+	UPROPERTY(EditAnywhere, Config, Category = "Local Fetch - Encryption", meta=(EditCondition="bEnableLocalFetch"), AdvancedDisplay)
 	bool bDownloadExistingTextures;
 
 	// Main key for archives
-	UPROPERTY(EditAnywhere, Config, Category="Local Fetch - Encryption", meta=(EditCondition="bEnableLocalFetch", DisplayName="Archive Key"))
+	UPROPERTY(EditAnywhere, Config, Category = "Local Fetch - Encryption", meta=(EditCondition="bEnableLocalFetch", DisplayName="Archive Key"))
 	FString ArchiveKey;
 
 	// AES Keys
-	UPROPERTY(EditAnywhere, Config, Category="Local Fetch - Encryption", meta=(EditCondition="bEnableLocalFetch", DisplayName="Dynamic Keys"))
+	UPROPERTY(EditAnywhere, Config, Category = "Local Fetch - Encryption", meta=(EditCondition="bEnableLocalFetch", DisplayName="Dynamic Keys"))
 	TArray<FParseKey> DynamicKeys;
 
 	// Enables the option to change the api's URL
@@ -261,6 +279,6 @@ public:
 	bool bChangeURL;
 
 	// "http://localhost:1500" is default
-	UPROPERTY(EditAnywhere, Config, Category="Local Fetch", meta=(EditCondition="bChangeURL && bEnableLocalFetch", DisplayName = "Local URL"), AdvancedDisplay)
+	UPROPERTY(EditAnywhere, Config, Category = "Local Fetch", meta=(EditCondition="bChangeURL && bEnableLocalFetch", DisplayName = "Local URL"), AdvancedDisplay)
 	FString Url = "http://localhost:1500";
 };
