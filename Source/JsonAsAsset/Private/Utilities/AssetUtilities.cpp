@@ -380,7 +380,7 @@ bool FAssetUtilities::Construct_TypeTexture(const FString& Path, const FString& 
 
 void FAssetUtilities::CreatePlugin(FString PluginName)
 {
-	// Plugin creation not in UE4?
+	// Plugin creation is different between UE5 and UE4
 #if ENGINE_MAJOR_VERSION >= 5
 	FPluginUtils::FNewPluginParamsWithDescriptor CreationParams;
 	CreationParams.Descriptor.bCanContainContent = true;
@@ -397,6 +397,17 @@ void FAssetUtilities::CreatePlugin(FString PluginName)
 	LoadParams.bSelectInContentBrowser = false;
 
 	FPluginUtils::CreateAndLoadNewPlugin(PluginName, FPaths::ProjectPluginsDir(), CreationParams, LoadParams);
+#else
+	FPluginUtils::FNewPluginParams CreationParams;
+	CreationParams.bCanContainContent = true;
+
+	FText FailReason;
+	FPluginUtils::FMountPluginParams LoadParams;
+	LoadParams.bEnablePluginInProject = true;
+	LoadParams.bUpdateProjectPluginSearchPath = true;
+	LoadParams.bSelectInContentBrowser = false;
+
+	FPluginUtils::CreateAndMountNewPlugin(PluginName, FPaths::ProjectPluginsDir(), CreationParams, LoadParams, FailReason);
 #endif
 
 #define LOCTEXT_NAMESPACE "UMG"
