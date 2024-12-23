@@ -145,9 +145,6 @@ bool UAnimationBaseImporter::ImportData()
 			AnimSequenceBase->PostEditChange();
 #endif
 #endif
-#if ENGINE_MAJOR_VERSION == 4
-			// Retired Code - Doesn't work on 4.27
-			// AnimSequenceBase->RawCurveData.AddCurveData(NewTrackName, CurveTypeFlags);
 
 			// Each key of the curve
 			TArray<TSharedPtr<FJsonValue>> Keys = FloatCurveObject->AsObject()->GetObjectField("FloatCurve")->GetArrayField("Keys");
@@ -164,7 +161,7 @@ bool UAnimationBaseImporter::ImportData()
 				// Unreal Engine 5: Using a AnimDataController to handle adding curves
 #if ENGINE_MAJOR_VERSION == 5
 				const FAnimationCurveIdentifier CurveId(NewTrackName, ERawCurveTrackTypes::RCT_Float);
-				Controller->SetCurveKey(CurveId, RichKey);
+				Controller.SetCurveKey(CurveId, RichKey);
 #endif
 #if ENGINE_MAJOR_VERSION == 4
 				AnimSequenceBase->RawCurveData.AddFloatCurveKey(NewTrackName, CurveTypeFlags, RichKey.Time, RichKey.Value);
@@ -173,7 +170,6 @@ bool UAnimationBaseImporter::ImportData()
 				AnimSequenceBase->RawCurveData.FloatCurves.Last().FloatCurve.Keys.Last().InterpMode = RichKey.InterpMode;
 #endif
 			}
-#endif
 		}
 
 		UAnimSequence* CastedAnimSequence = Cast<UAnimSequence>(AnimSequenceBase);
