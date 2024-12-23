@@ -146,7 +146,33 @@ bool UAnimationBaseImporter::ImportData()
 #endif
 #endif
 #if ENGINE_MAJOR_VERSION == 4
-			AnimSequenceBase->RawCurveData.AddCurveData(NewTrackName, CurveTypeFlags);
+			// Retired Code - Doesn't work on 4.27
+			// AnimSequenceBase->RawCurveData.AddCurveData(NewTrackName, CurveTypeFlags);
+
+			// Each key of the curve
+			TArray<TSharedPtr<FJsonValue>> Keys = FloatCurveObject->AsObject()->GetObjectField("FloatCurve")->GetArrayField("Keys");
+
+			for (TSharedPtr<FJsonValue> JsonKey : Keys) {
+				TSharedPtr<FJsonObject> Key = JsonKey->AsObject();
+
+				FRichCurveKey RichKey = FMathUtilities::ObjectToRichCurveKey(Key);
+
+				// Unreal Engine 5 and Unreal Engine 4
+				// have different ways of adding curves
+				//
+				// Unreal Engine 4: Simply adding curves to RawCurveData
+				// Unreal Engine 5: Using a AnimDataController to handle adding curves
+#if ENGINE_MAJOR_VERSION == 5
+				const FAnimationCurveIdentifier CurveId(NewTrackName, ERawCurveTrackTypes::RCT_Float);
+				Controller->SetCurveKey(CurveId, RichKey);
+#endif
+#if ENGINE_MAJOR_VERSION == 4
+				AnimSequenceBase->RawCurveData.AddFloatCurveKey(NewTrackName, CurveTypeFlags, RichKey.Time, RichKey.Value);
+				AnimSequenceBase->RawCurveData.FloatCurves.Last().FloatCurve.Keys.Last().ArriveTangent = RichKey.ArriveTangent;
+				AnimSequenceBase->RawCurveData.FloatCurves.Last().FloatCurve.Keys.Last().LeaveTangent = RichKey.LeaveTangent;
+				AnimSequenceBase->RawCurveData.FloatCurves.Last().FloatCurve.Keys.Last().InterpMode = RichKey.InterpMode;
+#endif
+			}
 #endif
 		}
 
@@ -186,8 +212,6 @@ bool UAnimationBaseImporter::ImportData()
 #endif
 		AnimSequenceBase->Modify();
 		AnimSequenceBase->PostEditChange();
-
-		return OnAssetCreation(AnimSequenceBase);
 	}
 	catch (const char* Exception)
 	{
