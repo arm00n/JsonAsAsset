@@ -139,24 +139,51 @@ A window should pop-up, and once the console says `[CORE] Running API`, Local Fe
 -----------------------
 
 <a name="common-errors"></a>
-## Common Errors 🐛
+### Common Errors 🐛
 
-### ***"Attempted to create a package with name containing double slashes. PackageName: ..."***
+<details>
+  <summary>Attempted to create a package with name containing double slashes. PackageName: ...</summary>
+  
+------------
+  
 Please set your Export Directory to your actual "Output/Exports" directory
 
 ***INCORRECT***: T:/FModel/Output
 
 ***CORRECT***: T:/FModel/Output/Exports
+</details>
 
-### ***"Assertion failed: TextureReferenceIndex != INDEX_NONE"***
-This is a common issue in our code that we haven't fully resolved yet. While previous attempts to fix it have been unsuccessful, here’s a partial solution to reduce its occurrence:
+<details>
+  <summary>Assertion failed: TextureReferenceIndex != INDEX_NONE</summary>
+
+------------
+  
+This is a known issue in our code that we haven't fully resolved yet. While previous attempts to fix it have been unsuccessful, here’s a partial solution to reduce its occurrence:
 
 - Re-launch your Unreal Engine project, go to JsonAsAsset's plugin settings and enable ***"Expose Pins"*** or ***"Skip Result Node Connection"***. Also enable ***"Allow Package Saving"***.
+</details>
+
+<details>
+  <summary>Local Fetch closes instantly when executing</summary>
+
+------------
+
+There may be a few reasons why the application automatically closes, but mostly the issue stems from something missing:
+
+### 1. Your settings are wrong, and need modifications
+> If you don't have anything in the settings, how is it gonna execute correctly? Make sure all the information about your game is set in the settings.
+
+### 2. ASP.NET 8.0 not installed
+> Running the API requires ASP.NET 8.0 to be installed, please install this [here](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-aspnetcore-8.0.2-windows-x64-installer).
+
+### 3. oo2core missing
+> Run the API manually in the file explorer once, this should download the file to use in the api. (Plugins/JsonAsAsset/Binaries/Win64/JsonAsAsset_API/)
+</details>
 
 --------------------
 
 <a name="contribute"></a>
-# ✨ Contributors
+## ✨ Contributors
 
 Thanks go to these wonderful people:
 
