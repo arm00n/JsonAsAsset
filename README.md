@@ -19,7 +19,7 @@ JsonAsAsset is a plugin for [Unreal Engine](https://www.unrealengine.com/en-US) 
 <br> 
 
 > 1. [Introduction to JsonAsAsset](#intro)
-> 1. [Installing JsonAsAsset](#install)  
+> 1. [Installation](#install)  
 >    2.1 [Setup FModel](#setup-fmodel)  
 >    2.2 [Setup Settings](#setup-settings)  
 > 3. [Local Fetch](#setup-local-fetch)
@@ -69,7 +69,7 @@ JsonAsAsset is a user-friendly Unreal Engine plugin for importing assets from pa
 </details>
 
 <a name="install"></a>
-## 2. Installing JsonAsAsset
+## 2. Installation
 > [!WARNING]
 > JsonAsAsset may not work for every Unreal Engine 5 version, please check Releases to see compatibility. Unreal Engine 4 is not maintained at the moment, and is not planned to be supported.
 > *`(See branches for the current available Unreal Engine 4 versions)`*
