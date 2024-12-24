@@ -49,7 +49,8 @@ JsonAsAsset is a user-friendly Unreal Engine plugin for importing assets from pa
 <details>
   <summary>Supported Asset Types</summary>
 
-##### All Sound Asset Types
+###### Sound Classes
+- SoundWave
 
 ###### Materials
  - Material
