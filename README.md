@@ -9,7 +9,7 @@
 
 ### Description:
 
-JsonAsAsset is a plugin for [Unreal Engine](https://www.unrealengine.com/en-US) that acts as a reader for [JSON](https://www.json.org/json-en.html) files taken from [FModel](https://fmodel.app) *(Software for exploring Unreal Engine games)*, regenerating assets as they were from game's files. It uses Local Fetch, a project of JsonAsAsset, which enables the plugin to make REST API calls to retrieve assets and seamlessly reconstruct them based on the JSON data. These files are extracted using [CUE4Parse](https://github.com/FabianFG/CUE4Parse), Local Fetch's core parsing library.
+JsonAsAsset is a plugin for [Unreal Engine](https://www.unrealengine.com/en-US) that reads [JSON](https://www.json.org/json-en.html) files extracted from [FModel](https://fmodel.app) *(Software for exploring Unreal Engine games)*, and regenerates assets as they were from the game's files. It uses Local Fetch, a JsonAsAsset project, which enables the plugin to make REST API calls to retrieve assets and seamlessly reconstruct them based on the JSON data. These files are extracted using [CUE4Parse](https://github.com/FabianFG/CUE4Parse), Local Fetch's core parsing library.
 
 ✨ [Contributors](#contribute)
 
@@ -71,7 +71,7 @@ JsonAsAsset is a user-friendly Unreal Engine plugin for importing assets from pa
 <a name="install"></a>
 ## 2. Installation
 > [!WARNING]
-> JsonAsAsset may not work for every Unreal Engine 5 version, please check Releases to see compatibility. Unreal Engine 4 is not maintained at the moment, and is not planned to be supported.
+> JsonAsAsset may not work for every Unreal Engine 5 version; please check Releases for compatibility. Unreal Engine 4 is not maintained at the moment and is not planned to be supported.
 > *`(See branches for the current available Unreal Engine 4 versions)`*
 
 1. Go to the [Releases page](/../../releases) for the plugin.
@@ -84,7 +84,7 @@ JsonAsAsset is a user-friendly Unreal Engine plugin for importing assets from pa
 
 <a name="setup-fmodel"></a>
 #### 2.1 Setup FModel
-If you haven't already, install FModel and setup it up correctly.
+If you haven't already, install FModel and set it up correctly.
 <img align="left" width="150" height="150" src="./Resources/FModelLogo.png?raw=true">
 The JSON format/file has to be from a program that fits the format of FModel's JSON export files:
 <br><br>
@@ -93,7 +93,7 @@ The JSON format/file has to be from a program that fits the format of FModel's J
 
 -------------------
 
-Now that you've installed FModel and setup it up correctly, we can continue to setting up JsonAsAsset for our own Unreal Engine project.
+Now that you've installed FModel and set it up up correctly, we can continue to setting up JsonAsAsset for our own Unreal Engine project.
 
 <a name="setup-settings"></a>
 ##### 2.2 Setup Settings
@@ -102,35 +102,35 @@ Now that you've installed FModel and setup it up correctly, we can continue to s
 > [!NOTE]
 > If you have FModel installed and setup correctly, you can now press the FModel Settings button in your Settings to grab it from there!
 
-We need to change the export directory to allow the plugin to differentiate between what's your directory, and what's the game path it should put it in.
+We need to change the export directory to allow the plugin to differentiate between what's your directory and what's the game path it should put it in.
 
-First, open up to the JsonAsAsset plugin settings (basically do what's on the picture on the right) and make sure you are looking at the property "Export Directory".
+First, open up the JsonAsAsset plugin settings (basically, do what's on the picture on the right) and make sure you are looking at the property "Export Directory."
 
-Now open up FModel, and go to your settings. `(Settings -> General)` There will be a setting called `Output Directory`, copy that and go back to Unreal Engine. Now you need to click on the three dots and jump to the folder you copied and go to the folder named `Exports`, then press `Select Folder`.
+Now open up FModel and go to your settings. `(Settings -> General)` There will be a setting called `Output Directory,` copy that and go back to Unreal Engine. Now you need to click on the three dots, jump to the folder you copied, go to the folder named `Exports,` then press `Select Folder.`
 
 -------------------
 
-That’s the basic setup! To bulk import assets and **what they reference**, you'll need to set up [`Local Fetch`](#setup-local-fetch)!
+That’s the basic setup! To bulk import assets and **what they reference**, you must set up [`Local Fetch`](#setup-local-fetch)!
 
 <a name="setup-local-fetch"></a>
 ## 3. Setting Up *Local Fetch*
-Running the API requires ASP.NET 8.0 to be installed, please install this [here](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-aspnetcore-8.0.1-windows-x64-installer).
+Running the API requires ASP.NET 8.0 to be installed; please install this [here](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-aspnetcore-8.0.1-windows-x64-installer).
 
 <img align="right" width="460" height="156" src=https://github.com/user-attachments/assets/2e3a3680-ccba-4847-9e81-50242085ae63>
 
 > [!TIP]
-> Please make sure you have the plugin in your project's directory and not in the Engine.
+> Please ensure you have the plugin in your project's directory and not the Engine.
 
 Before we can launch Local Fetch and begin working on automated references, you need to input all the information about your game first.
 
-Many of these settings are similar to FModel, but make sure to manually select a file or directory using UE's file selector.
+Many of these settings are similar to FModel, but manually select a file or directory using UE's file selector.
 
 <img align="right" width="220" height="156" src=https://github.com/user-attachments/assets/ede73451-9e69-40d9-b1e2-4ee3a00838c9>
 
 ###### Launching Local Fetch
 
 > [!IMPORTANT]
-> You must launch Local Fetch through UE, and not by the executable file. The reason being is that the local host port is different when you launch it through UE, so it's important you do so.
+> You must launch Local Fetch through UE and not by the executable file. The reason is that the local host port is different when you launch it through UE, so you must do so.
 
 Go ahead and click on the JsonAsAsset logo (<img width="25" height="25" src=https://github.com/JsonAsAsset/JsonAsAsset/assets/73559984/b90ab71f-d9ac-4349-96eb-620aadf7812f>) and hover over the list `"Command-line Application"` and press `"Execute Local Fetch (.EXE)"`.
 
@@ -200,4 +200,4 @@ Thanks go to these wonderful people:
   </tbody>
 </table>
 
-- Massive thanks to the people who contributed to [UEAssetToolkit](https://github.com/Buckminsterfullerene02/UEAssetToolkit-Fixes)!
+- Thanks to the people who contributed to [UEAssetToolkit](https://github.com/Buckminsterfullerene02/UEAssetToolkit-Fixes)!
