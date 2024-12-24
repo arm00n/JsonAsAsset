@@ -205,10 +205,31 @@ void UPropertySerializer::DeserializePropertyValueInner(FProperty* Property, con
 		// Need to serialize full UObject for object property
 		TObjectPtr<UObject> Object = NULL;
 
-		// Use IImporter to import the object
-		IImporter* Importer = new IImporter();
-		Importer->LoadObject(&NewJsonValue->AsObject(), Object);
-		ObjectProperty->SetObjectPropertyValue(Value, Object);
+		auto JsonValueAsObject = NewJsonValue->AsObject();
+		bool bUseDefaultLoadObject = !JsonValueAsObject->GetStringField("ObjectName").Contains(":ParticleModule");
+
+		if (bUseDefaultLoadObject) {
+			// Use IImporter to import the object
+			IImporter* Importer = new IImporter();
+			Importer->LoadObject(&NewJsonValue->AsObject(), Object);
+			ObjectProperty->SetObjectPropertyValue(Value, Object);
+		}
+
+		FString ObjectName = JsonValueAsObject->GetStringField("ObjectName");
+
+		if (ObjectName.StartsWith("Distribution")) {
+			FString DistributionSecondaryName;
+			ObjectName.Split(".", nullptr, &DistributionSecondaryName);
+			DistributionSecondaryName = DistributionSecondaryName.Replace(TEXT("'"), TEXT(""));
+
+			if (UObject** FoundObjectPtr = ReferencedObjects.Find(DistributionSecondaryName)) {
+				UObject* FoundObject = *FoundObjectPtr;
+
+				if (FoundObject) {
+					ObjectProperty->SetObjectPropertyValue(Value, FoundObject);
+				}
+			}
+		}
 	}
 	else if (const FStructProperty* StructProperty = CastField<const FStructProperty>(Property)) {
 		// JSON for FGuids are FStrings

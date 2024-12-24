@@ -58,6 +58,27 @@ public:
     bool ImportAssetReference(const FString& GamePath);
     bool ImportExports(TArray<TSharedPtr<FJsonValue>> Exports, FString File, bool bHideNotifications = false);
 
+    TArray<TSharedPtr<FJsonValue>> GetObjectsWithTypeStartingWith(const FString& StartsWithStr) {
+        TArray<TSharedPtr<FJsonValue>> FilteredObjects;
+
+        for (const TSharedPtr<FJsonValue>& JsonObjectValue : AllJsonObjects) {
+            if (JsonObjectValue->Type == EJson::Object) {
+                TSharedPtr<FJsonObject> JsonObjectType = JsonObjectValue->AsObject();
+
+                if (JsonObjectType.IsValid() && JsonObjectType->HasField("Type")) {
+                    FString TypeValue = JsonObjectType->GetStringField("Type");
+
+                    // Check if the "Type" field starts with the specified string
+                    if (TypeValue.StartsWith(StartsWithStr)) {
+                        FilteredObjects.Add(JsonObjectValue);
+                    }
+                }
+            }
+        }
+
+        return FilteredObjects;
+    }
+
     TSharedPtr<FJsonObject> GetExport(FJsonObject* PackageIndex);
 
     // Notification Functions
