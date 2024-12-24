@@ -33,6 +33,16 @@
 #include "Importers/Constructor/SoundGraph.h"
 #include "Importers/Types/DataAssetImporter.h"
 #include "Importers/Types/CurveTableImporter.h"
+
+// Particle System Importing is not finalized
+#ifndef JSONASASSET_PARTICLESYSTEM_ALLOW
+#define JSONASASSET_PARTICLESYSTEM_ALLOW 0
+#endif
+
+#if JSONASASSET_PARTICLESYSTEM_ALLOW
+#include "Importers/Types/ParticleSystemImporter.h"
+#endif
+
 // <---- Importers
 
 // Templated Class
@@ -79,8 +89,14 @@ TArray<FString> ImporterAcceptedTypes = {
 	"LandscapeGrassType",
 	"DataTable",
 
+#if JSONASASSET_PARTICLESYSTEM_ALLOW
 	"", // separator
 
+	"ParticleSystem",
+#endif
+
+	"", // separator
+	
 	"PhysicsAsset",
 	"PhysicalMaterial",
 
@@ -160,6 +176,11 @@ bool IImporter::ImportExports(TArray<TSharedPtr<FJsonValue>> Exports, FString Fi
 
 				else if (Type == "SoundCue") 
 					Importer = new ISoundGraph(Name, File, DataObject, LocalPackage, LocalOutermostPkg, Exports);
+
+#if JSONASASSET_PARTICLESYSTEM_ALLOW
+				else if (Type == "ParticleSystem") 
+					Importer = new UParticleSystemImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg, Exports);
+#endif
 				
 				else if (Type == "Material") 
 					Importer = new UMaterialImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg, Exports);
