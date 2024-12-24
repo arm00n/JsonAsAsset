@@ -4,10 +4,12 @@
 [![GitHub Downloads (all assets, latest release)](https://img.shields.io/github/downloads/JsonAsAsset/JsonAsAsset/latest/total?style=for-the-badge&label=DOWNLOADS&color=red)](https://github.com/JsonAsAsset/JsonAsAsset/releases)
 [![GitHub Repo stars](https://img.shields.io/github/stars/JsonAsAsset/JsonAsAsset?style=for-the-badge&logo=&color=gold)](https://github.com/JsonAsAsset/JsonAsAsset/stargazers)
 
-JsonAsAsset is a user-friendly [Unreal Engine](https://www.unrealengine.com/en-US) plugin designed to import assets from packaged games through [JSON](https://www.json.org/json-en.html) files.
+[![Unreal Engine 5 Supported)](https://img.shields.io/badge/UE5.0+-black?logo=unrealengine&style=for-the-badge&labelColor=grey)](#install)
+[![Unreal Engine 4.27 Supported)](https://img.shields.io/badge/4.27-black?logo=unrealengine&style=for-the-badge&labelColor=grey)](#install)
 
-**Editor Only Data**:
-<br> In Unreal Engine 5.2 and above, editor only data has been introduced to Unreal Engine. Allowing us to import materials and material functions into our own project from the pak files of a game.
+### Description:
+
+JsonAsAsset is a plugin for [Unreal Engine](https://www.unrealengine.com/en-US) that acts as a reader for [JSON](https://www.json.org/json-en.html) files taken from [FModel](https://fmodel.app) *(Software for exploring Unreal Engine games)*, regenerating assets as they were from game's files. It uses Local Fetch, a project of JsonAsAsset, which enables the plugin to make REST API calls to retrieve assets and seamlessly reconstruct them based on the JSON data. These files are extracted using [CUE4Parse](https://github.com/FabianFG/CUE4Parse), Local Fetch's core parsing library.
 
 ✨ [Contributors](#contribute)
 
