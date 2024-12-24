@@ -139,7 +139,7 @@ public:
 	*
 	* (or you could just connect them yourself)
 	*/
-	UPROPERTY(EditAnywhere, Config)
+	UPROPERTY(EditAnywhere, Config, Category = "Material Import Settings")
 	bool bSkipResultNodeConnection;
 };
 
@@ -149,22 +149,8 @@ struct FSoundImportSettings
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, Config, meta = (DisplayName = "Audio File Name Extension"))
+	UPROPERTY(EditAnywhere, Config, Category = "Sound Import Settings", meta = (DisplayName = "Audio File Name Extension"))
 	FString AudioFileExtension = "ogg";
-};
-
-USTRUCT()
-struct FJsonAsAssetRedirectsSettings
-{
-	GENERATED_BODY()
-
-	// File Path to replace [Example: /Game/Asset]
-	UPROPERTY(EditAnywhere, Config, meta = (DisplayName = "Original Location"))
-	FString SourceLocation;
-
-	// File Path to replace with [Example: /Game/Asset]
-	UPROPERTY(EditAnywhere, Config, meta = (DisplayName = "Target Location"))
-	FString TargetLocation;
 };
 
 USTRUCT()
@@ -181,23 +167,23 @@ public:
 		SoundImportSettings = FSoundImportSettings();
 	}
 	
-	UPROPERTY(EditAnywhere, Config)
+	UPROPERTY(EditAnywhere, Config, Category = "Asset Settings")
 	FMaterialImportSettings MaterialImportSettings;
 
-	UPROPERTY(EditAnywhere, Config)
+	UPROPERTY(EditAnywhere, Config, Category = "Asset Settings")
 	FSoundImportSettings SoundImportSettings;
 
 	// TODO:
 	// UPROPERTY(EditAnywhere, Config)
 	// TArray<FJsonAsAssetRedirectsSettings> RedirectsSettings;
 
-	UPROPERTY(EditAnywhere, Config, meta = (DisplayName = "Save Assets On Import"))
+	UPROPERTY(EditAnywhere, Config, Category = "Asset Settings", meta = (DisplayName = "Save Assets On Import"))
 	bool bSavePackagesOnImport;
 
 	/**
 	* Not needed for normal operations, needed for older versions of game builds.
 	*/
-	UPROPERTY(EditAnywhere, Config)
+	UPROPERTY(EditAnywhere, Config, Category = "Asset Settings")
 	FString GameName;
 };
 

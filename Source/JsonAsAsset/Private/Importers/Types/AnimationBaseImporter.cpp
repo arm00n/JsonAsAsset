@@ -160,7 +160,6 @@ bool UAnimationBaseImporter::ImportData()
 				// Unreal Engine 4: Simply adding curves to RawCurveData
 				// Unreal Engine 5: Using a AnimDataController to handle adding curves
 #if ENGINE_MAJOR_VERSION == 5
-				const FAnimationCurveIdentifier CurveId(NewTrackName, ERawCurveTrackTypes::RCT_Float);
 				Controller.SetCurveKey(CurveId, RichKey);
 #endif
 #if ENGINE_MAJOR_VERSION == 4
