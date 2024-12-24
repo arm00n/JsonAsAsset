@@ -139,7 +139,7 @@ A window should pop-up, and once the console says `[CORE] Running API`, Local Fe
 -----------------------
 
 <a name="common-errors"></a>
-### Common Errors 🐛
+#### Common Errors 🐛
 
 <details>
   <summary>Attempted to create a package with name containing double slashes. PackageName: ...</summary>
@@ -177,13 +177,13 @@ There may be a few reasons why the application automatically closes, but mostly 
 > Running the API requires ASP.NET 8.0 to be installed, please install this [here](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-aspnetcore-8.0.2-windows-x64-installer).
 
 ### 3. oo2core missing
-> Run the API manually in the file explorer once, this should download the file to use in the api. (Plugins/JsonAsAsset/Binaries/Win64/JsonAsAsset_API/)
+> Run the API manually in the file explorer once, this should download the file to use in the api. (Plugins/JsonAsAsset/Binaries/Win64/LocalFetch)
 </details>
 
 --------------------
 
 <a name="contribute"></a>
-## ✨ Contributors
+#### ✨ Contributors
 
 Thanks go to these wonderful people:
 
