@@ -9,9 +9,17 @@
 
 ### Description:
 
-A user friendly plugin for [Unreal Engine](https://www.unrealengine.com/en-US) that reads [JSON](https://www.json.org/json-en.html) files extracted from [FModel](https://fmodel.app), and regenerates assets as they were from the game's files. It uses Local Fetch, a JsonAsAsset project, which enables the plugin to make REST API calls to retrieve assets and seamlessly reconstruct them based on the JSON data. These files are extracted using [CUE4Parse](https://github.com/FabianFG/CUE4Parse), Local Fetch's core parsing library.
+A user friendly plugin for [Unreal Engine](https://www.unrealengine.com/en-US) that reads [JSON](https://www.json.org/json-en.html) files extracted from [FModel](https://fmodel.app), and regenerates assets as they were from the game's files.
 
 ✨ [Contributors](#contribute)
+
+### Example Use:
+
+- Porting **materials**, data assets, data tables *[(see more here)](#intro)*
+- Porting **sound effects** to Unreal Engine
+- Automating the porting process for users
+
+The goal of this project is to simplify the process for the porting and modding communities, enabling them to more easily port over assets into Unreal Engine.
 
 -----------------
 
