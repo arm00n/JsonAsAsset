@@ -9,7 +9,7 @@
 
 ### Description:
 
-JsonAsAsset is a plugin for [Unreal Engine](https://www.unrealengine.com/en-US) that reads [JSON](https://www.json.org/json-en.html) files extracted from [FModel](https://fmodel.app), and regenerates assets as they were from the game's files. It uses Local Fetch, a JsonAsAsset project, which enables the plugin to make REST API calls to retrieve assets and seamlessly reconstruct them based on the JSON data. These files are extracted using [CUE4Parse](https://github.com/FabianFG/CUE4Parse), Local Fetch's core parsing library.
+A user friendly plugin for [Unreal Engine](https://www.unrealengine.com/en-US) that reads [JSON](https://www.json.org/json-en.html) files extracted from [FModel](https://fmodel.app), and regenerates assets as they were from the game's files. It uses Local Fetch, a JsonAsAsset project, which enables the plugin to make REST API calls to retrieve assets and seamlessly reconstruct them based on the JSON data. These files are extracted using [CUE4Parse](https://github.com/FabianFG/CUE4Parse), Local Fetch's core parsing library.
 
 ✨ [Contributors](#contribute)
 
