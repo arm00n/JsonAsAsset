@@ -2,6 +2,7 @@
 
 #include "Importers/Constructor/MaterialGraph.h"
 #include "Utilities/MathUtilities.h"
+#include "Styling/SlateIconFinder.h"
 
 // Expressions
 #include "Materials/MaterialExpressionComment.h"
@@ -12,8 +13,6 @@
 
 #if ENGINE_MAJOR_VERSION >= 5
 #include "Materials/MaterialExpressionTextureBase.h"
-#else
-#include "Styling/SlateIconFinder.h"
 #endif
 
 static TWeakPtr<SNotificationItem> MaterialGraphNotification;
