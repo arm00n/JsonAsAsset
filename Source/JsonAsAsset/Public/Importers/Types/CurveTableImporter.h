@@ -5,15 +5,15 @@
 #include "../Constructor/Importer.h"
 #include "Engine/CurveTable.h"
 
-class UCurveTableDerived : public UCurveTable {
+class CCurveTableDerived : public UCurveTable {
 public:
 	void AddRow(FName Name, FRealCurve* Curve);
 	void ChangeTableMode(ECurveTableMode Mode);
 };
 
-class UCurveTableImporter : public IImporter {
+class ICurveTableImporter : public IImporter {
 public:
-	UCurveTableImporter(const FString& FileName, const FString& FilePath, const TSharedPtr<FJsonObject>& JsonObject, UPackage* Package, UPackage* OutermostPkg):
+	ICurveTableImporter(const FString& FileName, const FString& FilePath, const TSharedPtr<FJsonObject>& JsonObject, UPackage* Package, UPackage* OutermostPkg):
 		IImporter(FileName, FilePath, JsonObject, Package, OutermostPkg) {
 	}
 

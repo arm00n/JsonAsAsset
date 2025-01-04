@@ -9,7 +9,7 @@
 #include "Utilities/AssetUtilities.h"
 #include "Utilities/MathUtilities.h"
 
-bool USkeletonAssetDerived::AddVirtualBone(const FName SourceBoneName, const FName TargetBoneName, const FName VirtualBoneRootName) {
+bool CSkeletonAssetDerived::AddVirtualBone(const FName SourceBoneName, const FName TargetBoneName, const FName VirtualBoneRootName) {
 	for (const FVirtualBone& SSBone : VirtualBones) {
 		if (SSBone.SourceBoneName == SourceBoneName && SSBone.TargetBoneName == TargetBoneName) {
 			return false;
@@ -29,7 +29,7 @@ bool USkeletonAssetDerived::AddVirtualBone(const FName SourceBoneName, const FNa
 	return true;
 }
 
-bool USkeletonImporter::ImportData() {
+bool ISkeletonImporter::ImportData() {
 	try {
 		bool ImportSlotGroups = true;
 		bool ImportBlendProfiles = true;
@@ -73,7 +73,7 @@ bool USkeletonImporter::ImportData() {
 				for (const TSharedPtr<FJsonValue> VirtualBoneValue : Properties->GetArrayField("VirtualBones")) {
 					const TSharedPtr<FJsonObject> VirtualBoneObject = VirtualBoneValue->AsObject();
 
-					Cast<USkeletonAssetDerived>(Skeleton)->AddVirtualBone(FName(*VirtualBoneObject->GetStringField("SourceBoneName")),
+					Cast<CSkeletonAssetDerived>(Skeleton)->AddVirtualBone(FName(*VirtualBoneObject->GetStringField("SourceBoneName")),
 					                                                      FName(*VirtualBoneObject->GetStringField("TargetBoneName")),
 					                                                      FName(*VirtualBoneObject->GetStringField("VirtualBoneName")));
 				}

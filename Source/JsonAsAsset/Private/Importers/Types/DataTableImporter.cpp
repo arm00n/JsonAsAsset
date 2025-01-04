@@ -4,7 +4,7 @@
 #include "Dom/JsonObject.h"
 
 // Shout-out to UEAssetToolkit
-bool UDataTableImporter::ImportData() {
+bool IDataTableImporter::ImportData() {
 	try {
 		TSharedPtr<FJsonObject> AssetData = JsonObject->GetObjectField("Properties");
 		UDataTable* DataTable = NewObject<UDataTable>(Package, UDataTable::StaticClass(), *FileName, RF_Public | RF_Standalone);

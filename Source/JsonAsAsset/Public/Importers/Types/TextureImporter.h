@@ -4,9 +4,9 @@
 
 #include "../Constructor/Importer.h"
 
-class UTextureImporter : public IImporter {
+class ITextureImporter : public IImporter {
 public:
-	UTextureImporter(const FString& FileName, const FString& FilePath, const TSharedPtr<FJsonObject>& JsonObject, UPackage* Package, UPackage* OutermostPkg):
+	ITextureImporter(const FString& FileName, const FString& FilePath, const TSharedPtr<FJsonObject>& JsonObject, UPackage* Package, UPackage* OutermostPkg):
 		IImporter(FileName, FilePath, JsonObject, Package, OutermostPkg) {
 	}
 

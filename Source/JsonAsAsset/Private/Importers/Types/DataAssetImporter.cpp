@@ -3,7 +3,7 @@
 #include "Importers/Types/DataAssetImporter.h"
 #include "Engine/DataAsset.h"
 
-bool UDataAssetImporter::ImportData() {
+bool IDataAssetImporter::ImportData() {
 	try {
 		TSharedPtr<FJsonObject> Properties = JsonObject->GetObjectField("Properties");
 		GetObjectSerializer()->SetPackageForDeserialization(Package);

@@ -102,6 +102,7 @@ TArray<FString> ImporterAcceptedTypes = {
 
 	"", // separator
 	
+	"PhysicsAsset",
 	"PhysicalMaterial",
 
 	"", // separator
@@ -158,59 +159,59 @@ bool IImporter::ImportExports(TArray<TSharedPtr<FJsonValue>> Exports, FString Fi
 
 			IImporter* Importer;
 			if (Type == "AnimSequence" || Type == "AnimMontage") 
-				Importer = new UAnimationBaseImporter(Name, File, DataObject, nullptr, nullptr);
+				Importer = new IAnimationBaseImporter(Name, File, DataObject, nullptr, nullptr);
 			else {
 				UPackage* LocalOutermostPkg;
 				UPackage* LocalPackage = FAssetUtilities::CreateAssetPackage(Name, File, LocalOutermostPkg);
 
 				// Curve Importers
 				if (Type == "CurveFloat") 
-					Importer = new UCurveFloatImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg);
+					Importer = new ICurveFloatImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg);
 				else if (Type == "CurveTable") 
-					Importer = new UCurveTableImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg);
+					Importer = new ICurveTableImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg);
 				else if (Type == "CurveVector") 
-					Importer = new UCurveVectorImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg);
+					Importer = new ICurveVectorImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg);
 				else if (Type == "CurveLinearColor") 
-					Importer = new UCurveLinearColorImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg);
+					Importer = new ICurveLinearColorImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg);
 				else if (Type == "CurveLinearColorAtlas") 
-					Importer = new UCurveLinearColorAtlasImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg);
+					Importer = new ICurveLinearColorAtlasImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg);
 
 				else if (Type == "Skeleton") 
-					Importer = new USkeletonImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg, Exports);
+					Importer = new ISkeletonImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg, Exports);
 
 				else if (Type == "BlendSpace") 
-					Importer = new UBlendSpaceImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg);
+					Importer = new IBlendSpaceImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg);
 
 				else if (Type == "SoundCue") 
 					Importer = new ISoundGraph(Name, File, DataObject, LocalPackage, LocalOutermostPkg, Exports);
 
 #if JSONASASSET_PARTICLESYSTEM_ALLOW
 				else if (Type == "ParticleSystem") 
-					Importer = new UParticleSystemImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg, Exports);
+					Importer = new IParticleSystemImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg, Exports);
 #endif
 				
 				else if (Type == "Material") 
-					Importer = new UMaterialImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg, Exports);
+					Importer = new IMaterialImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg, Exports);
 				else if (Type == "MaterialFunction") 
-					Importer = new UMaterialFunctionImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg, Exports);
+					Importer = new IMaterialFunctionImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg, Exports);
 				else if (Type == "MaterialInstanceConstant") 
-					Importer = new UMaterialInstanceConstantImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg, Exports);
+					Importer = new IMaterialInstanceConstantImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg, Exports);
 				
 				// Other Importers
 				else if (Type == "NiagaraParameterCollection") 
 				    Importer = new UNiagaraParameterCollectionImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg);
  				else if (Type == "DataTable") 
-				    Importer = new UDataTableImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg);
+				    Importer = new IDataTableImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg);
 
 				else // Data Asset
 					if (bDataAsset)
-						Importer = new UDataAssetImporter(Class, Name, File, DataObject, LocalPackage, LocalOutermostPkg, Exports);
+						Importer = new IDataAssetImporter(Class, Name, File, DataObject, LocalPackage, LocalOutermostPkg, Exports);
 
 				else { // Templates handled here
 					UClass* LoadedClass = FindObject<UClass>(ANY_PACKAGE, *Type);
 
 					if (LoadedClass != nullptr) {
-						Importer = new TemplatedImporter<UObject>(LoadedClass, Name, File, DataObject, LocalPackage, LocalOutermostPkg, AllJsonObjects);
+						Importer = new ITemplatedImporter<UObject>(LoadedClass, Name, File, DataObject, LocalPackage, LocalOutermostPkg, AllJsonObjects);
 					} else { // No template found
 						UE_LOG(LogTemp, Error, TEXT("Failed to load class for type: %s"), *Type);
 						

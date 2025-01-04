@@ -11,7 +11,7 @@
 
 #include "UObject/SavePackage.h"
 
-bool UCurveLinearColorImporter::ImportData() {
+bool ICurveLinearColorImporter::ImportData() {
 	try {
 		// Array of containers
 		TArray<TSharedPtr<FJsonValue>> FloatCurves = JsonObject->GetArrayField("FloatCurves");

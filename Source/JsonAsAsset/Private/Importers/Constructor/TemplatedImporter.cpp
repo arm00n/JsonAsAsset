@@ -2,11 +2,11 @@
 
 #include "Importers/Constructor/TemplatedImporter.h"
 
-// Explicit instantiation of TemplatedImporter for UObject
-template class TemplatedImporter<UObject>;
+// Explicit instantiation of ITemplatedImporter for UObject
+template class ITemplatedImporter<UObject>;
 
 template <typename AssetType>
-bool TemplatedImporter<AssetType>::ImportData() {
+bool ITemplatedImporter<AssetType>::ImportData() {
 	try {
 		// Make Properties if it doesn't exist
 		if (!JsonObject->HasField("Properties")) {

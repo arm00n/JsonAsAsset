@@ -5,19 +5,19 @@
 
 // Unfortunately these variables are privated, so we had to make a "bypass" by making
 // an asset then casting to subclass that has these functions to modify them.
-void UCurveTableDerived::AddRow(FName Name, FRealCurve* Curve) {
+void CCurveTableDerived::AddRow(FName Name, FRealCurve* Curve) {
 	RowMap.Add(Name, Curve);
 }
 
-void UCurveTableDerived::ChangeTableMode(ECurveTableMode Mode) {
+void CCurveTableDerived::ChangeTableMode(ECurveTableMode Mode) {
 	CurveTableMode = Mode;
 }
 
-bool UCurveTableImporter::ImportData() {
+bool ICurveTableImporter::ImportData() {
 	try {
 		TSharedPtr<FJsonObject> RowData = JsonObject->GetObjectField("Rows");
 		UCurveTable* CurveTable = NewObject<UCurveTable>(Package, UCurveTable::StaticClass(), *FileName, RF_Public | RF_Standalone);
-		UCurveTableDerived* DerivedCurveTable = Cast<UCurveTableDerived>(CurveTable);
+		CCurveTableDerived* DerivedCurveTable = Cast<CCurveTableDerived>(CurveTable);
 
 		// Used to determine curve type
 		ECurveTableMode CurveTableMode = ECurveTableMode::RichCurves; {

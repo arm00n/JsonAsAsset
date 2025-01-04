@@ -332,7 +332,7 @@ bool FAssetUtilities::Construct_TypeTexture(const FString& Path, const FString& 
 	Package->FullyLoad();
 
 	// Create Importer
-	const UTextureImporter* Importer = new UTextureImporter(AssetName, Path, Response[0]->AsObject(), Package, OutermostPkg);
+	const ITextureImporter* Importer = new ITextureImporter(AssetName, Path, Response[0]->AsObject(), Package, OutermostPkg);
 
 	if (Type == "Texture2D")
 		Importer->ImportTexture2D(Texture, Data, JsonExport);

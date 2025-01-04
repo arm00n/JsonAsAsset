@@ -7,7 +7,7 @@
 #include "Factories/CurveFactory.h"
 #include "Utilities/MathUtilities.h"
 
-bool UCurveFloatImporter::ImportData() {
+bool ICurveFloatImporter::ImportData() {
 	try {
 		// Quick way to access the curve keys
 		TArray<TSharedPtr<FJsonValue>> Keys = JsonObject->GetObjectField("Properties")->GetObjectField("FloatCurve")->GetArrayField("Keys");

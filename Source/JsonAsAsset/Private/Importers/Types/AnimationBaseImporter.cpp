@@ -16,7 +16,7 @@
 #include "AnimDataController.h"
 #endif
 
-bool UAnimationBaseImporter::ImportData()
+bool IAnimationBaseImporter::ImportData()
 {
 	try
 	{

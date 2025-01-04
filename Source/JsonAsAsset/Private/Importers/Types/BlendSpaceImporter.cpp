@@ -3,35 +3,35 @@
 #include "Importers/Types/BlendSpaceImporter.h"
 #include "Utilities/MathUtilities.h"
 
-void UBlendSpaceDerived::AddSampleOnly(UAnimSequence* AnimationSequence, const FVector& SampleValue) {
+void CBlendSpaceDerived::AddSampleOnly(UAnimSequence* AnimationSequence, const FVector& SampleValue) {
 	SampleData.Add(FBlendSample(AnimationSequence, SampleValue, true, true));
 }
 
-void UBlendSpaceDerived::SetAxisToScaleAnimationInput(const EBlendSpaceAxis AxisToScaleAnimationInput) {
+void CBlendSpaceDerived::SetAxisToScaleAnimationInput(const EBlendSpaceAxis AxisToScaleAnimationInput) {
 	this->AxisToScaleAnimation = AxisToScaleAnimationInput;
 }
 
-void UBlendSpaceDerived::SetBlendParameterPrimary(const FBlendParameter& BlendParametersInput) {
+void CBlendSpaceDerived::SetBlendParameterPrimary(const FBlendParameter& BlendParametersInput) {
 	this->BlendParameters[0] = BlendParametersInput;
 }
 
-void UBlendSpaceDerived::SetBlendParameterSecondary(const FBlendParameter& BlendParametersInput) {
+void CBlendSpaceDerived::SetBlendParameterSecondary(const FBlendParameter& BlendParametersInput) {
 	this->BlendParameters[1] = BlendParametersInput;
 }
 
-void UBlendSpaceDerived::SetInterpolationParamPrimary(const FInterpolationParameter InterpolationParamInput) {
+void CBlendSpaceDerived::SetInterpolationParamPrimary(const FInterpolationParameter InterpolationParamInput) {
 	this->InterpolationParam[0] = InterpolationParamInput;
 }
 
-void UBlendSpaceDerived::SetInterpolationParamSecondary(const FInterpolationParameter InterpolationParamInput) {
+void CBlendSpaceDerived::SetInterpolationParamSecondary(const FInterpolationParameter InterpolationParamInput) {
 	this->InterpolationParam[1] = InterpolationParamInput;
 }
 
-void UBlendSpaceDerived::SetNotifyTriggerMode(const ENotifyTriggerMode::Type NotifyTriggerModeInput) {
+void CBlendSpaceDerived::SetNotifyTriggerMode(const ENotifyTriggerMode::Type NotifyTriggerModeInput) {
 	this->NotifyTriggerMode = NotifyTriggerModeInput;
 }
 
-bool UBlendSpaceImporter::ImportData() {
+bool IBlendSpaceImporter::ImportData() {
 	try {
 		TSharedPtr<FJsonObject> AssetData = JsonObject->GetObjectField("Properties");
 		UBlendSpace* BlendSpace = NewObject<UBlendSpace>(Package, UBlendSpace::StaticClass(), *FileName, RF_Public | RF_Standalone);
@@ -53,7 +53,7 @@ bool UBlendSpaceImporter::ImportData() {
 				PrimaryBlendParam.GridNum = 4;
 			}
 
-			Cast<UBlendSpaceDerived>(BlendSpace)->SetBlendParameterPrimary(PrimaryBlendParam);
+			Cast<CBlendSpaceDerived>(BlendSpace)->SetBlendParameterPrimary(PrimaryBlendParam);
 		}
 
 		if (AssetData->HasField("BlendParameters[1]"))
@@ -71,7 +71,7 @@ bool UBlendSpaceImporter::ImportData() {
 				SecondaryBlendParam.GridNum = 4;
 			}
 
-			Cast<UBlendSpaceDerived>(BlendSpace)->SetBlendParameterSecondary(SecondaryBlendParam);
+			Cast<CBlendSpaceDerived>(BlendSpace)->SetBlendParameterSecondary(SecondaryBlendParam);
 		}
 
 		if (AssetData->HasField("InterpolationParam")) {
@@ -80,7 +80,7 @@ bool UBlendSpaceImporter::ImportData() {
 			FInterpolationParameter PrimaryInterpolationParam;
 			PrimaryInterpolationParam.InterpolationTime = InterpolationParamObject->GetNumberField("InterpolationTime");
 
-			Cast<UBlendSpaceDerived>(BlendSpace)->SetInterpolationParamPrimary(PrimaryInterpolationParam);
+			Cast<CBlendSpaceDerived>(BlendSpace)->SetInterpolationParamPrimary(PrimaryInterpolationParam);
 		}
 
 		if (AssetData->HasField("InterpolationParam[1]")) {
@@ -89,7 +89,7 @@ bool UBlendSpaceImporter::ImportData() {
 			FInterpolationParameter SecondaryInterpolationParam;
 			SecondaryInterpolationParam.InterpolationTime = InterpolationParamObjectSecondary->GetNumberField("InterpolationTime");
 
-			Cast<UBlendSpaceDerived>(BlendSpace)->SetInterpolationParamSecondary(SecondaryInterpolationParam);
+			Cast<CBlendSpaceDerived>(BlendSpace)->SetInterpolationParamSecondary(SecondaryInterpolationParam);
 		}
 
 		for (const TSharedPtr<FJsonValue>& JsonObjectValue : SampleData) {
@@ -104,7 +104,7 @@ bool UBlendSpaceImporter::ImportData() {
 				UObject* Object = StaticLoadObject(UObject::StaticClass(), nullptr, *AnimationPath);
 
 				BlendSpace->Modify();
-				Cast<UBlendSpaceDerived>(BlendSpace)->AddSampleOnly(Cast<UAnimSequence>(Object), FMathUtilities::ObjectToVector(JsonObjectVal->GetObjectField("SampleValue").Get()));
+				Cast<CBlendSpaceDerived>(BlendSpace)->AddSampleOnly(Cast<UAnimSequence>(Object), FMathUtilities::ObjectToVector(JsonObjectVal->GetObjectField("SampleValue").Get()));
 				BlendSpace->PostEditChange();
 			}
 		}

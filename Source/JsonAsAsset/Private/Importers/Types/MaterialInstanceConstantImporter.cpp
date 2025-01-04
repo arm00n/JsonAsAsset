@@ -8,7 +8,7 @@
 #include "RHIDefinitions.h"
 #include "MaterialShared.h"
 
-bool UMaterialInstanceConstantImporter::ImportData() {
+bool IMaterialInstanceConstantImporter::ImportData() {
 	try {
 		TSharedPtr<FJsonObject> Properties = JsonObject->GetObjectField("Properties");
 

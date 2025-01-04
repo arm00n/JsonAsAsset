@@ -12,7 +12,7 @@
 #include "Utilities/MathUtilities.h"
 #include "Utilities/TextureDecode/TextureNVTT.h"
 
-bool UTextureImporter::ImportTexture2D(UTexture*& OutTexture2D, TArray<uint8>& Data, const TSharedPtr<FJsonObject>& Properties) const {
+bool ITextureImporter::ImportTexture2D(UTexture*& OutTexture2D, TArray<uint8>& Data, const TSharedPtr<FJsonObject>& Properties) const {
 	const TSharedPtr<FJsonObject> SubObjectProperties = Properties->GetObjectField(TEXT("Properties"));
 
 	// NEW: .bin support
@@ -63,7 +63,7 @@ bool UTextureImporter::ImportTexture2D(UTexture*& OutTexture2D, TArray<uint8>& D
 	return false;
 }
 
-bool UTextureImporter::ImportTextureCube(UTexture*& OutTextureCube, TArray<uint8>& Data, const TSharedPtr<FJsonObject>& Properties) const {
+bool ITextureImporter::ImportTextureCube(UTexture*& OutTextureCube, TArray<uint8>& Data, const TSharedPtr<FJsonObject>& Properties) const {
 	UTextureCube* TextureCube = NewObject<UTextureCube>(Package, UTextureCube::StaticClass(), *FileName, RF_Public | RF_Standalone);
 
 #if ENGINE_MAJOR_VERSION >= 5
@@ -107,7 +107,7 @@ bool UTextureImporter::ImportTextureCube(UTexture*& OutTextureCube, TArray<uint8
 	return false;
 }
 
-bool UTextureImporter::ImportVolumeTexture(UTexture*& OutVolumeTexture, TArray<uint8>& Data, const TSharedPtr<FJsonObject>& Properties) const {
+bool ITextureImporter::ImportVolumeTexture(UTexture*& OutVolumeTexture, TArray<uint8>& Data, const TSharedPtr<FJsonObject>& Properties) const {
 	UVolumeTexture* VolumeTexture = NewObject<UVolumeTexture>(Package, UVolumeTexture::StaticClass(), *FileName, RF_Public | RF_Standalone);
 
 #if ENGINE_MAJOR_VERSION >= 5
@@ -151,7 +151,7 @@ bool UTextureImporter::ImportVolumeTexture(UTexture*& OutVolumeTexture, TArray<u
 	return false;
 }
 
-bool UTextureImporter::ImportRenderTarget2D(UTexture*& OutRenderTarget2D, const TSharedPtr<FJsonObject>& Properties) const {
+bool ITextureImporter::ImportRenderTarget2D(UTexture*& OutRenderTarget2D, const TSharedPtr<FJsonObject>& Properties) const {
 	UTextureRenderTargetFactoryNew* TextureFactory = NewObject<UTextureRenderTargetFactoryNew>();
 	TextureFactory->AddToRoot();
 	UTextureRenderTarget2D* RenderTarget2D = Cast<UTextureRenderTarget2D>(TextureFactory->FactoryCreateNew(UTextureRenderTarget2D::StaticClass(), OutermostPkg, *FileName, RF_Standalone | RF_Public, nullptr, GWarn));
@@ -191,7 +191,7 @@ bool UTextureImporter::ImportRenderTarget2D(UTexture*& OutRenderTarget2D, const 
 }
 
 // Handle UTexture2D
-bool UTextureImporter::ImportTexture2D_Data(UTexture2D* InTexture2D, const TSharedPtr<FJsonObject>& Properties) const {
+bool ITextureImporter::ImportTexture2D_Data(UTexture2D* InTexture2D, const TSharedPtr<FJsonObject>& Properties) const {
 	if (InTexture2D == nullptr) return false;
 
 	ImportTexture_Data(InTexture2D, Properties);
@@ -230,7 +230,7 @@ bool UTextureImporter::ImportTexture2D_Data(UTexture2D* InTexture2D, const TShar
 }
 
 // Handle UTexture
-bool UTextureImporter::ImportTexture_Data(UTexture* InTexture, const TSharedPtr<FJsonObject>& Properties) const {
+bool ITextureImporter::ImportTexture_Data(UTexture* InTexture, const TSharedPtr<FJsonObject>& Properties) const {
 	if (InTexture == nullptr) return false;
 
 	// Declare variables before the if statements
@@ -390,7 +390,7 @@ bool UTextureImporter::ImportTexture_Data(UTexture* InTexture, const TSharedPtr<
 	return false;
 }
 
-void UTextureImporter::GetDecompressedTextureData(uint8* Data, uint8*& OutData, const int SizeX, const int SizeY, const int SizeZ, const int TotalSize, const EPixelFormat Format) const {
+void ITextureImporter::GetDecompressedTextureData(uint8* Data, uint8*& OutData, const int SizeX, const int SizeY, const int SizeZ, const int TotalSize, const EPixelFormat Format) const {
 	// NOTE: Not all formats are supported, feel free to add
 	//       if needed. Formats may need other dependencies.
 	switch (Format) {

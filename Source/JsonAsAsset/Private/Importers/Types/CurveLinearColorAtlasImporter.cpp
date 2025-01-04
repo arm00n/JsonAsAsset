@@ -7,7 +7,7 @@
 #include "Curves/CurveLinearColorAtlas.h"
 #include "Dom/JsonObject.h"
 
-bool UCurveLinearColorAtlasImporter::ImportData() {
+bool ICurveLinearColorAtlasImporter::ImportData() {
 	try {
 		TSharedPtr<FJsonObject> Properties = JsonObject->GetObjectField("Properties");
 		

@@ -22,7 +22,7 @@
 #if ENGINE_MAJOR_VERSION >= 5
 #include <Editor/UnrealEd/Classes/MaterialGraph/MaterialGraphNode_Composite.h>
 
-void UMaterialImporter::ComposeExpressionPinBase(UMaterialExpressionPinBase* Pin, TMap<FName, UMaterialExpression*>& CreatedExpressionMap, const TSharedPtr<FJsonObject>& _JsonObject, TMap<FName, FExportData>& Exports) {
+void IMaterialImporter::ComposeExpressionPinBase(UMaterialExpressionPinBase* Pin, TMap<FName, UMaterialExpression*>& CreatedExpressionMap, const TSharedPtr<FJsonObject>& _JsonObject, TMap<FName, FExportData>& Exports) {
 	FJsonObject* Expression = (Exports.Find(GetExportNameOfSubobject(_JsonObject->GetStringField("ObjectName")))->Json)->GetObjectField("Properties").Get();
 
 	Pin->GraphNode->NodePosX = Expression->GetNumberField("MaterialExpressionEditorX");
@@ -72,7 +72,7 @@ void UMaterialImporter::ComposeExpressionPinBase(UMaterialExpressionPinBase* Pin
 }
 #endif
 
-bool UMaterialImporter::ImportData() {
+bool IMaterialImporter::ImportData() {
 	try {
 		// Create Material Factory (factory automatically creates the Material)
 		UMaterialFactoryNew* MaterialFactory = NewObject<UMaterialFactoryNew>();
@@ -389,7 +389,7 @@ bool UMaterialImporter::ImportData() {
 
 // Filter out Material Graph Nodes
 // by checking their subgraph expression (composite)
-TArray<TSharedPtr<FJsonValue>> UMaterialImporter::FilterGraphNodesBySubgraphExpression(const FString& Outer) {
+TArray<TSharedPtr<FJsonValue>> IMaterialImporter::FilterGraphNodesBySubgraphExpression(const FString& Outer) {
 	TArray<TSharedPtr<FJsonValue>> ReturnValue = TArray<TSharedPtr<FJsonValue>>();
 
 	/*

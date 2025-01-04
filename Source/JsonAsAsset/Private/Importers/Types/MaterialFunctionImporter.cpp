@@ -3,7 +3,7 @@
 #include "Importers/Types/MaterialFunctionImporter.h"
 #include "Factories/MaterialFunctionFactoryNew.h"
 
-bool UMaterialFunctionImporter::ImportData() {
+bool IMaterialFunctionImporter::ImportData() {
 	try {
 		// Create Material Function Factory (factory automatically creates the MF)
 		UMaterialFunctionFactoryNew* MaterialFunctionFactory = NewObject<UMaterialFunctionFactoryNew>();

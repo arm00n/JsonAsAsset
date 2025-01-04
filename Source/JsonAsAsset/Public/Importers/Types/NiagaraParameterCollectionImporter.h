@@ -6,7 +6,7 @@
 #include "NiagaraParameterCollectionImporter.h"
 #include "NiagaraParameterCollection.h"
 
-class UNiagaraParameterCollectionDerived : public UNiagaraParameterCollection {
+class INiagaraParameterCollectionDerived : public UNiagaraParameterCollection {
 public:
     void SetSourceMaterialCollection(TObjectPtr<UMaterialParameterCollection> MaterialParameterCollection);
     void SetCompileId(FGuid Guid);

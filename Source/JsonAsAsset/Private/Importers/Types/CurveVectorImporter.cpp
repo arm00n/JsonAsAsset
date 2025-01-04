@@ -8,7 +8,7 @@
 
 #include "Utilities/MathUtilities.h"
 
-bool UCurveVectorImporter::ImportData() {
+bool ICurveVectorImporter::ImportData() {
 	try {
 		// Array of containers
 		TArray<TSharedPtr<FJsonValue>> FloatCurves = JsonObject->GetArrayField("FloatCurves");
