@@ -102,7 +102,6 @@ TArray<FString> ImporterAcceptedTypes = {
 
 	"", // separator
 	
-	"PhysicsAsset",
 	"PhysicalMaterial",
 
 	"", // separator
