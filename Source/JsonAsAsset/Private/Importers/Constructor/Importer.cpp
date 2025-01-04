@@ -54,6 +54,7 @@
 #include "Engine/SubsurfaceProfile.h"
 #include "Materials/MaterialParameterCollection.h"
 #include "Curves/CurveLinearColor.h"
+#include "Importers/Types/PhysicsAssetImporter.h"
 #include "Logging/MessageLog.h"
 
 // -----------------------------------------------------------------------------------------------
@@ -196,6 +197,9 @@ bool IImporter::ImportExports(TArray<TSharedPtr<FJsonValue>> Exports, FString Fi
 					Importer = new IMaterialFunctionImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg, Exports);
 				else if (Type == "MaterialInstanceConstant") 
 					Importer = new IMaterialInstanceConstantImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg, Exports);
+
+				else if (Type == "PhysicsAsset") 
+					Importer = new IPhysicsAssetImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg, Exports);
 				
 				// Other Importers
 				else if (Type == "NiagaraParameterCollection") 
@@ -309,7 +313,7 @@ TObjectPtr<T> IImporter::DownloadWrapper(TObjectPtr<T> InObject, FString Type, F
 	) {
 		const UObject* DefaultObject = T::StaticClass()->ClassDefaultObject;
 
-		if (DefaultObject != nullptr) {
+		if (DefaultObject != nullptr && !Name.IsEmpty() && !Path.IsEmpty()) {
 			bool bRemoteDownloadStatus = false;
 
 			// Notification
@@ -448,6 +452,26 @@ void IImporter::ImportReference(const FString& File) {
 
 		ImportExports(DataObjects, File);
 	}
+}
+
+TMap<FName, FExportData> IImporter::CreateExports() {
+	TMap<FName, FExportData> OutExports;
+
+	for (const TSharedPtr<FJsonValue> Value : AllJsonObjects) {
+		TSharedPtr<FJsonObject> Object = TSharedPtr<FJsonObject>(Value->AsObject());
+
+		FString ExType = Object->GetStringField("Type");
+		FString Name = Object->GetStringField("Name");
+		FString Outer = "None";
+
+		if (Object->HasField("Outer")) {
+			Outer = Object->GetStringField("Outer");
+		}
+
+		OutExports.Add(FName(Name), FExportData(ExType, Outer, Object));
+	}
+
+	return OutExports;
 }
 
 // Called before HandleAssetCreation, simply saves the asset if user opted

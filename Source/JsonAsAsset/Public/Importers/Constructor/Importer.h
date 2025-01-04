@@ -11,6 +11,30 @@
 
 extern TArray<FString> ImporterAcceptedTypes;
 
+struct FExportData {
+    FExportData(const FName Type, const FName Outer, const TSharedPtr<FJsonObject>& Json) {
+        this->Type = Type;
+        this->Outer = Outer;
+        this->Json = Json.Get();
+    }
+
+    FExportData(const FString& Type, const FString& Outer, const TSharedPtr<FJsonObject>& Json) {
+        this->Type = FName(Type);
+        this->Outer = FName(Outer);
+        this->Json = Json.Get();
+    }
+
+    FExportData(const FString& Type, const FString& Outer, FJsonObject* Json) {
+        this->Type = FName(Type);
+        this->Outer = FName(Outer);
+        this->Json = Json;
+    }
+
+    FName Type;
+    FName Outer;
+    FJsonObject* Json;
+};
+
 // Global handler for converting JSON to assets
 class IImporter {
 public:
@@ -90,6 +114,20 @@ public:
 protected:
     bool HandleAssetCreation(UObject* Asset) const;
     void SavePackage();
+
+    // Simple handler for JsonArray
+    void ProcessJsonArrayField(const TSharedPtr<FJsonObject>& ObjectField, const FString& ArrayFieldName, TFunction<void(const TSharedPtr<FJsonObject>&)> ProcessObjectFunction) {
+        const TArray<TSharedPtr<FJsonValue>>* JsonArray;
+        if (ObjectField->TryGetArrayField(ArrayFieldName, JsonArray)) {
+            for (const auto& JsonValue : *JsonArray) {
+                if (const TSharedPtr<FJsonObject> JsonItem = JsonValue->AsObject()) {
+                    ProcessObjectFunction(JsonItem);
+                }
+            }
+        }
+    }
+
+    TMap<FName, FExportData> CreateExports();
 
     // Handle edit changes, and add it to the content browser
     // Shortcut to calling SavePackage and HandleAssetCreation
