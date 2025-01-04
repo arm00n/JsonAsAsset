@@ -98,7 +98,10 @@ bool UBlendSpaceImporter::ImportData() {
 			if (JsonObjectVal.IsValid()) {
 				auto AnimationJsonObject = JsonObjectVal->GetObjectField("Animation");
 
-				UObject* Object = StaticLoadObject(UObject::StaticClass(), nullptr, *AnimationJsonObject->GetStringField("PathToObject"));
+				FString AnimationPath = AnimationJsonObject->GetStringField("ObjectPath").Replace(TEXT("FortniteGame/Content"), TEXT("/Game"));
+				AnimationPath.Split(".", &AnimationPath, nullptr);
+
+				UObject* Object = StaticLoadObject(UObject::StaticClass(), nullptr, *AnimationPath);
 
 				BlendSpace->Modify();
 				Cast<UBlendSpaceDerived>(BlendSpace)->AddSampleOnly(Cast<UAnimSequence>(Object), FMathUtilities::ObjectToVector(JsonObjectVal->GetObjectField("SampleValue").Get()));

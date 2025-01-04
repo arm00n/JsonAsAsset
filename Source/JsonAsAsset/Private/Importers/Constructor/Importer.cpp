@@ -33,6 +33,7 @@
 #include "Importers/Constructor/SoundGraph.h"
 #include "Importers/Types/DataAssetImporter.h"
 #include "Importers/Types/CurveTableImporter.h"
+#include "Importers/Types/BlendspaceImporter.h"
 
 // Particle System Importing is not finalized
 #ifndef JSONASASSET_PARTICLESYSTEM_ALLOW
@@ -82,6 +83,10 @@ TArray<FString> ImporterAcceptedTypes = {
 	"MaterialInstanceConstant",
 	"MaterialParameterCollection",
 	"NiagaraParameterCollection",
+
+	"", // separator
+
+	"BlendSpace",
 
 	"", // separator
 
@@ -173,6 +178,9 @@ bool IImporter::ImportExports(TArray<TSharedPtr<FJsonValue>> Exports, FString Fi
 
 				else if (Type == "Skeleton") 
 					Importer = new USkeletonImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg, Exports);
+
+				else if (Type == "BlendSpace") 
+					Importer = new UBlendSpaceImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg);
 
 				else if (Type == "SoundCue") 
 					Importer = new ISoundGraph(Name, File, DataObject, LocalPackage, LocalOutermostPkg, Exports);

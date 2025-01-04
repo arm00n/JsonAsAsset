@@ -254,10 +254,10 @@ void IMaterialGraph::PropagateExpressions(UObject* Parent, TArray<FName>& Expres
 void IMaterialGraph::MaterialGraphNode_AddComment(UObject* Parent, UMaterialExpressionComment* Comment) {
 #if ENGINE_MAJOR_VERSION >= 5
 	if (UMaterialFunction* FuncCasted = Cast<UMaterialFunction>(Parent)) FuncCasted->GetExpressionCollection().AddComment(Comment);
-	else if (UMaterial* MatCasted = Cast<UMaterial>(Parent)) MatCasted->GetExpressionCollection().AddComment(Comment);
+	if (UMaterial* MatCasted = Cast<UMaterial>(Parent)) MatCasted->GetExpressionCollection().AddComment(Comment);
 #else
 	if (UMaterialFunction* FuncCasted = Cast<UMaterialFunction>(Parent)) FuncCasted->FunctionEditorComments.Add(Comment);
-	else if (UMaterial* MatCasted = Cast<UMaterial>(Parent)) MatCasted->EditorComments.Add(Comment);
+	if (UMaterial* MatCasted = Cast<UMaterial>(Parent)) MatCasted->EditorComments.Add(Comment);
 #endif
 }
 
@@ -355,8 +355,7 @@ UMaterialExpression* IMaterialGraph::CreateEmptyExpression(UObject* Parent, FNam
 		FNotificationInfo Info = FNotificationInfo(FText::FromString("Missing Node (" + Parent->GetName() + ")"));
 
 		Info.bUseLargeFont = false;
-		Info.bFireAndForget = false;
-		Info.FadeOutDuration = .5f;
+		Info.FadeOutDuration = 2.5f;
 		Info.ExpireDuration = 8.0f;
 		Info.WidthOverride = FOptionalSize(456);
 		Info.bUseThrobber = false;
