@@ -3,10 +3,7 @@
 #include "Importers/Types/PhysicsAssetImporter.h"
 
 bool IPhysicsAssetImporter::ImportData() {
-	try {
-	} catch (const char* Exception) {
-		UE_LOG(LogJson, Error, TEXT("%s"), *FString(Exception));
-	}
+	UPhysicsAsset* PhysicsAsset = NewObject<UPhysicsAsset>(Package, UPhysicsAsset::StaticClass(), *FileName, RF_Public | RF_Standalone);
 
-	return false;
+	return OnAssetCreation(PhysicsAsset);
 }

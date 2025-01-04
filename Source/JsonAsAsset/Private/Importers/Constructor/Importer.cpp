@@ -223,7 +223,13 @@ bool IImporter::ImportExports(TArray<TSharedPtr<FJsonValue>> Exports, FString Fi
 			FMessageLog MessageLogger = FMessageLog(FName("JsonAsAsset"));
 
 			if (bHideNotifications) {
-				Importer->ImportData();
+				try {
+					Importer->ImportData();
+					
+					return true;
+				} catch (const char* Exception) {
+					UE_LOG(LogJson, Error, TEXT("Importer exception: %s"), *FString(Exception));
+				}
 
 				return true;
 			}
