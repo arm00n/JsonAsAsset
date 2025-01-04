@@ -5,27 +5,27 @@
 #include "Dom/JsonObject.h"
 #include "Materials/MaterialParameterCollection.h"
 
-void INiagaraParameterCollectionDerived::SetSourceMaterialCollection(TObjectPtr<UMaterialParameterCollection> MaterialParameterCollection) {
+void CNiagaraParameterCollectionDerived::SetSourceMaterialCollection(TObjectPtr<UMaterialParameterCollection> MaterialParameterCollection) {
     this->SourceMaterialCollection = MaterialParameterCollection;
 }
 
-void INiagaraParameterCollectionDerived::SetCompileId(FGuid Guid) {
+void CNiagaraParameterCollectionDerived::SetCompileId(FGuid Guid) {
     this->CompileId = Guid;
 }
 
-void INiagaraParameterCollectionDerived::SetNamespace(FName InNamespace) {
+void CNiagaraParameterCollectionDerived::SetNamespace(FName InNamespace) {
     this->Namespace = InNamespace;
 }
 
-void INiagaraParameterCollectionDerived::AddAParameter(FNiagaraVariable Parameter) {
+void CNiagaraParameterCollectionDerived::AddAParameter(FNiagaraVariable Parameter) {
     this->Parameters.Add(Parameter);
 }
 
-bool UNiagaraParameterCollectionImporter::ImportData() {
+bool INiagaraParameterCollectionImporter::ImportData() {
     try {
         TSharedPtr<FJsonObject> Properties = JsonObject->GetObjectField("Properties");
 
-        INiagaraParameterCollectionDerived* NiagaraParameterCollection = Cast<INiagaraParameterCollectionDerived>(
+        CNiagaraParameterCollectionDerived* NiagaraParameterCollection = Cast<CNiagaraParameterCollectionDerived>(
             NewObject<UNiagaraParameterCollection>(Package, UNiagaraParameterCollection::StaticClass(), *FileName, RF_Public | RF_Standalone));
 
         NiagaraParameterCollection->SetCompileId(FGuid(Properties->GetStringField("CompileId")));

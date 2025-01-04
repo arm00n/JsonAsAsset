@@ -199,7 +199,7 @@ bool IImporter::ImportExports(TArray<TSharedPtr<FJsonValue>> Exports, FString Fi
 				
 				// Other Importers
 				else if (Type == "NiagaraParameterCollection") 
-				    Importer = new UNiagaraParameterCollectionImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg);
+				    Importer = new INiagaraParameterCollectionImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg);
  				else if (Type == "DataTable") 
 				    Importer = new IDataTableImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg);
 
