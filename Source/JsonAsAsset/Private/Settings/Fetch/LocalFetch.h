@@ -11,7 +11,7 @@ struct FAesKey
 {
 	GENERATED_BODY()
 public:
-	// Construct a AES Key with an empty Key and Value
+	// Construct an AES Key with an empty Key and Value
 	FAesKey() {
 	}
 

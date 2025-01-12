@@ -12,7 +12,10 @@ class FJsonAsAssetSettingsDetails : public IDetailCustomization
 {
 public:
 	static TSharedRef<IDetailCustomization> MakeInstance();
-	virtual void CustomizeDetails(IDetailLayoutBuilder& DetailBuilder) override;
-
 	static void SaveConfig(UJsonAsAssetSettings* Settings);
+
+	// Customization
+	virtual void CustomizeDetails(IDetailLayoutBuilder& DetailBuilder) override;
+	void EditConfiguration(TWeakObjectPtr<UJsonAsAssetSettings> Settings, IDetailLayoutBuilder& DetailBuilder);
+	void EditEncryption(TWeakObjectPtr<UJsonAsAssetSettings> Settings, IDetailLayoutBuilder& DetailBuilder);
 };
