@@ -6,12 +6,12 @@
 #include "DetailWidgetRow.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/SBoxPanel.h"
-#include "Widgets/Text/SRichTextBlock.h"
 #include "Utilities/RemoteUtilities.h"
 #include "Serialization/JsonSerializer.h"
 #include "Misc/FileHelper.h"
 #include "Dom/JsonObject.h"
 #include "HttpModule.h"
+#include "Settings/Fetch/LocalFetch.h"
 
 #if ENGINE_MAJOR_VERSION == 4
 #include "DetailCategoryBuilder.h"
@@ -91,7 +91,7 @@ void FJsonAsAssetSettingsDetails::CustomizeDetails(IDetailLayoutBuilder& DetailB
                                         const TSharedPtr<FJsonObject> KeyObject = KeyValue->AsObject();
 
                                         if (KeyObject.IsValid()) {
-                                            FParseKey NewKey;
+                                            FAesKey NewKey;
                                             NewKey.Guid = KeyObject->GetStringField("guid");
                                             NewKey.Value = KeyObject->GetStringField("key");
                                             PluginSettings->DynamicKeys.Add(NewKey);
@@ -166,7 +166,7 @@ void FJsonAsAssetSettingsDetails::CustomizeDetails(IDetailLayoutBuilder& DetailB
 					FString GUID = Object->GetStringField("guid");
 					FString Key = Object->GetStringField("key");
 
-					PluginSettings->DynamicKeys.Add(FParseKey(GUID, Key));
+					PluginSettings->DynamicKeys.Add(FAesKey(GUID, Key));
 				}
 			}
 

@@ -33,6 +33,9 @@
 #include "Styling/SlateIconFinder.h"
 #include <TlHelp32.h>
 
+// Settings
+#include "./Settings/Details/JsonAsAssetSettingsDetails.h"
+
 #include "Modules/AboutJsonAsAsset.h"
 #include "Utilities/AppStyleCompatibility.h"
 #include "Utilities/AssetUtilities.h"
