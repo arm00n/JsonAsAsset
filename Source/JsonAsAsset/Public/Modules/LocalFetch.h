@@ -5,6 +5,12 @@
 // Structures, Enumerations, used for Local Fetch
 #include "LocalFetch.generated.h"
 
+/**
+ * A list of classes allowed to be used by Local Fetch
+ * --> Defined in CPP
+ */
+extern TArray<FString> LocalFetchAcceptedTypes;
+
 // Used for settings and in Local Fetch
 USTRUCT()
 struct FAesKey

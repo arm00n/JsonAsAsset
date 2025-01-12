@@ -8,14 +8,8 @@
 #include "Modules/ModuleInterface.h"
 #endif
 
-class FToolBarBuilder;
-class FMenuBuilder;
-class ITableRow;
-class SButton;
-class STableViewBase;
-struct FSlateBrush;
-
-class FJsonAsAssetModule : public IModuleInterface {
+class FJsonAsAssetModule : public IModuleInterface
+{
 public:
     virtual void StartupModule() override;
     virtual void ShutdownModule() override;

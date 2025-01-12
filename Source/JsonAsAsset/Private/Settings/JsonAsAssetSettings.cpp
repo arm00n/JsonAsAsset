@@ -3,7 +3,7 @@
 #include "JsonAsAssetSettings.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/SBoxPanel.h"
-#include "Fetch/LocalFetch.h"
+#include "Modules/LocalFetch.h"
 
 #define LOCTEXT_NAMESPACE "JsonAsAsset"
 

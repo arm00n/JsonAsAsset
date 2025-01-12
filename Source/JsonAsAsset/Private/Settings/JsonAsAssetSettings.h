@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Engine/EngineTypes.h"
 #include "Engine/DeveloperSettings.h"
-#include "Fetch/LocalFetch.h"
+#include "Modules/LocalFetch.h"
 #include "JsonAsAssetSettings.generated.h"
 
 // Settings for materials

@@ -6,7 +6,8 @@
 #include "Framework/Commands/Commands.h"
 #include "JsonAsAssetStyle.h"
 
-class FJsonAsAssetCommands : public TCommands<FJsonAsAssetCommands> {
+class FJsonAsAssetCommands : public TCommands<FJsonAsAssetCommands>
+{
 public:
 	FJsonAsAssetCommands()
 		: TCommands(TEXT("JsonAsAsset"), NSLOCTEXT("Contexts", "JsonAsAsset", "JsonAsAsset Plugin"), NAME_None, FJsonAsAssetStyle::GetStyleSetName()) {

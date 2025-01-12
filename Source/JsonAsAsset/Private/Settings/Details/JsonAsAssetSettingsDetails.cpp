@@ -11,7 +11,7 @@
 #include "Misc/FileHelper.h"
 #include "Dom/JsonObject.h"
 #include "HttpModule.h"
-#include "Settings/Fetch/LocalFetch.h"
+#include "Modules/LocalFetch.h"
 
 #if ENGINE_MAJOR_VERSION == 4
 #include "DetailCategoryBuilder.h"
