@@ -5,6 +5,7 @@
 
 void CBlendSpaceDerived::AddSampleOnly(UAnimSequence* AnimationSequence, const FVector& SampleValue) {
 	SampleData.Add(FBlendSample(AnimationSequence, SampleValue, true, true));
+	PreviewBasePose = nullptr;
 }
 
 void CBlendSpaceDerived::SetAxisToScaleAnimationInput(const EBlendSpaceAxis AxisToScaleAnimationInput) {
@@ -108,24 +109,22 @@ bool IBlendSpaceImporter::ImportData() {
 		}
 	}
 
-	auto SerializerProperties = TSharedPtr<FJsonObject>(AssetData);
-
-	TArray<FString> FieldsToRemove = {
+	// Ensure internal state is refreshed after adding all samples
+	BlendSpace->ValidateSampleData();
+	FPropertyChangedEvent PropertyChangedEvent(nullptr);
+	BlendSpace->PostEditChangeProperty(PropertyChangedEvent);
+	BlendSpace->MarkPackageDirty();
+	BlendSpace->PostEditChange();
+	
+	GetObjectSerializer()->DeserializeObjectProperties(RemovePropertiesShared(AssetData,
+	{
 		"SampleData",
 		"GridSamples",
 		"InterpolationParam",
 		"InterpolationParam[1]",
 		"BlendParameters",
 		"BlendParameters[1]",
-	};
-
-	for (const FString& FieldName : FieldsToRemove) {
-		if (SerializerProperties->HasField(FieldName)) {
-			SerializerProperties->RemoveField(FieldName);
-		}
-	}
-
-	GetObjectSerializer()->DeserializeObjectProperties(AssetData, BlendSpace);
+	}), BlendSpace);
 
 	return OnAssetCreation(BlendSpace);
 }

@@ -609,4 +609,16 @@ TSharedPtr<FJsonObject> IImporter::RemovePropertiesShared(TSharedPtr<FJsonObject
 	return RawSharedPtrData;
 }
 
+TSharedPtr<FJsonObject> IImporter::KeepPropertiesShared(TSharedPtr<FJsonObject> Input, TArray<FString> WhitelistProperties) const {
+	const TSharedPtr<FJsonObject> RawSharedPtrData = MakeShared<FJsonObject>();
+
+	for (const FString& Property : WhitelistProperties) {
+		if (Input->HasField(Property)) {
+			RawSharedPtrData->SetField(Property, Input->TryGetField(Property));
+		}
+	}
+
+	return RawSharedPtrData;
+}
+
 #undef LOCTEXT_NAMESPACE

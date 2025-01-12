@@ -19,11 +19,30 @@
 bool IAnimationBaseImporter::ImportData() {
 	// Properties of the object
 	TSharedPtr<FJsonObject> Properties = JsonObject->GetObjectField("Properties");
+	FString AssetName = JsonObject->GetStringField("Name");
 
 	TArray<TSharedPtr<FJsonValue>> FloatCurves;
 	TArray<TSharedPtr<FJsonValue>> Notifies;
 
-	UAnimSequenceBase* AnimSequenceBase = Cast<UAnimSequenceBase>(FAssetUtilities::GetSelectedAsset());
+	UAnimSequenceBase* AnimSequenceBase = nullptr;
+
+	// ----------------------------------------------------------------------------
+	// Find the asset in the current content browser selection
+	TArray<FAssetData> AssetDataList = GetAssetsInSelectedFolder();
+
+	for (const FAssetData& AssetData : AssetDataList) {
+		if (UAnimSequenceBase* SequenceBase = Cast<UAnimSequenceBase>(AssetData.GetAsset())) {
+			FString AnimationName = SequenceBase->GetName();
+
+			if (AnimationName == AssetName) {
+				AnimSequenceBase = SequenceBase;
+			}
+		}
+	}
+
+	if (!AnimSequenceBase) {
+		AnimSequenceBase = Cast<UAnimSequenceBase>(FAssetUtilities::GetSelectedAsset());
+	}
 
 	ensure(AnimSequenceBase);
 	if (!AnimSequenceBase)
@@ -39,6 +58,7 @@ bool IAnimationBaseImporter::ImportData() {
 		UE_LOG(LogJson, Error, TEXT("Could not get valid Skeleton"));
 		return false;
 	}
+	
 	/* In Unreal Engine 5, a new data model has been added to edit animation curves */
 	// Unreal Engine 5.2 changed handling getting a data model
 #if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 2
@@ -184,6 +204,23 @@ bool IAnimationBaseImporter::ImportData() {
 			CastedAnimSequence->AuthoredSyncMarkers.Add(AuthoredSyncMarker);
 		}
 	}
+
+	// Whitelist
+	GetObjectSerializer()->DeserializeObjectProperties(KeepPropertiesShared(Properties,
+	{
+		"RetargetSource",
+		
+		"AdditiveAnimType",
+		"RefPoseType",
+		"RefPoseSeq",
+		"Notifies",
+
+		// Montages
+		"BlendIn",
+		"BlendOut",
+		"SlotAnimTracks",
+		"CompositeSections"
+	}), AnimSequenceBase);
 
 #if ENGINE_MAJOR_VERSION == 5
 	if (ITargetPlatform* RunningPlatform = GetTargetPlatformManagerRef().GetRunningTargetPlatform())

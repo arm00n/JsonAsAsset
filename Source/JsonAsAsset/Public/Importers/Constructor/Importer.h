@@ -3,10 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ContentBrowserModule.h"
 #include "Dom/JsonObject.h"
 #include "../../Utilities/ObjectUtilities.h"
 #include "../../Utilities/PropertyUtilities.h"
+#include "AssetRegistry/AssetRegistryModule.h"
 #include "Utilities/AppStyleCompatibility.h"
+#include "IContentBrowserSingleton.h"
 #include "Widgets/Notifications/SNotificationList.h"
 
 extern TArray<FString> ImporterAcceptedTypes;
@@ -103,6 +106,36 @@ public:
         return FilteredObjects;
     }
 
+    TArray<FAssetData> GetAssetsInSelectedFolder() {
+        TArray<FAssetData> AssetDataList;
+
+        // Get the Content Browser Module
+        FContentBrowserModule& ContentBrowserModule = FModuleManager::LoadModuleChecked<FContentBrowserModule>("ContentBrowser");
+
+        TArray<FString> SelectedFolders;
+        ContentBrowserModule.Get().GetSelectedPathViewFolders(SelectedFolders);
+
+        if (SelectedFolders.Num() == 0) {
+            return AssetDataList;
+        }
+
+        FString CurrentFolder = SelectedFolders[0];
+
+        // Check if the folder is the root folder
+        if (CurrentFolder == "/Game") {
+            return AssetDataList; // Return empty array to prevent further actions
+        }
+
+        // Get the Asset Registry Module
+        FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
+        AssetRegistryModule.Get().SearchAllAssets(true);
+
+        // Get all assets in the folder and its subfolders
+        AssetRegistryModule.Get().GetAssetsByPath(FName(*CurrentFolder), AssetDataList, true);
+
+        return AssetDataList;
+    }
+
     TSharedPtr<FJsonObject> GetExport(FJsonObject* PackageIndex);
 
     // Notification Functions
@@ -110,6 +143,7 @@ public:
     virtual void AppendNotification(const FText& Text, const FText& SubText, float ExpireDuration, const FSlateBrush* SlateBrush, SNotificationItem::ECompletionState CompletionState, bool bUseSuccessFailIcons = false, float WidthOverride = 500);
 
     TSharedPtr<FJsonObject> RemovePropertiesShared(TSharedPtr<FJsonObject> Input, TArray<FString> RemovedProperties) const;
+    TSharedPtr<FJsonObject> KeepPropertiesShared(TSharedPtr<FJsonObject> Input, TArray<FString> WhitelistProperties) const;
 
 protected:
     bool HandleAssetCreation(UObject* Asset) const;
