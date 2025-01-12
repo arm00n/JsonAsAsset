@@ -6,7 +6,6 @@
 #include "Utilities/AssetUtilities.h"
 #include "Utilities/MathUtilities.h"
 #include "Animation/AnimSequence.h"
-#include "Animation/AnimMontage.h"
 
 #if ENGINE_MAJOR_VERSION == 5
 #include "Animation/AnimData/IAnimationDataController.h"
@@ -85,9 +84,7 @@ bool IAnimationBaseImporter::ImportData() {
 		}
 
 		// Curve Type Flags:
-		//	Used to define if a curve
-		//  if a curve is metadata
-		//  or not.
+		// Used to define if a curve is a curve is metadata or not.
 		int CurveTypeFlags = FloatCurveObject->AsObject()->GetIntegerField("CurveTypeFlags");
 
 #if ENGINE_MAJOR_VERSION == 4
@@ -233,8 +230,6 @@ bool IAnimationBaseImporter::ImportData() {
 		CastedAnimSequence->RequestSyncAnimRecompression();
 	}
 #endif
-
-	UAnimMontage* CastedAnimMontage = Cast<UAnimMontage>(AnimSequenceBase);
 
 #if ENGINE_MAJOR_VERSION == 4
 	AnimSequenceBase->MarkRawDataAsModified();

@@ -1,9 +1,8 @@
 ﻿// Copyright JAA Contributors 2024-2025
 
 #include "Importers/Types/NiagaraParameterCollectionImporter.h"
-
-#include "Dom/JsonObject.h"
 #include "Materials/MaterialParameterCollection.h"
+#include "Dom/JsonObject.h"
 
 void CNiagaraParameterCollectionDerived::SetSourceMaterialCollection(TObjectPtr<UMaterialParameterCollection> MaterialParameterCollection) {
     this->SourceMaterialCollection = MaterialParameterCollection;

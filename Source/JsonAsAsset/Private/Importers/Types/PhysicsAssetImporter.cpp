@@ -1,8 +1,8 @@
 // Copyright JAA Contributors 2024-2025
 
-#include "Importers/Types/PhysicsAssetImporter.h"
-
 #include "PhysicsEngine/PhysicsConstraintTemplate.h"
+#include "Importers/Types/PhysicsAssetImporter.h"
+#include "Utilities/EngineUtilities.h"
 
 USkeletalBodySetup* CreateNewBody(UPhysicsAsset* PhysAsset, FName ExportName, FName BoneName)
 {
@@ -26,20 +26,29 @@ UPhysicsConstraintTemplate* CreateNewConstraint(UPhysicsAsset* PhysAsset, FName 
 bool IPhysicsAssetImporter::ImportData() {
 	UPhysicsAsset* PhysicsAsset = NewObject<UPhysicsAsset>(Package, UPhysicsAsset::StaticClass(), *FileName, RF_Public | RF_Standalone);
 
-	// I'm planning this beforehand so I can have a clear mind:
-	//
-	// 1. Import main physics asset's properties
-	// 2. Read SkeletalBodySetups and create them into a array
-	// 3. Read ConstraintSetup and create them intro a array
-	//
-	// What I'm baffled about is if this will work in the end, because
-	// physics assets have a lot of data basically baked into the uasset itself.
-	//
-	// I made a full recreation of a physics asset a long time ago with 1:1 JSON data,
-	// yet it was completely broken on simulation.
-	//
-	// We'll see.
-	// ---------------------------------------------------------
+	/*
+	 * January 4th 2025
+	 * I'm planning this beforehand so I can have a clear mind:
+	 * 
+	 * 1. Import main physics asset's properties
+	 * 2. Read SkeletalBodySetups and create them into an array
+	 * 3. Read ConstraintSetup and create them intro an array
+	 * 
+	 * What I'm baffled about is if this will work in the end, because
+	 * physics assets have a lot of data basically baked into the uasset itself.
+	 * 
+	 * I made a full recreation of a physics asset a long time ago with 1:1 JSON data,
+	 * yet it was completely broken on simulation.
+	 * 
+	 * We'll see.
+	*/
+	
+	/*
+	 * January 12th 2025
+	 * Physics asset import properly, but do not simulate properly.
+	 *
+	 * I'm not quite sure how to fix it, but maybe an idea pops up later on.
+	*/
 
 	TSharedPtr<FJsonObject> Properties = JsonObject->GetObjectField("Properties");
 	TMap<FName, FExportData> Exports = CreateExports();

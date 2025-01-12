@@ -24,7 +24,9 @@ bool IDataTableImporter::ImportData() {
 			AppendNotification(FText::FromString("DataTable Missing: " + TableStruct), FText::FromString(FileName), 2.0f, SNotificationItem::CS_Fail, true, 350.0f);
 
 			return false;
-		} else DataTable->RowStruct = TableRowStruct;
+		} else {
+			DataTable->RowStruct = TableRowStruct;
+		}
 	}
 
 	// Access Property Serializer

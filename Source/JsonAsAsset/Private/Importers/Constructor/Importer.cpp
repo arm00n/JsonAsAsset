@@ -19,6 +19,15 @@
 #include "Styling/SlateIconFinder.h"
 
 // ----> Importers
+// Particle System Importing is not finalized
+#ifndef JSONASASSET_PARTICLESYSTEM_ALLOW
+#define JSONASASSET_PARTICLESYSTEM_ALLOW 0
+#endif
+
+#if JSONASASSET_PARTICLESYSTEM_ALLOW
+#include "Importers/Types/ParticleSystemImporter.h"
+#endif
+
 #include "Importers/Types/CurveFloatImporter.h"
 #include "Importers/Types/CurveVectorImporter.h"
 #include "Importers/Types/CurveLinearColorImporter.h"
@@ -30,35 +39,39 @@
 #include "Importers/Types/MaterialImporter.h"
 #include "Importers/Types/NiagaraParameterCollectionImporter.h"
 #include "Importers/Types/MaterialInstanceConstantImporter.h"
-#include "Importers/Constructor/SoundGraph.h"
 #include "Importers/Types/DataAssetImporter.h"
 #include "Importers/Types/CurveTableImporter.h"
 #include "Importers/Types/BlendspaceImporter.h"
-
-// Particle System Importing is not finalized
-#ifndef JSONASASSET_PARTICLESYSTEM_ALLOW
-#define JSONASASSET_PARTICLESYSTEM_ALLOW 0
-#endif
-
-#if JSONASASSET_PARTICLESYSTEM_ALLOW
-#include "Importers/Types/ParticleSystemImporter.h"
-#endif
-
 // <---- Importers
 
 // Templated Class
 #include "Importers/Constructor/TemplatedImporter.h"
+#include "Importers/Constructor/SoundGraph.h"
 
-// ----------------------- Templated Engine Classes
-#include "Sound/SoundNode.h"
-#include "Engine/SubsurfaceProfile.h"
+// ----------------------- Templated Engine Classes ----------------------------------------------
 #include "Materials/MaterialParameterCollection.h"
-#include "Curves/CurveLinearColor.h"
 #include "Importers/Types/PhysicsAssetImporter.h"
+#include "Engine/SubsurfaceProfile.h"
+#include "Curves/CurveLinearColor.h"
 #include "Logging/MessageLog.h"
+#include "Sound/SoundNode.h"
+// -----------------------------------------------------------------------------------------------
+
+#define LOCTEXT_NAMESPACE "IImporter"
+
+// Importer Construction
+IImporter::IImporter(const FString& FileName, const FString& FilePath, 
+		  const TSharedPtr<FJsonObject>& JsonObject, UPackage* Package, 
+		  UPackage* OutermostPkg, const TArray<TSharedPtr<FJsonValue>>& AllJsonObjects)
+	: FileName(FileName), FilePath(FilePath), JsonObject(JsonObject),
+	  Package(Package), OutermostPkg(OutermostPkg), AllJsonObjects(AllJsonObjects) 
+{
+	PropertySerializer = NewObject<UPropertySerializer>();
+	GObjectSerializer = NewObject<UObjectSerializer>();
+	GObjectSerializer->SetPropertySerializer(PropertySerializer);
+}
 
 // -----------------------------------------------------------------------------------------------
-#define LOCTEXT_NAMESPACE "IImporter"
 
 TArray<FString> ImporterAcceptedTypes = {
 	"CurveTable",
@@ -124,17 +137,6 @@ TArray<FString> ImporterAcceptedTypes = {
 
 	"TextureRenderTarget2D"
 };
-
-IImporter::IImporter(const FString& FileName, const FString& FilePath, 
-		  const TSharedPtr<FJsonObject>& JsonObject, UPackage* Package, 
-		  UPackage* OutermostPkg, const TArray<TSharedPtr<FJsonValue>>& AllJsonObjects)
-	: FileName(FileName), FilePath(FilePath), JsonObject(JsonObject),
-	  Package(Package), OutermostPkg(OutermostPkg), AllJsonObjects(AllJsonObjects) 
-{
-	PropertySerializer = NewObject<UPropertySerializer>();
-	GObjectSerializer = NewObject<UObjectSerializer>();
-	GObjectSerializer->SetPropertySerializer(PropertySerializer);
-}
 
 // Handles the JSON of a file.
 // I want to replace Handle with Import in most of these functions
@@ -269,6 +271,27 @@ bool IImporter::ImportExports(TArray<TSharedPtr<FJsonValue>> Exports, FString Fi
 	}
 
 	return true;
+}
+
+TArray<TSharedPtr<FJsonValue>> IImporter::GetObjectsWithTypeStartingWith(const FString& StartsWithStr) {
+	TArray<TSharedPtr<FJsonValue>> FilteredObjects;
+
+	for (const TSharedPtr<FJsonValue>& JsonObjectValue : AllJsonObjects) {
+		if (JsonObjectValue->Type == EJson::Object) {
+			TSharedPtr<FJsonObject> JsonObjectType = JsonObjectValue->AsObject();
+
+			if (JsonObjectType.IsValid() && JsonObjectType->HasField("Type")) {
+				FString TypeValue = JsonObjectType->GetStringField("Type");
+
+				// Check if the "Type" field starts with the specified string
+				if (TypeValue.StartsWith(StartsWithStr)) {
+					FilteredObjects.Add(JsonObjectValue);
+				}
+			}
+		}
+	}
+
+	return FilteredObjects;
 }
 
 // This is called at the end of asset creation, bringing the user to the asset and fully loading it
@@ -564,61 +587,6 @@ TSharedPtr<FJsonValue> IImporter::GetExportByObjectPath(const TSharedPtr<FJsonOb
 	}
 
 	return AllJsonObjects[FCString::Atod(*StringIndex)];
-}
-
-// Show the user a Notification
-void IImporter::AppendNotification(const FText& Text, const FText& SubText, float ExpireDuration, SNotificationItem::ECompletionState CompletionState, bool bUseSuccessFailIcons, float WidthOverride) {
-	FNotificationInfo Info = FNotificationInfo(Text);
-	Info.ExpireDuration = ExpireDuration;
-	Info.bUseLargeFont = true;
-	Info.bUseSuccessFailIcons = bUseSuccessFailIcons;
-	Info.WidthOverride = FOptionalSize(WidthOverride);
-
-#if ENGINE_MAJOR_VERSION >= 5
-	Info.SubText = SubText;
-#endif
-
-	const TSharedPtr<SNotificationItem> NotificationPtr = FSlateNotificationManager::Get().AddNotification(Info);
-	NotificationPtr->SetCompletionState(CompletionState);
-}
-
-// Show the user a Notification with Subtext
-void IImporter::AppendNotification(const FText& Text, const FText& SubText, float ExpireDuration, const FSlateBrush* SlateBrush, SNotificationItem::ECompletionState CompletionState, bool bUseSuccessFailIcons, float WidthOverride) {
-	FNotificationInfo Info = FNotificationInfo(Text);
-	Info.ExpireDuration = ExpireDuration;
-	Info.bUseLargeFont = true;
-	Info.bUseSuccessFailIcons = bUseSuccessFailIcons;
-	Info.WidthOverride = FOptionalSize(WidthOverride);
-#if ENGINE_MAJOR_VERSION >= 5
-	Info.SubText = SubText;
-#endif
-	Info.Image = SlateBrush;
-
-	const TSharedPtr<SNotificationItem> NotificationPtr = FSlateNotificationManager::Get().AddNotification(Info);
-	NotificationPtr->SetCompletionState(CompletionState);
-}
-
-TSharedPtr<FJsonObject> IImporter::RemovePropertiesShared(TSharedPtr<FJsonObject> Input, TArray<FString> RemovedProperties) const {
-	const TSharedPtr<FJsonObject> RawSharedPtrData = TSharedPtr<FJsonObject>(Input);
-	
-	for (FString Property : RemovedProperties) {
-		if (RawSharedPtrData->HasField(Property))
-			RawSharedPtrData->RemoveField(Property);
-	}
-
-	return RawSharedPtrData;
-}
-
-TSharedPtr<FJsonObject> IImporter::KeepPropertiesShared(TSharedPtr<FJsonObject> Input, TArray<FString> WhitelistProperties) const {
-	const TSharedPtr<FJsonObject> RawSharedPtrData = MakeShared<FJsonObject>();
-
-	for (const FString& Property : WhitelistProperties) {
-		if (Input->HasField(Property)) {
-			RawSharedPtrData->SetField(Property, Input->TryGetField(Property));
-		}
-	}
-
-	return RawSharedPtrData;
 }
 
 #undef LOCTEXT_NAMESPACE

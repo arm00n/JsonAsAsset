@@ -2,9 +2,8 @@
 
 #include "Importers/Types/CurveLinearColorAtlasImporter.h"
 #include "Importers/Types/TextureImporter.h"
-#include "Curves/CurveLinearColor.h"
-#include "JsonGlobals.h"
 #include "Curves/CurveLinearColorAtlas.h"
+#include "Curves/CurveLinearColor.h"
 #include "Dom/JsonObject.h"
 
 bool ICurveLinearColorAtlasImporter::ImportData() {

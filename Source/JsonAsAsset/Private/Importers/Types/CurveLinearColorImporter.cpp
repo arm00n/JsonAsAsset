@@ -1,14 +1,9 @@
 ﻿// Copyright JAA Contributors 2024-2025
 
 #include "Importers/Types/CurveLinearColorImporter.h"
-
-#include "JsonGlobals.h"
-#include "AssetRegistry/AssetRegistryModule.h"
-#include "Curves/CurveLinearColor.h"
-#include "Dom/JsonObject.h"
-#include "Factories/CurveFactory.h"
 #include "Utilities/MathUtilities.h"
-
+#include "Curves/CurveLinearColor.h"
+#include "Factories/CurveFactory.h"
 #include "UObject/SavePackage.h"
 
 bool ICurveLinearColorImporter::ImportData() {

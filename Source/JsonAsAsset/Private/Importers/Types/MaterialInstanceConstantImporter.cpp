@@ -1,10 +1,9 @@
 // Copyright JAA Contributors 2024-2025
 
 #include "Importers/Types/MaterialInstanceConstantImporter.h"
-
-#include "Dom/JsonObject.h"
 #include "Materials/MaterialInstanceConstant.h"
 #include "Utilities/MathUtilities.h"
+#include "Dom/JsonObject.h"
 #include "RHIDefinitions.h"
 #include "MaterialShared.h"
 

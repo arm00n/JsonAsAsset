@@ -1,12 +1,9 @@
 ﻿// Copyright JAA Contributors 2024-2025
 
 #include "Importers/Types/CurveVectorImporter.h"
-
-#include "Dom/JsonObject.h"
+#include "Utilities/MathUtilities.h"
 #include "Factories/CurveFactory.h"
 #include "Curves/CurveVector.h"
-
-#include "Utilities/MathUtilities.h"
 
 bool ICurveVectorImporter::ImportData() {
 	// Array of containers
