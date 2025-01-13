@@ -86,7 +86,7 @@ public:
 #endif
 
 	/**
-	 * Directory path for exporting FModel assets.
+	 * Directory path from exporting assets.
 	 * (Output/Exports)
 	 *
 	 * NOTE: Use the file selector to choose a directory. 
@@ -118,7 +118,7 @@ public:
 	UPROPERTY(EditAnywhere, Config, Category = "Local Fetch - Configuration", meta=(EditCondition="bEnableLocalFetch"))
 	FDirectoryPath ArchiveDirectory;
 
-	// UE Version for the Unreal Engine Game (same as FModel's UE Verisons property)
+	// UE Version for the Unreal Engine Game
 	UPROPERTY(EditAnywhere, Config, Category = "Local Fetch - Configuration", meta=(EditCondition="bEnableLocalFetch"))
 	TEnumAsByte<ECUE4ParseVersion> UnrealVersion;
 
@@ -134,18 +134,41 @@ public:
 	UPROPERTY(EditAnywhere, Config, Category = "Local Fetch - Configuration", meta=(EditCondition="bEnableLocalFetch", FilePathFilter="usmap", RelativeToGameDir))
 	FFilePath MappingFilePath;
 
+	/**
+	* Added to re-download textures if already present in the Unreal Engine project.
+	* 
+	* Use case: 
+	* If you want to re-import textures if they were changed in a newer version of your Local Fetch build.
+	* 
+	* NOTE: Not needed for normal usage, most normal operations never use this option.
+	*/
 	UPROPERTY(EditAnywhere, Config, Category = "Local Fetch - Encryption", meta=(EditCondition="bEnableLocalFetch"), AdvancedDisplay)
 	bool bDownloadExistingTextures;
 
-	// Main key for archives
+	/**
+	* Main archive key for encrypted game files.
+	*
+	* Defaults ---------------------------------------------------------------------
+	* AES Key: 0x00000000000000000000000000000000000000000000000000000000000
+	* 
+	* NOTE: This is optional for MOST UE5 games, override this setting if your build is encrypted
+	*/
 	UPROPERTY(EditAnywhere, Config, Category = "Local Fetch - Encryption", meta=(EditCondition="bEnableLocalFetch", DisplayName="Archive Key"))
 	FString ArchiveKey = "0x00000000000000000000000000000000000000000000000000000000000";
 
-	// AES Keys
+	/**
+	* Additional Archive keys for encrypted game files.
+	*
+	* NOTE: This is optional for MOST UE5 games, override this setting if your build is encrypted
+	*/
 	UPROPERTY(EditAnywhere, Config, Category = "Local Fetch - Encryption", meta=(EditCondition="bEnableLocalFetch", DisplayName="Dynamic Keys"))
 	TArray<FAesKey> DynamicKeys;
 
-	// Enables the option to change the api's URL
+	/*
+	* Enables the option to change the API's URL
+	* 
+	* NOTE: Do not change unless you are aware of what you are doing.
+	*/
 	UPROPERTY(EditAnywhere, Config, Category = "Local Fetch", meta = (EditCondition = "bEnableLocalFetch"), AdvancedDisplay)
 	bool bChangeURL;
 

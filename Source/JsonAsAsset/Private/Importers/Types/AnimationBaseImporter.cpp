@@ -67,7 +67,7 @@ bool IAnimationBaseImporter::ImportData() {
 #endif
 #endif
 
-	// Some FModel versions have different named objects for curves
+	// Some CUE4Parse versions have different named objects for curves
 	const TSharedPtr<FJsonObject>* RawCurveData;
 	
 	if (Properties->TryGetObjectField("RawCurveData", RawCurveData)) FloatCurves = Properties->GetObjectField("RawCurveData")->GetArrayField("FloatCurves");

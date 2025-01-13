@@ -11,7 +11,7 @@ public:
 	const UClass* AssetClass;
 
 	// We mash these properties back into the properties object if needed
-	// [basically when FModel doesn't format it properly]
+	// [basically when CUE4Parse doesn't format it properly]
 	TArray<FString> PropertyMash = {
 		"ChildClasses"
 	};
