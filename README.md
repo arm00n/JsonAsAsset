@@ -59,7 +59,10 @@ JsonAsAsset is a user-friendly Unreal Engine plugin for importing assets from pa
  - MaterialParameterCollection
  - PhysicalMaterial
  - SubsurfaceProfile
-     
+
+**Material Data**:
+<br> Unreal Engine games made below 4.12 (a guess) will have material data, any games made above that version will most definitely not have any material data, and therefore the actual data will be stripped and cannot be imported. **Unless** you are using a User Generated Content editor, then it's possible the material data will be there.
+  
 ###### Curve Asset Types
  - CurveFloat
  - CurveTable
