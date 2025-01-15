@@ -89,9 +89,8 @@ public:
 	 * Directory path from exporting assets.
 	 * (Output/Exports)
 	 *
-	 * NOTE: Use the file selector to choose a directory. 
-	 *       Avoid manually entering the path or replacing "\" with "/". 
-	 *       The file selector ensures proper formatting.
+	 * Use the file selector to choose the file location.
+	 * Avoid manually pasting the path.
 	*/
 	UPROPERTY(EditAnywhere, Config, Category = "Configuration")
 	FDirectoryPath ExportDirectory;
@@ -102,8 +101,8 @@ public:
 	/**
 	 * Fetches assets from a local hosted API and imports them directly into your project.
 	 * 
-	 * NOTE: Ensure all settings are correctly configured before starting Local Fetch. 
-	 *       Please refer to the README.md file.
+	 * Ensure all settings are correctly configured before starting Local Fetch. 
+	 * Please refer to the README.md file.
 	 */
 	UPROPERTY(EditAnywhere, Config, Category = "Local Fetch")
 	bool bEnableLocalFetch;
@@ -112,8 +111,8 @@ public:
 	 * Location of the Paks folder containing all the assets.
 	 * (Content/Paks)
 	 * 
-	 * NOTE: Use the file selector to choose the folder location. 
-	 *       Avoid manually pasting the path or replacing "\" with "/".
+	 * Use the file selector to choose the file location.
+	 * Avoid manually pasting the path.
 	 */
 	UPROPERTY(EditAnywhere, Config, Category = "Local Fetch - Configuration", meta=(EditCondition="bEnableLocalFetch"))
 	FDirectoryPath ArchiveDirectory;
@@ -128,8 +127,8 @@ public:
 	/*
 	 * Path to the mappings file.
 	 *
-	 * NOTE: Use the file selector to choose the file location. 
-	 *        Avoid manually pasting the path.
+	 * Use the file selector to choose the file location.
+	 * Avoid manually pasting the path.
 	 */
 	UPROPERTY(EditAnywhere, Config, Category = "Local Fetch - Configuration", meta=(EditCondition="bEnableLocalFetch", FilePathFilter="usmap", RelativeToGameDir))
 	FFilePath MappingFilePath;

@@ -1,7 +1,7 @@
 // Copyright JAA Contributors 2024-2025
 
-#include "PhysicsEngine/PhysicsConstraintTemplate.h"
 #include "Importers/Types/PhysicsAssetImporter.h"
+#include "PhysicsEngine/PhysicsConstraintTemplate.h"
 #include "Utilities/EngineUtilities.h"
 
 USkeletalBodySetup* CreateNewBody(UPhysicsAsset* PhysAsset, FName ExportName, FName BoneName)
