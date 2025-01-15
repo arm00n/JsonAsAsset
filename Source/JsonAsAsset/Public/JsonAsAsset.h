@@ -8,6 +8,8 @@
 #include "Modules/ModuleInterface.h"
 #endif
 
+class UJsonAsAssetSettings;
+
 class FJsonAsAssetModule : public IModuleInterface
 {
 public:
@@ -22,6 +24,10 @@ private:
 
     TSharedPtr<FUICommandList> PluginCommands;
     TSharedRef<SWidget> CreateToolbarDropdown();
+    void CreateLocalFetchDropdown(FMenuBuilder MenuBuilder);
+
+    bool bActionRequired;
+    const UJsonAsAssetSettings* Settings;
 
     // Creates a dialog for a file
     TArray<FString> OpenFileDialog(FString Title, FString Type);

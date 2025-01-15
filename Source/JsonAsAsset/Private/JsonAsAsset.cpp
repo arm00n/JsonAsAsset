@@ -53,7 +53,8 @@
 #endif
 
 void FJsonAsAssetModule::PluginButtonClicked() {
-	const UJsonAsAssetSettings* Settings = GetDefault<UJsonAsAssetSettings>();
+	Settings = GetDefault<UJsonAsAssetSettings>();
+	
 	if (Settings->ExportDirectory.Path.IsEmpty())
 		return;
 
@@ -189,7 +190,8 @@ void FJsonAsAssetModule::StartupModule() {
     UToolMenus::RegisterStartupCallback(FSimpleMulticastDelegate::FDelegate::CreateRaw(this, &FJsonAsAssetModule::RegisterMenus));
 
     // Check for export directory in settings
-    const UJsonAsAssetSettings* Settings = GetDefault<UJsonAsAssetSettings>();
+    Settings = GetDefault<UJsonAsAssetSettings>();
+	
     if (Settings->ExportDirectory.Path.IsEmpty()) {
         const FText TitleText = LOCTEXT("JsonAsAssetNotificationTitle", "Missing export directory for JsonAsAsset");
         const FText MessageText = LOCTEXT("JsonAsAssetNotificationText",
@@ -385,7 +387,7 @@ void FJsonAsAssetModule::AddToolbarExtension(FToolBarBuilder& Builder)
 
 TSharedRef<SWidget> FJsonAsAssetModule::CreateToolbarDropdown() {
 	TSharedPtr<IPlugin> Plugin = IPluginManager::Get().FindPlugin("JsonAsAsset");
-	const UJsonAsAssetSettings* Settings = GetDefault<UJsonAsAssetSettings>();
+	Settings = GetDefault<UJsonAsAssetSettings>();
 
 	FMenuBuilder MenuBuilder(false, nullptr);
 	MenuBuilder.BeginSection("JsonAsAssetSection", FText::FromString("JSON Tools v" + Plugin->GetDescriptor().VersionName));
@@ -452,7 +454,7 @@ TSharedRef<SWidget> FJsonAsAssetModule::CreateToolbarDropdown() {
 
 	MenuBuilder.EndSection();
 
-	bool bActionRequired =
+	bActionRequired =
 		Settings->ExportDirectory.Path.IsEmpty() //||..
 		;
 
@@ -478,129 +480,7 @@ TSharedRef<SWidget> FJsonAsAssetModule::CreateToolbarDropdown() {
 		MenuBuilder.EndSection();
 	}
 
-	if (Settings->bEnableLocalFetch && !bActionRequired) {
-		MenuBuilder.BeginSection("JsonAsAssetSection", FText::FromString("Local Fetch"));
-		MenuBuilder.AddSubMenu(
-			LOCTEXT("JsonAsAssetLocalFetchTypesMenu", "Asset Types"),
-			LOCTEXT("JsonAsAssetLocalFetchTypesMenuToolTip", "List of supported classes that can be locally fetched using the API"),
-			FNewMenuDelegate::CreateLambda([this](FMenuBuilder& InnerMenuBuilder) {
-				InnerMenuBuilder.BeginSection("JsonAsAssetSection", LOCTEXT("JsonAsAssetSection", "Asset Classes"));
-				{
-					TArray<FString> AcceptedTypes = LocalFetchAcceptedTypes;
-					const UJsonAsAssetSettings* Settings = GetDefault<UJsonAsAssetSettings>();
-
-					for (FString& Asset : AcceptedTypes) {
-						if (Asset == "") { // Separator
-							InnerMenuBuilder.AddSeparator();
-						}
-						
-						else {
-							UClass* Class = FindObject<UClass>(nullptr, *("/Script/Engine." + Asset));
-							FText Description = Class ? Class->GetToolTipText() : FText::FromString(Asset);
-							
-							InnerMenuBuilder.AddMenuEntry(
-								FText::FromString(Asset),
-								Description,
-								FSlateIconFinder::FindCustomIconForClass(Class, TEXT("ClassThumbnail")),
-								FUIAction()
-							);
-						}
-					}
-				}
-				InnerMenuBuilder.EndSection();
-			}),
-			false,
-			FSlateIcon()
-		);
-
-		MenuBuilder.AddSubMenu(
-			LOCTEXT("JsonAsAssetLocalFetchCMDMenu", "Command-line Application"),
-			LOCTEXT("", ""),
-			FNewMenuDelegate::CreateLambda([this](FMenuBuilder& InnerMenuBuilder) {
-				InnerMenuBuilder.BeginSection("JsonAsAssetSection", LOCTEXT("JsonAsAssetSection", "Console"));
-				{
-					InnerMenuBuilder.AddMenuEntry(
-						FText::FromString("Execute Local Fetch (.EXE)"),
-						FText::FromString(""),
-						FSlateIcon(),
-						FUIAction(
-							FExecuteAction::CreateLambda([this]() {
-								TSharedPtr<SNotificationItem> NotificationItem = LocalFetchNotificationPtr.Pin();
-
-								if (NotificationItem.IsValid()) {
-									NotificationItem->SetFadeOutDuration(0.001);
-									NotificationItem->Fadeout();
-									LocalFetchNotificationPtr.Reset();
-								}
-
-								FString PluginBinariesFolder;
-
-								const TSharedPtr<IPlugin> PluginInfo = IPluginManager::Get().FindPlugin("JsonAsAsset");
-								if (PluginInfo.IsValid()) {
-									const FString PluginBaseDir = PluginInfo->GetBaseDir();
-									PluginBinariesFolder = FPaths::Combine(PluginBaseDir, TEXT("Binaries"));
-
-									if (!FPaths::DirectoryExists(PluginBinariesFolder)) {
-										PluginBinariesFolder = FPaths::Combine(PluginBaseDir, TEXT("JsonAsAsset/Binaries"));
-									}
-								}
-
-								FString FullPath = FPaths::ConvertRelativePathToFull(PluginBinariesFolder + "/Win64/LocalFetch/LocalFetch.exe");
-								FPlatformProcess::LaunchFileInDefaultExternalApplication(*FullPath, TEXT("--urls=http://localhost:1500/"), ELaunchVerb::Open);
-							}),
-							FCanExecuteAction::CreateLambda([this]() {
-								return !IsProcessRunning("LocalFetch.exe");
-							})
-						)
-					);
-
-					InnerMenuBuilder.AddMenuEntry(
-						FText::FromString("Shutdown Local Fetch (.EXE)"),
-						FText::FromString(""),
-						FSlateIcon(),
-						FUIAction(
-							FExecuteAction::CreateLambda([this]() {
-								FString ProcessName = TEXT("LocalFetch.exe");
-								TCHAR* ProcessNameChar = ProcessName.GetCharArray().GetData();
-
-								DWORD ProcessID = 0;
-								HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-								if (hSnapshot != INVALID_HANDLE_VALUE) {
-									PROCESSENTRY32 ProcessEntry;
-									ProcessEntry.dwSize = sizeof(PROCESSENTRY32);
-
-									if (Process32First(hSnapshot, &ProcessEntry)) {
-										do {
-											if (FCString::Stricmp(ProcessEntry.szExeFile, ProcessNameChar) == 0) {
-												ProcessID = ProcessEntry.th32ProcessID;
-												break;
-											}
-										} while (Process32Next(hSnapshot, &ProcessEntry));
-									}
-									CloseHandle(hSnapshot);
-								}
-
-								if (ProcessID != 0) {
-									HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, false, ProcessID);
-									if (hProcess != nullptr) {
-										TerminateProcess(hProcess, 0);
-										CloseHandle(hProcess);
-									}
-								}
-							}),
-							FCanExecuteAction::CreateLambda([this]() {
-								return IsProcessRunning("LocalFetch.exe");
-							})
-						)
-					);
-				}
-				InnerMenuBuilder.EndSection();
-			}),
-			false,
-			FSlateIcon()
-		);
-		MenuBuilder.EndSection();
-	}
+	CreateLocalFetchDropdown(MenuBuilder);
 
 	MenuBuilder.AddSeparator();
 	MenuBuilder.AddMenuEntry(
@@ -658,6 +538,134 @@ TSharedRef<SWidget> FJsonAsAssetModule::CreateToolbarDropdown() {
 	);
 
 	return MenuBuilder.MakeWidget();
+}
+
+void FJsonAsAssetModule::CreateLocalFetchDropdown(FMenuBuilder MenuBuilder) {
+	// Local Fetch must be enabled, and if there is an action required, don't create Local Fetch's dropdown
+	if (!Settings->bEnableLocalFetch || bActionRequired) {
+		return;
+	}
+	
+	MenuBuilder.BeginSection("JsonAsAssetSection", FText::FromString("Local Fetch"));
+	MenuBuilder.AddSubMenu(
+		LOCTEXT("JsonAsAssetLocalFetchTypesMenu", "Asset Types"),
+		LOCTEXT("JsonAsAssetLocalFetchTypesMenuToolTip", "List of supported classes that can be locally fetched using the API"),
+		FNewMenuDelegate::CreateLambda([this](FMenuBuilder& InnerMenuBuilder) {
+			InnerMenuBuilder.BeginSection("JsonAsAssetSection", LOCTEXT("JsonAsAssetSection", "Asset Classes"));
+			{
+				TArray<FString> AcceptedTypes = LocalFetchAcceptedTypes;
+
+				for (FString& Asset : AcceptedTypes) {
+					if (Asset == "") { // Separator
+						InnerMenuBuilder.AddSeparator();
+					}
+					
+					else {
+						UClass* Class = FindObject<UClass>(nullptr, *("/Script/Engine." + Asset));
+						FText Description = Class ? Class->GetToolTipText() : FText::FromString(Asset);
+						
+						InnerMenuBuilder.AddMenuEntry(
+							FText::FromString(Asset),
+							Description,
+							FSlateIconFinder::FindCustomIconForClass(Class, TEXT("ClassThumbnail")),
+							FUIAction()
+						);
+					}
+				}
+			}
+			InnerMenuBuilder.EndSection();
+		}),
+		false,
+		FSlateIcon()
+	);
+
+	MenuBuilder.AddSubMenu(
+		LOCTEXT("JsonAsAssetLocalFetchCMDMenu", "Command-line Application"),
+		LOCTEXT("", ""),
+		FNewMenuDelegate::CreateLambda([this](FMenuBuilder& InnerMenuBuilder) {
+			InnerMenuBuilder.BeginSection("JsonAsAssetSection", LOCTEXT("JsonAsAssetSection", "Console"));
+			{
+				InnerMenuBuilder.AddMenuEntry(
+					FText::FromString("Execute Local Fetch (.EXE)"),
+					FText::FromString(""),
+					FSlateIcon(),
+					FUIAction(
+						FExecuteAction::CreateLambda([this]() {
+							TSharedPtr<SNotificationItem> NotificationItem = LocalFetchNotificationPtr.Pin();
+
+							if (NotificationItem.IsValid()) {
+								NotificationItem->SetFadeOutDuration(0.001);
+								NotificationItem->Fadeout();
+								LocalFetchNotificationPtr.Reset();
+							}
+
+							FString PluginBinariesFolder;
+
+							const TSharedPtr<IPlugin> PluginInfo = IPluginManager::Get().FindPlugin("JsonAsAsset");
+							if (PluginInfo.IsValid()) {
+								const FString PluginBaseDir = PluginInfo->GetBaseDir();
+								PluginBinariesFolder = FPaths::Combine(PluginBaseDir, TEXT("Binaries"));
+
+								if (!FPaths::DirectoryExists(PluginBinariesFolder)) {
+									PluginBinariesFolder = FPaths::Combine(PluginBaseDir, TEXT("JsonAsAsset/Binaries"));
+								}
+							}
+
+							FString FullPath = FPaths::ConvertRelativePathToFull(PluginBinariesFolder + "/Win64/LocalFetch/LocalFetch.exe");
+							FPlatformProcess::LaunchFileInDefaultExternalApplication(*FullPath, TEXT("--urls=http://localhost:1500/"), ELaunchVerb::Open);
+						}),
+						FCanExecuteAction::CreateLambda([this]() {
+							return !IsProcessRunning("LocalFetch.exe");
+						})
+					)
+				);
+
+				InnerMenuBuilder.AddMenuEntry(
+					FText::FromString("Shutdown Local Fetch (.EXE)"),
+					FText::FromString(""),
+					FSlateIcon(),
+					FUIAction(
+						FExecuteAction::CreateLambda([this]() {
+							FString ProcessName = TEXT("LocalFetch.exe");
+							TCHAR* ProcessNameChar = ProcessName.GetCharArray().GetData();
+
+							DWORD ProcessID = 0;
+							HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+							if (hSnapshot != INVALID_HANDLE_VALUE) {
+								PROCESSENTRY32 ProcessEntry;
+								ProcessEntry.dwSize = sizeof(PROCESSENTRY32);
+
+								if (Process32First(hSnapshot, &ProcessEntry)) {
+									do {
+										if (FCString::Stricmp(ProcessEntry.szExeFile, ProcessNameChar) == 0) {
+											ProcessID = ProcessEntry.th32ProcessID;
+											break;
+										}
+									} while (Process32Next(hSnapshot, &ProcessEntry));
+								}
+								CloseHandle(hSnapshot);
+							}
+
+							if (ProcessID != 0) {
+								HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, false, ProcessID);
+								if (hProcess != nullptr) {
+									TerminateProcess(hProcess, 0);
+									CloseHandle(hProcess);
+								}
+							}
+						}),
+						FCanExecuteAction::CreateLambda([this]() {
+							return IsProcessRunning("LocalFetch.exe");
+						})
+					)
+				);
+			}
+			InnerMenuBuilder.EndSection();
+		}),
+		false,
+		FSlateIcon()
+	);
+	MenuBuilder.EndSection();
 }
 
 #undef LOCTEXT_NAMESPACE
