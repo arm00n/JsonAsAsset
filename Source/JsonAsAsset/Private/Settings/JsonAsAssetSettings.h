@@ -65,6 +65,9 @@ public:
 	UPROPERTY(EditAnywhere, Config, Category = "Asset Settings", meta = (DisplayName = "Save Assets On Import"))
 	bool bSavePackagesOnImport;
 
+	UPROPERTY(EditAnywhere, Config, Category = "Asset Settings", meta = (DisplayName = "Enable Asset Tools (experimental)"))
+	bool bEnableAssetTools;
+
 	/**
 	* Not needed for normal operations, needed for older versions of game builds.
 	*/

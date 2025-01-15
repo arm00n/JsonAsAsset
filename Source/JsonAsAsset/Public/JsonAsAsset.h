@@ -25,6 +25,7 @@ private:
     TSharedPtr<FUICommandList> PluginCommands;
     TSharedRef<SWidget> CreateToolbarDropdown();
     void CreateLocalFetchDropdown(FMenuBuilder MenuBuilder);
+    void ImportConvexCollision();
 
     bool bActionRequired;
     const UJsonAsAssetSettings* Settings;

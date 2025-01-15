@@ -7,6 +7,9 @@
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "IContentBrowserSingleton.h"
 #include "ContentBrowserModule.h"
+#include "DesktopPlatformModule.h"
+#include "IDesktopPlatform.h"
+#include "Interfaces/IMainFrameModule.h"
 
 // Gets all assets in selected folder
 inline TArray<FAssetData> GetAssetsInSelectedFolder() {
@@ -37,6 +40,31 @@ inline TArray<FAssetData> GetAssetsInSelectedFolder() {
 	AssetRegistryModule.Get().GetAssetsByPath(FName(*CurrentFolder), AssetDataList, true);
 
 	return AssetDataList;
+}
+
+inline TArray<FString> OpenFolderDialog(FString Title) {
+	TArray<FString> ReturnValue;
+
+	void* ParentWindowHandle = nullptr;
+
+	IMainFrameModule& MainFrameModule = IMainFrameModule::Get();
+	TSharedPtr<SWindow> MainWindow = MainFrameModule.GetParentWindow();
+
+	if (MainWindow.IsValid() && MainWindow->GetNativeWindow().IsValid()) {
+		ParentWindowHandle = MainWindow->GetNativeWindow()->GetOSWindowHandle();
+	}
+
+	IDesktopPlatform* DesktopPlatform = FDesktopPlatformModule::Get();
+	if (DesktopPlatform) {
+		FString SelectedFolder;
+
+		// Open Folder Dialog
+		if (DesktopPlatform->OpenDirectoryDialog(ParentWindowHandle, Title, FString(""), SelectedFolder)) {
+			ReturnValue.Add(SelectedFolder);
+		}
+	}
+
+	return ReturnValue;
 }
 
 // Filter to remove
