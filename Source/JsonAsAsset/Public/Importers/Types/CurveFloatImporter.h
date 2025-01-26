@@ -4,9 +4,9 @@
 
 #include "../Constructor/Importer.h"
 
-class UCurveFloatImporter : public IImporter {
+class ICurveFloatImporter : public IImporter {
 public:
-	UCurveFloatImporter(const FString& FileName, const FString& FilePath, const TSharedPtr<FJsonObject>& JsonObject, UPackage* Package, UPackage* OutermostPkg):
+	ICurveFloatImporter(const FString& FileName, const FString& FilePath, const TSharedPtr<FJsonObject>& JsonObject, UPackage* Package, UPackage* OutermostPkg):
 		IImporter(FileName, FilePath, JsonObject, Package, OutermostPkg) {
 	}
 

@@ -5,11 +5,11 @@
 #include "../Constructor/Importer.h"
 #include "UObject/StructOnScope.h"
 
-class UDataTableImporter : public IImporter {
+class IDataTableImporter : public IImporter {
 public:
 	using FTableRowMap = TMap<FName, TSharedPtr<class FStructOnScope>>;
 
-	UDataTableImporter(const FString& FileName, const FString& FilePath, const TSharedPtr<FJsonObject>& JsonObject, UPackage* Package, UPackage* OutermostPkg):
+	IDataTableImporter(const FString& FileName, const FString& FilePath, const TSharedPtr<FJsonObject>& JsonObject, UPackage* Package, UPackage* OutermostPkg):
 		IImporter(FileName, FilePath, JsonObject, Package, OutermostPkg) {
 	}
 

@@ -8,9 +8,9 @@
 #include "Materials/MaterialExpressionComposite.h"
 #endif
 
-class UMaterialImporter : public IMaterialGraph {
+class IMaterialImporter : public IMaterialGraph {
 public:
-	UMaterialImporter(const FString& FileName, const FString& FilePath, const TSharedPtr<FJsonObject>& JsonObject, UPackage* Package, UPackage* OutermostPkg, const TArray<TSharedPtr<FJsonValue>>& AllJsonObjects):
+	IMaterialImporter(const FString& FileName, const FString& FilePath, const TSharedPtr<FJsonObject>& JsonObject, UPackage* Package, UPackage* OutermostPkg, const TArray<TSharedPtr<FJsonValue>>& AllJsonObjects):
 		IMaterialGraph(FileName, FilePath, JsonObject, Package, OutermostPkg, AllJsonObjects) {
 	}
 

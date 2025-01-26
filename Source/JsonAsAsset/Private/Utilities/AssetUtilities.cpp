@@ -25,61 +25,20 @@
 #include "Utilities/RemoteUtilities.h"
 #include "PluginUtils.h"
 
-TArray<FString> LocalFetchAcceptedTypes = {
-	"Texture2D",
-	// "TextureCube",
-	// "VolumeTexture",
-	"TextureRenderTarget2D",
-
-	"", // separator
-
-	"Material",
-	"MaterialFunction",
-	"MaterialInstanceConstant",
-
-	"", // separator
-
-	"CurveFloat",
-	"CurveTable",
-	"CurveVector",
-	"CurveLinearColorAtlas",
-	"CurveLinearColor",
-
-	"", // separator
-
-	"SoundWave",
-	"ReverbEffect",
-	"SoundAttenuation",
-	"SoundConcurrency",
-	"SoundClass",
-	"SoundMix",
-	"SoundModulationPatch",
-		
-	"", // separator
-
-	"PhysicalMaterial",
-	"SubsurfaceProfile",
-	"LandscapeGrassType",
-	"DataTable",
-};
-
-UPackage* FAssetUtilities::CreateAssetPackage(const FString& FullPath)
-{
+// CreateAssetPackage Implementations ----------------------------------------------------------------------------------------------------------------------
+UPackage* FAssetUtilities::CreateAssetPackage(const FString& FullPath) {
 	UPackage* Package = CreatePackage(*FullPath);
-	UPackage* _ = Package->GetOutermost(); // ??
 	Package->FullyLoad();
 
 	return Package;
 }
 
-UPackage* FAssetUtilities::CreateAssetPackage(const FString& Name, const FString& OutputPath)
-{
-	UPackage* Ignore = nullptr;
+UPackage* FAssetUtilities::CreateAssetPackage(const FString& Name, const FString& OutputPath) {
+	UPackage* Ignore = nullptr; // ?
 	return CreateAssetPackage(Name, OutputPath, Ignore);
 }
 
-UPackage* FAssetUtilities::CreateAssetPackage(const FString& Name, const FString& OutputPath, UPackage*& OutOutermostPkg)
-{
+UPackage* FAssetUtilities::CreateAssetPackage(const FString& Name, const FString& OutputPath, UPackage*& OutOutermostPkg) {
 	const UJsonAsAssetSettings* Settings = GetDefault<UJsonAsAssetSettings>();
 	FString ModifiablePath;
 
@@ -89,18 +48,15 @@ UPackage* FAssetUtilities::CreateAssetPackage(const FString& Name, const FString
 		OutputPath.Split(*(Settings->ExportDirectory.Path + "/"), nullptr, &ModifiablePath, ESearchCase::IgnoreCase, ESearchDir::FromStart);
 		ModifiablePath.Split("/", nullptr, &ModifiablePath, ESearchCase::IgnoreCase, ESearchDir::FromStart);
 		ModifiablePath.Split("/", &ModifiablePath, nullptr, ESearchCase::IgnoreCase, ESearchDir::FromEnd);
-		// Ex: RestPath: Plugins/ContentLibraries/EpicBaseTextures
-		// Ex: RestPath: Content/Athena
+		// Ex: RestPath: Plugins/Folder/BaseTextures
+		// Ex: RestPath: Content/SecondaryFolder
 		bool bIsPlugin = ModifiablePath.StartsWith("Plugins");
 
-		// Plugins/ContentLibraries/EpicBaseTextures -> ContentLibraries/EpicBaseTextures
-		if (bIsPlugin)
-		{
+		// Plugins/Folder/BaseTextures -> Folder/BaseTextures
+		if (bIsPlugin) {
 			FString PluginName = ModifiablePath;
 			FString RemaningPath;
-			// Plugins/GameFeatures/Creative/CRP/CRP_Sunburst/Content/SetupAssets/Materials
-			// Plugins/GameFeatures/Creative/CRP/CRP_Sunburst
-			// PluginName = CRP_Sunburst
+			// PluginName = TestName
 			// RemaningPath = SetupAssets/Materials
 			PluginName.Split("/Content/", &PluginName, &RemaningPath, ESearchCase::IgnoreCase, ESearchDir::FromStart);
 			PluginName.Split("/", nullptr, &PluginName, ESearchCase::IgnoreCase, ESearchDir::FromEnd);
@@ -108,15 +64,15 @@ UPackage* FAssetUtilities::CreateAssetPackage(const FString& Name, const FString
 			// /CRP_Sunburst/SetupAssets/Materials
 			ModifiablePath = PluginName + "/" + RemaningPath;
 		}
-		// Content/Athena -> Game/Athena
-		else ModifiablePath = ModifiablePath.Replace(TEXT("Content"), TEXT("Game"));
+		// Content/Athena -> Game/SecondaryFolder
+		else {
+			ModifiablePath = ModifiablePath.Replace(TEXT("Content"), TEXT("Game"));
+		}
 
-		// ContentLibraries/EpicBaseTextures -> /ContentLibraries/EpicBaseTextures/
 		ModifiablePath = "/" + ModifiablePath + "/";
 
 		// Check if plugin exists
-		if (bIsPlugin)
-		{
+		if (bIsPlugin) {
 			FString PluginName;
 			ModifiablePath.Split("/", nullptr, &PluginName, ESearchCase::IgnoreCase, ESearchDir::FromStart);
 			PluginName.Split("/", &PluginName, nullptr, ESearchCase::IgnoreCase, ESearchDir::FromStart);
@@ -125,10 +81,8 @@ UPackage* FAssetUtilities::CreateAssetPackage(const FString& Name, const FString
 				CreatePlugin(PluginName);
 		}
 	}
-	else
-	{
-		FString RootName;
-		{
+	else {
+		FString RootName; {
 			OutputPath.Split("/", nullptr, &RootName, ESearchCase::IgnoreCase, ESearchDir::FromStart);
 			RootName.Split("/", &RootName, nullptr, ESearchCase::IgnoreCase, ESearchDir::FromStart);
 		}
@@ -149,15 +103,14 @@ UPackage* FAssetUtilities::CreateAssetPackage(const FString& Name, const FString
 
 	return Package;
 }
+// <-------------------------------------------------------------------------------------------------------------------------
 
-UObject* FAssetUtilities::GetSelectedAsset()
-{
+UObject* FAssetUtilities::GetSelectedAsset() {
 	const FContentBrowserModule& ContentBrowserModule = FModuleManager::LoadModuleChecked<FContentBrowserModule>("ContentBrowser");
 	TArray<FAssetData> SelectedAssets;
 	ContentBrowserModule.Get().GetSelectedAssets(SelectedAssets);
 
-	if (SelectedAssets.Num() == 0)
-	{
+	if (SelectedAssets.Num() == 0) {
 		GLog->Log("JsonAsAsset: [GetSelectedAsset] None selected, returning nullptr.");
 
 		const FText DialogText = FText::FromString(TEXT("A function to find a selected asset failed, please select a asset to go further."));
@@ -329,7 +282,7 @@ bool FAssetUtilities::Construct_TypeTexture(const FString& Path, const FString& 
 	Package->FullyLoad();
 
 	// Create Importer
-	const UTextureImporter* Importer = new UTextureImporter(AssetName, Path, Response[0]->AsObject(), Package, OutermostPkg);
+	const ITextureImporter* Importer = new ITextureImporter(AssetName, Path, Response[0]->AsObject(), Package, OutermostPkg);
 
 	if (Type == "Texture2D")
 		Importer->ImportTexture2D(Texture, Data, JsonExport);
@@ -377,7 +330,7 @@ bool FAssetUtilities::Construct_TypeTexture(const FString& Path, const FString& 
 
 void FAssetUtilities::CreatePlugin(FString PluginName)
 {
-	// Plugin creation not in UE4?
+	// Plugin creation is different between UE5 and UE4
 #if ENGINE_MAJOR_VERSION >= 5
 	FPluginUtils::FNewPluginParamsWithDescriptor CreationParams;
 	CreationParams.Descriptor.bCanContainContent = true;
@@ -394,6 +347,17 @@ void FAssetUtilities::CreatePlugin(FString PluginName)
 	LoadParams.bSelectInContentBrowser = false;
 
 	FPluginUtils::CreateAndLoadNewPlugin(PluginName, FPaths::ProjectPluginsDir(), CreationParams, LoadParams);
+#else
+	FPluginUtils::FNewPluginParams CreationParams;
+	CreationParams.bCanContainContent = true;
+
+	FText FailReason;
+	FPluginUtils::FMountPluginParams LoadParams;
+	LoadParams.bEnablePluginInProject = true;
+	LoadParams.bUpdateProjectPluginSearchPath = true;
+	LoadParams.bSelectInContentBrowser = false;
+
+	FPluginUtils::CreateAndMountNewPlugin(PluginName, FPaths::ProjectPluginsDir(), CreationParams, LoadParams, FailReason);
 #endif
 
 #define LOCTEXT_NAMESPACE "UMG"

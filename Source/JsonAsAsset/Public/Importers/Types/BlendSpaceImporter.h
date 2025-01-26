@@ -6,7 +6,7 @@
 #include "Animation/BlendSpace.h"
 
 // We use this to set variables in the blend space asset
-class UBlendSpaceDerived : public UBlendSpace {
+class CBlendSpaceDerived : public UBlendSpace {
 public:
 	void AddSampleOnly(UAnimSequence* AnimationSequence, const FVector& SampleValue);
 	void SetAxisToScaleAnimationInput(const EBlendSpaceAxis AxisToScaleAnimationInput);
@@ -17,9 +17,9 @@ public:
 	void SetNotifyTriggerMode(const ENotifyTriggerMode::Type NotifyTriggerModeInput);
 };
 
-class UBlendSpaceImporter : public IImporter {
+class IBlendSpaceImporter : public IImporter {
 public:
-	UBlendSpaceImporter(const FString& FileName, const FString& FilePath, const TSharedPtr<FJsonObject>& JsonObject, UPackage* Package, UPackage* OutermostPkg):
+	IBlendSpaceImporter(const FString& FileName, const FString& FilePath, const TSharedPtr<FJsonObject>& JsonObject, UPackage* Package, UPackage* OutermostPkg):
 		IImporter(FileName, FilePath, JsonObject, Package, OutermostPkg) {
 	}
 

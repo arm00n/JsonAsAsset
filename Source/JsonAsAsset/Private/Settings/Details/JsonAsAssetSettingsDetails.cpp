@@ -6,12 +6,12 @@
 #include "DetailWidgetRow.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/SBoxPanel.h"
-#include "Widgets/Text/SRichTextBlock.h"
 #include "Utilities/RemoteUtilities.h"
 #include "Serialization/JsonSerializer.h"
 #include "Misc/FileHelper.h"
 #include "Dom/JsonObject.h"
 #include "HttpModule.h"
+#include "Modules/LocalFetch.h"
 
 #if ENGINE_MAJOR_VERSION == 4
 #include "DetailCategoryBuilder.h"
@@ -32,8 +32,19 @@ void FJsonAsAssetSettingsDetails::CustomizeDetails(IDetailLayoutBuilder& DetailB
 	// Reference to settings
 	TWeakObjectPtr<UJsonAsAssetSettings> Settings = Cast<UJsonAsAssetSettings>(ObjectsBeingCustomized[0].Get());
 
-	IDetailCategoryBuilder& AssetCategory = DetailBuilder.EditCategory("Configuration", FText::GetEmpty(), ECategoryPriority::Important);
+	EditConfiguration(Settings, DetailBuilder);
 
+	DetailBuilder.EditCategory("Local Fetch", FText::GetEmpty(), ECategoryPriority::Important);
+	DetailBuilder.EditCategory("Local Fetch - Configuration", FText::GetEmpty(), ECategoryPriority::Important);
+	DetailBuilder.EditCategory("Local Fetch - Encryption", FText::GetEmpty(), ECategoryPriority::Important);
+
+	EditEncryption(Settings, DetailBuilder);
+}
+
+void FJsonAsAssetSettingsDetails::EditConfiguration(TWeakObjectPtr<UJsonAsAssetSettings> Settings, IDetailLayoutBuilder& DetailBuilder)
+{
+	IDetailCategoryBuilder& AssetCategory = DetailBuilder.EditCategory("Configuration", FText::GetEmpty(), ECategoryPriority::Important);
+	
 	AssetCategory.AddCustomRow(LOCTEXT("UseFModelAppSettings", "UseFModelAppSettings"))
     .NameContent()
     [
@@ -91,7 +102,7 @@ void FJsonAsAssetSettingsDetails::CustomizeDetails(IDetailLayoutBuilder& DetailB
                                         const TSharedPtr<FJsonObject> KeyObject = KeyValue->AsObject();
 
                                         if (KeyObject.IsValid()) {
-                                            FParseKey NewKey;
+                                            FAesKey NewKey;
                                             NewKey.Guid = KeyObject->GetStringField("guid");
                                             NewKey.Value = KeyObject->GetStringField("key");
                                             PluginSettings->DynamicKeys.Add(NewKey);
@@ -104,21 +115,17 @@ void FJsonAsAssetSettingsDetails::CustomizeDetails(IDetailLayoutBuilder& DetailB
                 }
             }
 
-            PluginSettings->SaveConfig();
-#if ENGINE_MAJOR_VERSION >= 5
-            PluginSettings->TryUpdateDefaultConfigFile();
-#endif
-            PluginSettings->LoadConfig();
+        	SaveConfig(PluginSettings);
 
             return FReply::Handled();
         })
     ];
+}
 
-	DetailBuilder.EditCategory("Local Fetch", FText::GetEmpty(), ECategoryPriority::Important);
-	DetailBuilder.EditCategory("Local Fetch - Configuration", FText::GetEmpty(), ECategoryPriority::Important);
-	DetailBuilder.EditCategory("Local Fetch - Encryption", FText::GetEmpty(), ECategoryPriority::Important);
-
-	IDetailCategoryBuilder& EncryptionCategory = DetailBuilder.EditCategory("Local Fetch - Encryption", FText::GetEmpty(), ECategoryPriority::Important);
+void FJsonAsAssetSettingsDetails::EditEncryption(TWeakObjectPtr<UJsonAsAssetSettings> Settings,
+	IDetailLayoutBuilder& DetailBuilder)
+{
+		IDetailCategoryBuilder& EncryptionCategory = DetailBuilder.EditCategory("Local Fetch - Encryption", FText::GetEmpty(), ECategoryPriority::Important);
 	DetailBuilder.EditCategory("Local Fetch - Director", FText::GetEmpty(), ECategoryPriority::Important);
 
 	EncryptionCategory.AddCustomRow(LOCTEXT("EncryptionKeyFetcher", "EncryptionKeyFetcher"))
@@ -170,15 +177,11 @@ void FJsonAsAssetSettingsDetails::CustomizeDetails(IDetailLayoutBuilder& DetailB
 					FString GUID = Object->GetStringField("guid");
 					FString Key = Object->GetStringField("key");
 
-					PluginSettings->DynamicKeys.Add(FParseKey(GUID, Key));
+					PluginSettings->DynamicKeys.Add(FAesKey(GUID, Key));
 				}
 			}
 
-			PluginSettings->SaveConfig();
-#if ENGINE_MAJOR_VERSION >= 5
-			PluginSettings->TryUpdateDefaultConfigFile();
-#endif
-			PluginSettings->LoadConfig();
+			SaveConfig(PluginSettings);
 
 			FString LocalExportDirectory = PluginSettings->ExportDirectory.Path;
 
@@ -235,14 +238,9 @@ void FJsonAsAssetSettingsDetails::CustomizeDetails(IDetailLayoutBuilder& DetailB
 						{
 							FFileHelper::SaveArrayToFile(Response->GetContent(), *(DataFolder + "/" + FileName));
 
-							UJsonAsAssetSettings* PluginSettings = GetMutableDefault<
-								UJsonAsAssetSettings>();
-							PluginSettings->MappingFilePath.FilePath = DataFolder + "/" + FileName;
-							PluginSettings->SaveConfig();
-#if ENGINE_MAJOR_VERSION >= 5
-							PluginSettings->TryUpdateDefaultConfigFile();
-#endif
-							PluginSettings->LoadConfig();
+							UJsonAsAssetSettings* PluginSettings = GetMutableDefault<UJsonAsAssetSettings>();
+							
+							FJsonAsAssetSettingsDetails::SaveConfig(PluginSettings);
 						}
 					};
 
@@ -253,11 +251,7 @@ void FJsonAsAssetSettingsDetails::CustomizeDetails(IDetailLayoutBuilder& DetailB
 					MappingsRequest->OnProcessRequestComplete().BindLambda(OnRequestComplete);
 					MappingsRequest->ProcessRequest();
 
-					PluginSettings->SaveConfig();
-#if ENGINE_MAJOR_VERSION >= 5
-					PluginSettings->TryUpdateDefaultConfigFile();
-#endif
-					PluginSettings->LoadConfig();
+					SaveConfig(PluginSettings);
 				}
 			}
 
@@ -267,6 +261,20 @@ void FJsonAsAssetSettingsDetails::CustomizeDetails(IDetailLayoutBuilder& DetailB
 			return Settings->bEnableLocalFetch;
 		})
 	];
+}
+
+void FJsonAsAssetSettingsDetails::SaveConfig(UJsonAsAssetSettings* Settings)
+{
+	Settings->SaveConfig();
+	
+#if ENGINE_MAJOR_VERSION >= 5
+	Settings->TryUpdateDefaultConfigFile();
+#else
+	Settings->UpdateDefaultConfigFile();
+	Settings->ReloadConfig(nullptr, nullptr, UE4::LCPF_PropagateToInstances);
+#endif
+        	
+	Settings->LoadConfig();
 }
 
 #undef LOCTEXT_NAMESPACE

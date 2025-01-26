@@ -4,9 +4,9 @@
 
 #include "../Constructor/Importer.h"
 
-class UCurveLinearColorImporter : public IImporter {
+class ICurveLinearColorImporter : public IImporter {
 public:
-	UCurveLinearColorImporter(const FString& FileName, const FString& FilePath, const TSharedPtr<FJsonObject>& JsonObject, UPackage* Package, UPackage* OutermostPkg):
+	ICurveLinearColorImporter(const FString& FileName, const FString& FilePath, const TSharedPtr<FJsonObject>& JsonObject, UPackage* Package, UPackage* OutermostPkg):
 		IImporter(FileName, FilePath, JsonObject, Package, OutermostPkg) {
 	}
 

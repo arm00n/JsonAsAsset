@@ -3,8 +3,6 @@
 #pragma once
 #include "AppStyleCompatibility.h"
 
-extern TArray<FString> LocalFetchAcceptedTypes;
-
 class FAssetUtilities {
 public:
 	/*

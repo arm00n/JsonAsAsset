@@ -8,14 +8,10 @@
 #include "Modules/ModuleInterface.h"
 #endif
 
-class FToolBarBuilder;
-class FMenuBuilder;
-class ITableRow;
-class SButton;
-class STableViewBase;
-struct FSlateBrush;
+class UJsonAsAssetSettings;
 
-class FJsonAsAssetModule : public IModuleInterface {
+class FJsonAsAssetModule : public IModuleInterface
+{
 public:
     virtual void StartupModule() override;
     virtual void ShutdownModule() override;
@@ -28,6 +24,11 @@ private:
 
     TSharedPtr<FUICommandList> PluginCommands;
     TSharedRef<SWidget> CreateToolbarDropdown();
+    void CreateLocalFetchDropdown(FMenuBuilder MenuBuilder);
+    void ImportConvexCollision();
+
+    bool bActionRequired;
+    const UJsonAsAssetSettings* Settings;
 
     // Creates a dialog for a file
     TArray<FString> OpenFileDialog(FString Title, FString Type);

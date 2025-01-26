@@ -1,61 +1,50 @@
 ﻿// Copyright JAA Contributors 2024-2025
 
 #include "Importers/Types/NiagaraParameterCollectionImporter.h"
-
-#include "Dom/JsonObject.h"
 #include "Materials/MaterialParameterCollection.h"
+#include "Dom/JsonObject.h"
 
-void UNiagaraParameterCollectionDerived::SetSourceMaterialCollection(TObjectPtr<UMaterialParameterCollection> MaterialParameterCollection) {
-#if ENGINE_MAJOR_VERSION >= 5
+void CNiagaraParameterCollectionDerived::SetSourceMaterialCollection(TObjectPtr<UMaterialParameterCollection> MaterialParameterCollection) {
     this->SourceMaterialCollection = MaterialParameterCollection;
-#else
-    this->SourceMaterialCollection = MaterialParameterCollection.Get();
-#endif
 }
 
-void UNiagaraParameterCollectionDerived::SetCompileId(FGuid Guid) {
+void CNiagaraParameterCollectionDerived::SetCompileId(FGuid Guid) {
     this->CompileId = Guid;
 }
 
-void UNiagaraParameterCollectionDerived::SetNamespace(FName InNamespace) {
+void CNiagaraParameterCollectionDerived::SetNamespace(FName InNamespace) {
     this->Namespace = InNamespace;
 }
 
-void UNiagaraParameterCollectionDerived::AddAParameter(FNiagaraVariable Parameter) {
+void CNiagaraParameterCollectionDerived::AddAParameter(FNiagaraVariable Parameter) {
     this->Parameters.Add(Parameter);
 }
 
-bool UNiagaraParameterCollectionImporter::ImportData() {
-    try {
-        TSharedPtr<FJsonObject> Properties = JsonObject->GetObjectField("Properties");
+bool INiagaraParameterCollectionImporter::ImportData() {
+    TSharedPtr<FJsonObject> Properties = JsonObject->GetObjectField("Properties");
 
-        UNiagaraParameterCollectionDerived* NiagaraParameterCollection = Cast<UNiagaraParameterCollectionDerived>(
-            NewObject<UNiagaraParameterCollection>(Package, UNiagaraParameterCollection::StaticClass(), *FileName, RF_Public | RF_Standalone));
+    CNiagaraParameterCollectionDerived* NiagaraParameterCollection = Cast<CNiagaraParameterCollectionDerived>(
+        NewObject<UNiagaraParameterCollection>(Package, UNiagaraParameterCollection::StaticClass(), *FileName, RF_Public | RF_Standalone));
 
-        NiagaraParameterCollection->SetCompileId(FGuid(Properties->GetStringField("CompileId")));
+    NiagaraParameterCollection->SetCompileId(FGuid(Properties->GetStringField("CompileId")));
 
-        TObjectPtr<UMaterialParameterCollection> MaterialParameterCollection;
-        const TSharedPtr<FJsonObject>* SourceMaterialCollection;
-        
-        if (Properties->TryGetObjectField("SourceMaterialCollection", SourceMaterialCollection))
-            LoadObject(SourceMaterialCollection, MaterialParameterCollection);
+    TObjectPtr<UMaterialParameterCollection> MaterialParameterCollection;
+    const TSharedPtr<FJsonObject>* SourceMaterialCollection;
+    
+    if (Properties->TryGetObjectField("SourceMaterialCollection", SourceMaterialCollection))
+        LoadObject(SourceMaterialCollection, MaterialParameterCollection);
 
-        NiagaraParameterCollection->SetSourceMaterialCollection(MaterialParameterCollection);
+    NiagaraParameterCollection->SetSourceMaterialCollection(MaterialParameterCollection);
 
-        const TArray<TSharedPtr<FJsonValue>>* ParametersPtr;
-        if (Properties->TryGetArrayField("Parameters", ParametersPtr)) {
-            for (const TSharedPtr<FJsonValue> ParameterPtr : *ParametersPtr) {
-                TSharedPtr<FJsonObject> ParameterObj = ParameterPtr->AsObject();
+    const TArray<TSharedPtr<FJsonValue>>* ParametersPtr;
+    if (Properties->TryGetArrayField("Parameters", ParametersPtr)) {
+        for (const TSharedPtr<FJsonValue> ParameterPtr : *ParametersPtr) {
+            TSharedPtr<FJsonObject> ParameterObj = ParameterPtr->AsObject();
 
-                FName Name = FName(*ParameterObj->GetStringField("Name"));
-            }
+            FName Name = FName(*ParameterObj->GetStringField("Name"));
         }
-
-        // Handle edit changes, and add it to the content browser
-        return OnAssetCreation(NiagaraParameterCollection);
-    } catch (const char* Exception) {
-        UE_LOG(LogJson, Error, TEXT("%s"), *FString(Exception));
     }
 
-    return false;
+    // Handle edit changes, and add it to the content browser
+    return OnAssetCreation(NiagaraParameterCollection);
 }

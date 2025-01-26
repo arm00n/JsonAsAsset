@@ -19,9 +19,6 @@ bool ISoundGraph::ImportData() {
 		SoundCue->PreEditChange(nullptr);
 
 		TSharedPtr<FJsonObject> Properties = JsonObject->GetObjectField("Properties");
-
-		// Simple Data
-		GetObjectSerializer()->DeserializeObjectProperties(Properties, SoundCue);
 		
 		// Start -------------------------------------------
 		if (SoundCue) {
@@ -31,6 +28,11 @@ bool ISoundGraph::ImportData() {
 			SetupNodes(SoundCue, SoundCueNodes, AllJsonObjects);
 		}
 		// END ---------------------------------------------
+
+		GetObjectSerializer()->DeserializeObjectProperties(RemovePropertiesShared(Properties, TArray<FString>
+		{
+			"FirstNode"
+		}), SoundCue);
 		
 		SoundCue->PostEditChange();
 		SoundCue->CompileSoundNodesFromGraphNodes();

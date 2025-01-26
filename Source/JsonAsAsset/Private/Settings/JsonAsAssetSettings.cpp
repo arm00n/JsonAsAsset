@@ -1,43 +1,35 @@
 // Copyright JAA Contributors 2024-2025
 
 #include "JsonAsAssetSettings.h"
-
-#include "DetailLayoutBuilder.h"
-#include "DetailWidgetRow.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/SBoxPanel.h"
-#include "Widgets/Text/SRichTextBlock.h"
-#include "Utilities/RemoteUtilities.h"
-#include "Serialization/JsonReader.h"
-#include "Serialization/JsonSerializer.h"
-#include "Interfaces/IHttpResponse.h"
-#include "Misc/FileHelper.h"
-
-#include "Dom/JsonObject.h"
-#include "HttpModule.h"
+#include "Modules/LocalFetch.h"
 
 #define LOCTEXT_NAMESPACE "JsonAsAsset"
 
-UJsonAsAssetSettings::UJsonAsAssetSettings()
+UJsonAsAssetSettings::UJsonAsAssetSettings():
+	// Default Initializers
+	bEnableLocalFetch(false), UnrealVersion(),
+	bDownloadExistingTextures(false), bChangeURL(false)
 {
 	CategoryName = TEXT("Plugins");
 	SectionName = TEXT("JsonAsAsset");
 }
-
-#if WITH_EDITOR
 
 FText UJsonAsAssetSettings::GetSectionText() const
 {
 	return LOCTEXT("SettingsDisplayName", "JsonAsAsset");
 }
 
-TArray<FString> UJsonAsAssetSettings::GetParseVersions()
+#if WITH_EDITOR
+// This displays the Unreal Versions in settings
+TArray<FString> UJsonAsAssetSettings::GetUnrealVersions()
 {
 	TArray<FString> EnumNames;
 
 	for (int Version = GAME_UE4_0; Version <= GAME_UE5_LATEST; ++Version)
 	{
-		EnumNames.Add(StaticEnum<EParseVersion>()->GetNameStringByIndex(Version));
+		EnumNames.Add(StaticEnum<ECUE4ParseVersion>()->GetNameStringByIndex(Version));
 	}
 
 	return EnumNames;

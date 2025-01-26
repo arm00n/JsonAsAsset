@@ -6,7 +6,7 @@
 #include "NiagaraParameterCollectionImporter.h"
 #include "NiagaraParameterCollection.h"
 
-class UNiagaraParameterCollectionDerived : public UNiagaraParameterCollection {
+class CNiagaraParameterCollectionDerived : public UNiagaraParameterCollection {
 public:
     void SetSourceMaterialCollection(TObjectPtr<UMaterialParameterCollection> MaterialParameterCollection);
     void SetCompileId(FGuid Guid);
@@ -14,9 +14,9 @@ public:
     void AddAParameter(FNiagaraVariable Parameter);
 };
 
-class UNiagaraParameterCollectionImporter : public IImporter {
+class INiagaraParameterCollectionImporter : public IImporter {
 public:
-    UNiagaraParameterCollectionImporter(const FString& FileName, const FString& FilePath, const TSharedPtr<FJsonObject>& JsonObject, UPackage* Package, UPackage* OutermostPkg) :
+    INiagaraParameterCollectionImporter(const FString& FileName, const FString& FilePath, const TSharedPtr<FJsonObject>& JsonObject, UPackage* Package, UPackage* OutermostPkg) :
         IImporter(FileName, FilePath, JsonObject, Package, OutermostPkg) {
     }
 

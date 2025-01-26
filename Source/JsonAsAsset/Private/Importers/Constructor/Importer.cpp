@@ -19,6 +19,15 @@
 #include "Styling/SlateIconFinder.h"
 
 // ----> Importers
+// Particle System Importing is not finalized
+#ifndef JSONASASSET_PARTICLESYSTEM_ALLOW
+#define JSONASASSET_PARTICLESYSTEM_ALLOW 0
+#endif
+
+#if JSONASASSET_PARTICLESYSTEM_ALLOW
+#include "Importers/Types/ParticleSystemImporter.h"
+#endif
+
 #include "Importers/Types/CurveFloatImporter.h"
 #include "Importers/Types/CurveVectorImporter.h"
 #include "Importers/Types/CurveLinearColorImporter.h"
@@ -30,62 +39,27 @@
 #include "Importers/Types/MaterialImporter.h"
 #include "Importers/Types/NiagaraParameterCollectionImporter.h"
 #include "Importers/Types/MaterialInstanceConstantImporter.h"
-#include "Importers/Constructor/SoundGraph.h"
 #include "Importers/Types/DataAssetImporter.h"
 #include "Importers/Types/CurveTableImporter.h"
+#include "Importers/Types/BlendspaceImporter.h"
 // <---- Importers
 
 // Templated Class
 #include "Importers/Constructor/TemplatedImporter.h"
+#include "Importers/Constructor/SoundGraph.h"
 
-// ----------------------- Templated Engine Classes
-#include "Sound/SoundNode.h"
-#include "Engine/SubsurfaceProfile.h"
+// ----------------------- Templated Engine Classes ----------------------------------------------
 #include "Materials/MaterialParameterCollection.h"
+#include "Importers/Types/PhysicsAssetImporter.h"
+#include "Engine/SubsurfaceProfile.h"
 #include "Curves/CurveLinearColor.h"
 #include "Logging/MessageLog.h"
-
+#include "Sound/SoundNode.h"
 // -----------------------------------------------------------------------------------------------
+
 #define LOCTEXT_NAMESPACE "IImporter"
 
-TArray<FString> ImporterAcceptedTypes = {
-	"Texture2D",
-	// "TextureCube",
-	// "VolumeTexture",
-	"TextureRenderTarget2D",
-
-	"", // separator
-
-	"Material",
-	"MaterialFunction",
-	"MaterialInstanceConstant",
-
-	"", // separator
-
-	"CurveFloat",
-	"CurveTable",
-	"CurveVector",
-	"CurveLinearColorAtlas",
-	"CurveLinearColor",
-
-	"", // separator
-
-	"SoundWave",
-	"ReverbEffect",
-	"SoundAttenuation",
-	"SoundConcurrency",
-	"SoundClass",
-	"SoundMix",
-	"SoundModulationPatch",
-
-	"", // separator
-
-	"PhysicalMaterial",
-	"SubsurfaceProfile",
-	"LandscapeGrassType",
-	"DataTable",
-};
-
+// Importer Construction
 IImporter::IImporter(const FString& FileName, const FString& FilePath, 
 		  const TSharedPtr<FJsonObject>& JsonObject, UPackage* Package, 
 		  UPackage* OutermostPkg, const TArray<TSharedPtr<FJsonValue>>& AllJsonObjects)
@@ -96,6 +70,73 @@ IImporter::IImporter(const FString& FileName, const FString& FilePath,
 	GObjectSerializer = NewObject<UObjectSerializer>();
 	GObjectSerializer->SetPropertySerializer(PropertySerializer);
 }
+
+// -----------------------------------------------------------------------------------------------
+
+TArray<FString> ImporterAcceptedTypes = {
+	"CurveTable",
+	"CurveFloat",
+	"CurveVector",
+	"CurveLinearColor",
+	"CurveLinearColorAtlas",
+
+	"", // separator
+
+	"SkeletalMeshLODSettings",
+	"Skeleton",
+
+	"", // separator
+
+	"AnimSequence",
+	"AnimMontage",
+
+	"", // separator
+
+	"Material",
+	"MaterialFunction",
+	"MaterialInstanceConstant",
+	"MaterialParameterCollection",
+	"NiagaraParameterCollection",
+
+	"", // separator
+
+	"BlendSpace",
+
+	"", // separator
+
+	"DataAsset",
+	"LandscapeGrassType",
+	"DataTable",
+
+#if JSONASASSET_PARTICLESYSTEM_ALLOW
+	"", // separator
+
+	"ParticleSystem",
+#endif
+
+	"", // separator
+	
+	"PhysicsAsset",
+	"PhysicalMaterial",
+
+	"", // separator
+
+	"SoundCue",
+	"ReverbEffect",
+	"SoundAttenuation",
+	"SoundConcurrency",
+	"SoundClass",
+	"SoundMix",
+	"SoundModulationPatch",
+
+	"", // separator
+
+	"SubsurfaceProfile",
+
+	"", // separator
+
+	"TextureRenderTarget2D"
+};
 
 // Handles the JSON of a file.
 // I want to replace Handle with Import in most of these functions
@@ -121,51 +162,62 @@ bool IImporter::ImportExports(TArray<TSharedPtr<FJsonValue>> Exports, FString Fi
 
 			IImporter* Importer;
 			if (Type == "AnimSequence" || Type == "AnimMontage") 
-				Importer = new UAnimationBaseImporter(Name, File, DataObject, nullptr, nullptr);
+				Importer = new IAnimationBaseImporter(Name, File, DataObject, nullptr, nullptr);
 			else {
 				UPackage* LocalOutermostPkg;
 				UPackage* LocalPackage = FAssetUtilities::CreateAssetPackage(Name, File, LocalOutermostPkg);
 
 				// Curve Importers
 				if (Type == "CurveFloat") 
-					Importer = new UCurveFloatImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg);
+					Importer = new ICurveFloatImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg);
 				else if (Type == "CurveTable") 
-					Importer = new UCurveTableImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg);
+					Importer = new ICurveTableImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg);
 				else if (Type == "CurveVector") 
-					Importer = new UCurveVectorImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg);
+					Importer = new ICurveVectorImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg);
 				else if (Type == "CurveLinearColor") 
-					Importer = new UCurveLinearColorImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg);
+					Importer = new ICurveLinearColorImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg);
 				else if (Type == "CurveLinearColorAtlas") 
-					Importer = new UCurveLinearColorAtlasImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg);
+					Importer = new ICurveLinearColorAtlasImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg);
 
 				else if (Type == "Skeleton") 
-					Importer = new USkeletonImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg, Exports);
+					Importer = new ISkeletonImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg, Exports);
+
+				else if (Type == "BlendSpace") 
+					Importer = new IBlendSpaceImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg);
 
 				else if (Type == "SoundCue") 
 					Importer = new ISoundGraph(Name, File, DataObject, LocalPackage, LocalOutermostPkg, Exports);
+
+#if JSONASASSET_PARTICLESYSTEM_ALLOW
+				else if (Type == "ParticleSystem") 
+					Importer = new IParticleSystemImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg, Exports);
+#endif
 				
 				else if (Type == "Material") 
-					Importer = new UMaterialImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg, Exports);
+					Importer = new IMaterialImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg, Exports);
 				else if (Type == "MaterialFunction") 
-					Importer = new UMaterialFunctionImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg, Exports);
+					Importer = new IMaterialFunctionImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg, Exports);
 				else if (Type == "MaterialInstanceConstant") 
-					Importer = new UMaterialInstanceConstantImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg, Exports);
+					Importer = new IMaterialInstanceConstantImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg, Exports);
+
+				else if (Type == "PhysicsAsset") 
+					Importer = new IPhysicsAssetImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg, Exports);
 				
 				// Other Importers
 				else if (Type == "NiagaraParameterCollection") 
-				    Importer = new UNiagaraParameterCollectionImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg);
+				    Importer = new INiagaraParameterCollectionImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg);
  				else if (Type == "DataTable") 
-				    Importer = new UDataTableImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg);
+				    Importer = new IDataTableImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg);
 
 				else // Data Asset
 					if (bDataAsset)
-						Importer = new UDataAssetImporter(Class, Name, File, DataObject, LocalPackage, LocalOutermostPkg, Exports);
+						Importer = new IDataAssetImporter(Class, Name, File, DataObject, LocalPackage, LocalOutermostPkg, Exports);
 
 				else { // Templates handled here
 					UClass* LoadedClass = FindObject<UClass>(ANY_PACKAGE, *Type);
 
 					if (LoadedClass != nullptr) {
-						Importer = new TemplatedImporter<UObject>(LoadedClass, Name, File, DataObject, LocalPackage, LocalOutermostPkg, AllJsonObjects);
+						Importer = new ITemplatedImporter<UObject>(LoadedClass, Name, File, DataObject, LocalPackage, LocalOutermostPkg, AllJsonObjects);
 					} else { // No template found
 						UE_LOG(LogTemp, Error, TEXT("Failed to load class for type: %s"), *Type);
 						
@@ -177,7 +229,13 @@ bool IImporter::ImportExports(TArray<TSharedPtr<FJsonValue>> Exports, FString Fi
 			FMessageLog MessageLogger = FMessageLog(FName("JsonAsAsset"));
 
 			if (bHideNotifications) {
-				Importer->ImportData();
+				try {
+					Importer->ImportData();
+					
+					return true;
+				} catch (const char* Exception) {
+					UE_LOG(LogJson, Error, TEXT("Importer exception: %s"), *FString(Exception));
+				}
 
 				return true;
 			}
@@ -215,6 +273,27 @@ bool IImporter::ImportExports(TArray<TSharedPtr<FJsonValue>> Exports, FString Fi
 	return true;
 }
 
+TArray<TSharedPtr<FJsonValue>> IImporter::GetObjectsWithTypeStartingWith(const FString& StartsWithStr) {
+	TArray<TSharedPtr<FJsonValue>> FilteredObjects;
+
+	for (const TSharedPtr<FJsonValue>& JsonObjectValue : AllJsonObjects) {
+		if (JsonObjectValue->Type == EJson::Object) {
+			TSharedPtr<FJsonObject> JsonObjectType = JsonObjectValue->AsObject();
+
+			if (JsonObjectType.IsValid() && JsonObjectType->HasField("Type")) {
+				FString TypeValue = JsonObjectType->GetStringField("Type");
+
+				// Check if the "Type" field starts with the specified string
+				if (TypeValue.StartsWith(StartsWithStr)) {
+					FilteredObjects.Add(JsonObjectValue);
+				}
+			}
+		}
+	}
+
+	return FilteredObjects;
+}
+
 // This is called at the end of asset creation, bringing the user to the asset and fully loading it
 bool IImporter::HandleAssetCreation(UObject* Asset) const {
 	FAssetRegistryModule::AssetCreated(Asset);
@@ -240,11 +319,7 @@ TObjectPtr<T> IImporter::DownloadWrapper(TObjectPtr<T> InObject, FString Type, F
 	const UJsonAsAssetSettings* Settings = GetDefault<UJsonAsAssetSettings>();
 
 	// If the asset can be found locally
-#if ENGINE_MAJOR_VERSION >= 5
 	if (InObject == nullptr && ImportAssetReference(Path)) {
-#else
-	if (InObject.Get() == nullptr && ImportAssetReference(Path)) {
-#endif
 		TObjectPtr<T> Object = Cast<T>(StaticLoadObject(T::StaticClass(), nullptr, *(Path + "." + Name)));
 
 		return Object;
@@ -254,18 +329,14 @@ TObjectPtr<T> IImporter::DownloadWrapper(TObjectPtr<T> InObject, FString Type, F
 	FMessageLog MessageLogger = FMessageLog(FName("JsonAsAsset"));
 
 	if (bEnableLocalFetch && (
-#if ENGINE_MAJOR_VERSION >= 5
 		InObject == nullptr ||
-#else
-		InObject.Get() == nullptr ||
-#endif
 			Settings->bDownloadExistingTextures &&
 			Type == "Texture2D"
 		)
 	) {
 		const UObject* DefaultObject = T::StaticClass()->ClassDefaultObject;
 
-		if (DefaultObject != nullptr) {
+		if (DefaultObject != nullptr && !Name.IsEmpty() && !Path.IsEmpty()) {
 			bool bRemoteDownloadStatus = false;
 
 			// Notification
@@ -336,11 +407,7 @@ void IImporter::LoadObject(const TSharedPtr<FJsonObject>* PackageIndex, TObjectP
 	TObjectPtr<T> LoadedObject = Cast<T>(StaticLoadObject(T::StaticClass(), nullptr, *(ObjectPath + "." + ObjectName)));
 
 	// Material Expression case
-#if ENGINE_MAJOR_VERSION >= 5
 	if (!LoadedObject && ObjectName.Contains("MaterialExpression")) {
-#else
-	if (!LoadedObject.Get() && ObjectName.Contains("MaterialExpression")) {
-#endif
 		FString AssetName;
 		ObjectPath.Split("/", nullptr, &AssetName, ESearchCase::IgnoreCase, ESearchDir::FromEnd);
 		LoadedObject = Cast<T>(StaticLoadObject(T::StaticClass(), nullptr, *(ObjectPath + "." + AssetName + ":" + ObjectName)));
@@ -408,6 +475,26 @@ void IImporter::ImportReference(const FString& File) {
 
 		ImportExports(DataObjects, File);
 	}
+}
+
+TMap<FName, FExportData> IImporter::CreateExports() {
+	TMap<FName, FExportData> OutExports;
+
+	for (const TSharedPtr<FJsonValue> Value : AllJsonObjects) {
+		TSharedPtr<FJsonObject> Object = TSharedPtr<FJsonObject>(Value->AsObject());
+
+		FString ExType = Object->GetStringField("Type");
+		FString Name = Object->GetStringField("Name");
+		FString Outer = "None";
+
+		if (Object->HasField("Outer")) {
+			Outer = Object->GetStringField("Outer");
+		}
+
+		OutExports.Add(FName(Name), FExportData(ExType, Outer, Object));
+	}
+
+	return OutExports;
 }
 
 // Called before HandleAssetCreation, simply saves the asset if user opted
@@ -500,49 +587,6 @@ TSharedPtr<FJsonValue> IImporter::GetExportByObjectPath(const TSharedPtr<FJsonOb
 	}
 
 	return AllJsonObjects[FCString::Atod(*StringIndex)];
-}
-
-// Show the user a Notification
-void IImporter::AppendNotification(const FText& Text, const FText& SubText, float ExpireDuration, SNotificationItem::ECompletionState CompletionState, bool bUseSuccessFailIcons, float WidthOverride) {
-	FNotificationInfo Info = FNotificationInfo(Text);
-	Info.ExpireDuration = ExpireDuration;
-	Info.bUseLargeFont = true;
-	Info.bUseSuccessFailIcons = bUseSuccessFailIcons;
-	Info.WidthOverride = FOptionalSize(WidthOverride);
-
-#if ENGINE_MAJOR_VERSION >= 5
-	Info.SubText = SubText;
-#endif
-
-	const TSharedPtr<SNotificationItem> NotificationPtr = FSlateNotificationManager::Get().AddNotification(Info);
-	NotificationPtr->SetCompletionState(CompletionState);
-}
-
-// Show the user a Notification with Subtext
-void IImporter::AppendNotification(const FText& Text, const FText& SubText, float ExpireDuration, const FSlateBrush* SlateBrush, SNotificationItem::ECompletionState CompletionState, bool bUseSuccessFailIcons, float WidthOverride) {
-	FNotificationInfo Info = FNotificationInfo(Text);
-	Info.ExpireDuration = ExpireDuration;
-	Info.bUseLargeFont = true;
-	Info.bUseSuccessFailIcons = bUseSuccessFailIcons;
-	Info.WidthOverride = FOptionalSize(WidthOverride);
-#if ENGINE_MAJOR_VERSION >= 5
-	Info.SubText = SubText;
-#endif
-	Info.Image = SlateBrush;
-
-	const TSharedPtr<SNotificationItem> NotificationPtr = FSlateNotificationManager::Get().AddNotification(Info);
-	NotificationPtr->SetCompletionState(CompletionState);
-}
-
-TSharedPtr<FJsonObject> IImporter::RemovePropertiesShared(TSharedPtr<FJsonObject> Input, TArray<FString> RemovedProperties) const {
-	const TSharedPtr<FJsonObject> RawSharedPtrData = TSharedPtr<FJsonObject>(Input);
-	
-	for (FString Property : RemovedProperties) {
-		if (RawSharedPtrData->HasField(Property))
-			RawSharedPtrData->RemoveField(Property);
-	}
-
-	return RawSharedPtrData;
 }
 
 #undef LOCTEXT_NAMESPACE

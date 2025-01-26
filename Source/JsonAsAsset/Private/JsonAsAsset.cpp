@@ -33,6 +33,10 @@
 #include "Styling/SlateIconFinder.h"
 #include <TlHelp32.h>
 
+// Settings
+#include "EditorStyleSet.h"
+#include "./Settings/Details/JsonAsAssetSettingsDetails.h"
+
 #include "Modules/AboutJsonAsAsset.h"
 #include "Utilities/AppStyleCompatibility.h"
 #include "Utilities/AssetUtilities.h"
@@ -50,7 +54,8 @@
 #endif
 
 void FJsonAsAssetModule::PluginButtonClicked() {
-	const UJsonAsAssetSettings* Settings = GetDefault<UJsonAsAssetSettings>();
+	Settings = GetDefault<UJsonAsAssetSettings>();
+	
 	if (Settings->ExportDirectory.Path.IsEmpty())
 		return;
 
@@ -186,7 +191,8 @@ void FJsonAsAssetModule::StartupModule() {
     UToolMenus::RegisterStartupCallback(FSimpleMulticastDelegate::FDelegate::CreateRaw(this, &FJsonAsAssetModule::RegisterMenus));
 
     // Check for export directory in settings
-    const UJsonAsAssetSettings* Settings = GetDefault<UJsonAsAssetSettings>();
+    Settings = GetDefault<UJsonAsAssetSettings>();
+	
     if (Settings->ExportDirectory.Path.IsEmpty()) {
         const FText TitleText = LOCTEXT("JsonAsAssetNotificationTitle", "Missing export directory for JsonAsAsset");
         const FText MessageText = LOCTEXT("JsonAsAssetNotificationText",
@@ -382,7 +388,7 @@ void FJsonAsAssetModule::AddToolbarExtension(FToolBarBuilder& Builder)
 
 TSharedRef<SWidget> FJsonAsAssetModule::CreateToolbarDropdown() {
 	TSharedPtr<IPlugin> Plugin = IPluginManager::Get().FindPlugin("JsonAsAsset");
-	const UJsonAsAssetSettings* Settings = GetDefault<UJsonAsAssetSettings>();
+	Settings = GetDefault<UJsonAsAssetSettings>();
 
 	FMenuBuilder MenuBuilder(false, nullptr);
 	MenuBuilder.BeginSection("JsonAsAssetSection", FText::FromString("JSON Tools v" + Plugin->GetDescriptor().VersionName));
@@ -449,7 +455,7 @@ TSharedRef<SWidget> FJsonAsAssetModule::CreateToolbarDropdown() {
 
 	MenuBuilder.EndSection();
 
-	bool bActionRequired =
+	bActionRequired =
 		Settings->ExportDirectory.Path.IsEmpty() //||..
 		;
 
@@ -475,131 +481,40 @@ TSharedRef<SWidget> FJsonAsAssetModule::CreateToolbarDropdown() {
 		MenuBuilder.EndSection();
 	}
 
-	if (Settings->bEnableLocalFetch && !bActionRequired) {
-		MenuBuilder.BeginSection("JsonAsAssetSection", FText::FromString("Local Fetch"));
-		MenuBuilder.AddSubMenu(
-			LOCTEXT("JsonAsAssetLocalFetchTypesMenu", "Asset Types"),
-			LOCTEXT("JsonAsAssetLocalFetchTypesMenuToolTip", "List of supported classes that can be locally fetched using the API"),
-			FNewMenuDelegate::CreateLambda([this](FMenuBuilder& InnerMenuBuilder) {
-				InnerMenuBuilder.BeginSection("JsonAsAssetSection", LOCTEXT("JsonAsAssetSection", "Asset Classes"));
-				{
-					TArray<FString> AcceptedTypes = LocalFetchAcceptedTypes;
-					const UJsonAsAssetSettings* Settings = GetDefault<UJsonAsAssetSettings>();
+	CreateLocalFetchDropdown(MenuBuilder);
 
-					for (FString& Asset : AcceptedTypes) {
-						if (Asset == "") { // Separator
-							InnerMenuBuilder.AddSeparator();
-						}
-						
-						else {
-							UClass* Class = FindObject<UClass>(nullptr, *("/Script/Engine." + Asset));
-							FText Description = Class ? Class->GetToolTipText() : FText::FromString(Asset);
-							
-							InnerMenuBuilder.AddMenuEntry(
-								FText::FromString(Asset),
-								Description,
-								FSlateIconFinder::FindCustomIconForClass(Class, TEXT("ClassThumbnail")),
-								FUIAction()
-							);
-						}
-					}
-				}
-				InnerMenuBuilder.EndSection();
-			}),
-			false,
-			FSlateIcon()
-		);
+	MenuBuilder.AddSeparator();
 
+	if (Settings->AssetSettings.bEnableAssetTools) {
 		MenuBuilder.AddSubMenu(
-			LOCTEXT("JsonAsAssetLocalFetchCMDMenu", "Command-line Application"),
-			LOCTEXT("", ""),
+			LOCTEXT("JsonAsAssetAssetTypesMenu", "Open Asset Tools"),
+			LOCTEXT("JsonAsAssetAssetTypesMenuToolTip", "Extra functionality / tools to do very specific actions with assets."),
 			FNewMenuDelegate::CreateLambda([this](FMenuBuilder& InnerMenuBuilder) {
-				InnerMenuBuilder.BeginSection("JsonAsAssetSection", LOCTEXT("JsonAsAssetSection", "Console"));
+				InnerMenuBuilder.BeginSection("JsonAsAssetSection", LOCTEXT("JsonAsAssetSection", "Asset Tools"));
 				{
 					InnerMenuBuilder.AddMenuEntry(
-						FText::FromString("Execute Local Fetch (.EXE)"),
-						FText::FromString(""),
-						FSlateIcon(),
+						LOCTEXT("ConvexCollisionExButton", "Import Folder Collision Convex"),
+						LOCTEXT("ConvexCollisionExButtonTooltip", "Imports convex collision data from a folder of JSON files and applies it to the corresponding assets."),
+						FSlateIcon(FEditorStyle::GetStyleSetName(), "LevelEditor.BspMode"),
+
 						FUIAction(
-							FExecuteAction::CreateLambda([this]() {
-								TSharedPtr<SNotificationItem> NotificationItem = LocalFetchNotificationPtr.Pin();
-
-								if (NotificationItem.IsValid()) {
-									NotificationItem->SetFadeOutDuration(0.001);
-									NotificationItem->Fadeout();
-									LocalFetchNotificationPtr.Reset();
-								}
-
-								FString PluginBinariesFolder;
-
-								const TSharedPtr<IPlugin> PluginInfo = IPluginManager::Get().FindPlugin("JsonAsAsset");
-								if (PluginInfo.IsValid()) {
-									const FString PluginBaseDir = PluginInfo->GetBaseDir();
-									PluginBinariesFolder = FPaths::Combine(PluginBaseDir, TEXT("Binaries"));
-
-									if (!FPaths::DirectoryExists(PluginBinariesFolder)) {
-										PluginBinariesFolder = FPaths::Combine(PluginBaseDir, TEXT("JsonAsAsset/Binaries"));
-									}
-								}
-
-								FString FullPath = FPaths::ConvertRelativePathToFull(PluginBinariesFolder + "/Win64/LocalFetch/LocalFetch.exe");
-								FPlatformProcess::LaunchFileInDefaultExternalApplication(*FullPath, TEXT("--urls=http://localhost:1500/"), ELaunchVerb::Open);
-							}),
+							FExecuteAction::CreateRaw(this, &FJsonAsAssetModule::ImportConvexCollision),
 							FCanExecuteAction::CreateLambda([this]() {
-								return !IsProcessRunning("LocalFetch.exe");
+								return true;
 							})
-						)
-					);
-
-					InnerMenuBuilder.AddMenuEntry(
-						FText::FromString("Shutdown Local Fetch (.EXE)"),
-						FText::FromString(""),
-						FSlateIcon(),
-						FUIAction(
-							FExecuteAction::CreateLambda([this]() {
-								FString ProcessName = TEXT("LocalFetch.exe");
-								TCHAR* ProcessNameChar = ProcessName.GetCharArray().GetData();
-
-								DWORD ProcessID = 0;
-								HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-								if (hSnapshot != INVALID_HANDLE_VALUE) {
-									PROCESSENTRY32 ProcessEntry;
-									ProcessEntry.dwSize = sizeof(PROCESSENTRY32);
-
-									if (Process32First(hSnapshot, &ProcessEntry)) {
-										do {
-											if (FCString::Stricmp(ProcessEntry.szExeFile, ProcessNameChar) == 0) {
-												ProcessID = ProcessEntry.th32ProcessID;
-												break;
-											}
-										} while (Process32Next(hSnapshot, &ProcessEntry));
-									}
-									CloseHandle(hSnapshot);
-								}
-
-								if (ProcessID != 0) {
-									HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, false, ProcessID);
-									if (hProcess != nullptr) {
-										TerminateProcess(hProcess, 0);
-										CloseHandle(hProcess);
-									}
-								}
-							}),
-							FCanExecuteAction::CreateLambda([this]() {
-								return IsProcessRunning("LocalFetch.exe");
-							})
-						)
+						),
+						NAME_None
 					);
 				}
 				InnerMenuBuilder.EndSection();
 			}),
 			false,
-			FSlateIcon()
-		);
-		MenuBuilder.EndSection();
+			FSlateIcon(FAppStyle::Get().GetStyleSetName(), "ProjectSettings.TabIcon")
+		);	
 	}
 
 	MenuBuilder.AddSeparator();
+
 	MenuBuilder.AddMenuEntry(
 		LOCTEXT("JsonAsAssetPluginSettingsButton", "Open Plugin Settings"),
 		LOCTEXT("JsonAsAssetPluginSettingsButtonTooltip", "Brings you to the JsonAsAsset Settings"),
@@ -655,6 +570,228 @@ TSharedRef<SWidget> FJsonAsAssetModule::CreateToolbarDropdown() {
 	);
 
 	return MenuBuilder.MakeWidget();
+}
+
+void FJsonAsAssetModule::CreateLocalFetchDropdown(FMenuBuilder MenuBuilder) {
+	// Local Fetch must be enabled, and if there is an action required, don't create Local Fetch's dropdown
+	if (!Settings->bEnableLocalFetch || bActionRequired) {
+		return;
+	}
+	
+	MenuBuilder.BeginSection("JsonAsAssetSection", FText::FromString("Local Fetch"));
+	MenuBuilder.AddSubMenu(
+		LOCTEXT("JsonAsAssetLocalFetchTypesMenu", "Asset Types"),
+		LOCTEXT("JsonAsAssetLocalFetchTypesMenuToolTip", "List of supported classes that can be locally fetched using the API"),
+		FNewMenuDelegate::CreateLambda([this](FMenuBuilder& InnerMenuBuilder) {
+			InnerMenuBuilder.BeginSection("JsonAsAssetSection", LOCTEXT("JsonAsAssetSection", "Asset Classes"));
+			{
+				TArray<FString> AcceptedTypes = LocalFetchAcceptedTypes;
+
+				for (FString& Asset : AcceptedTypes) {
+					if (Asset == "") { // Separator
+						InnerMenuBuilder.AddSeparator();
+					}
+					
+					else {
+						UClass* Class = FindObject<UClass>(nullptr, *("/Script/Engine." + Asset));
+						FText Description = Class ? Class->GetToolTipText() : FText::FromString(Asset);
+						
+						InnerMenuBuilder.AddMenuEntry(
+							FText::FromString(Asset),
+							Description,
+							FSlateIconFinder::FindCustomIconForClass(Class, TEXT("ClassThumbnail")),
+							FUIAction()
+						);
+					}
+				}
+			}
+			InnerMenuBuilder.EndSection();
+		}),
+		false,
+		FSlateIcon()
+	);
+
+	MenuBuilder.AddSubMenu(
+		LOCTEXT("JsonAsAssetLocalFetchCMDMenu", "Command-line Application"),
+		LOCTEXT("", ""),
+		FNewMenuDelegate::CreateLambda([this](FMenuBuilder& InnerMenuBuilder) {
+			InnerMenuBuilder.BeginSection("JsonAsAssetSection", LOCTEXT("JsonAsAssetSection", "Console"));
+			{
+				InnerMenuBuilder.AddMenuEntry(
+					FText::FromString("Execute Local Fetch (.EXE)"),
+					FText::FromString(""),
+					FSlateIcon(),
+					FUIAction(
+						FExecuteAction::CreateLambda([this]() {
+							TSharedPtr<SNotificationItem> NotificationItem = LocalFetchNotificationPtr.Pin();
+
+							if (NotificationItem.IsValid()) {
+								NotificationItem->SetFadeOutDuration(0.001);
+								NotificationItem->Fadeout();
+								LocalFetchNotificationPtr.Reset();
+							}
+
+							FString PluginBinariesFolder;
+
+							const TSharedPtr<IPlugin> PluginInfo = IPluginManager::Get().FindPlugin("JsonAsAsset");
+							if (PluginInfo.IsValid()) {
+								const FString PluginBaseDir = PluginInfo->GetBaseDir();
+								PluginBinariesFolder = FPaths::Combine(PluginBaseDir, TEXT("Binaries"));
+
+								if (!FPaths::DirectoryExists(PluginBinariesFolder)) {
+									PluginBinariesFolder = FPaths::Combine(PluginBaseDir, TEXT("JsonAsAsset/Binaries"));
+								}
+							}
+
+							FString FullPath = FPaths::ConvertRelativePathToFull(PluginBinariesFolder + "/Win64/LocalFetch/LocalFetch.exe");
+							FPlatformProcess::LaunchFileInDefaultExternalApplication(*FullPath, TEXT("--urls=http://localhost:1500/"), ELaunchVerb::Open);
+						}),
+						FCanExecuteAction::CreateLambda([this]() {
+							return !IsProcessRunning("LocalFetch.exe");
+						})
+					)
+				);
+
+				InnerMenuBuilder.AddMenuEntry(
+					FText::FromString("Shutdown Local Fetch (.EXE)"),
+					FText::FromString(""),
+					FSlateIcon(),
+					FUIAction(
+						FExecuteAction::CreateLambda([this]() {
+							FString ProcessName = TEXT("LocalFetch.exe");
+							TCHAR* ProcessNameChar = ProcessName.GetCharArray().GetData();
+
+							DWORD ProcessID = 0;
+							HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+							if (hSnapshot != INVALID_HANDLE_VALUE) {
+								PROCESSENTRY32 ProcessEntry;
+								ProcessEntry.dwSize = sizeof(PROCESSENTRY32);
+
+								if (Process32First(hSnapshot, &ProcessEntry)) {
+									do {
+										if (FCString::Stricmp(ProcessEntry.szExeFile, ProcessNameChar) == 0) {
+											ProcessID = ProcessEntry.th32ProcessID;
+											break;
+										}
+									} while (Process32Next(hSnapshot, &ProcessEntry));
+								}
+								CloseHandle(hSnapshot);
+							}
+
+							if (ProcessID != 0) {
+								HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, false, ProcessID);
+								if (hProcess != nullptr) {
+									TerminateProcess(hProcess, 0);
+									CloseHandle(hProcess);
+								}
+							}
+						}),
+						FCanExecuteAction::CreateLambda([this]() {
+							return IsProcessRunning("LocalFetch.exe");
+						})
+					)
+				);
+			}
+			InnerMenuBuilder.EndSection();
+		}),
+		false,
+		FSlateIcon()
+	);
+	MenuBuilder.EndSection();
+}
+
+void FJsonAsAssetModule::ImportConvexCollision()
+{
+	TArray<FAssetData> AssetDataList = GetAssetsInSelectedFolder();
+	TArray<FString> OutFolderNames = OpenFolderDialog("Select a folder for JSON files");
+
+	if (OutFolderNames.Num() == 0 || AssetDataList.Num() == 0) {
+		// Exit if no folder is selected
+		return;
+	}
+
+	for (const FAssetData& AssetData : AssetDataList) {
+		if (UStaticMesh* StaticMesh = Cast<UStaticMesh>(AssetData.GetAsset())) {
+			StaticMesh->ReleaseResources();
+			StaticMesh->Modify(true);
+
+			// Get the name of the static mesh
+			FString StaticMeshName = StaticMesh->GetName();
+
+			FString JsonFileName = StaticMeshName + ".json";
+			FString JsonFilePath = OutFolderNames[0] / JsonFileName;
+
+			if (FPaths::FileExists(JsonFilePath)) {
+				UE_LOG(LogTemp, Log, TEXT("Found JSON file for Static Mesh: %s"), *JsonFilePath);
+
+				FString ContentBefore;
+				if (FFileHelper::LoadFileToString(ContentBefore, *JsonFilePath)) {
+					FString Content = FString(TEXT("{\"data\": "));
+					Content.Append(ContentBefore);
+					Content.Append(FString("}"));
+
+					TSharedPtr<FJsonObject> JsonParsed;
+					const TSharedRef<TJsonReader<TCHAR>> JsonReader = TJsonReaderFactory<TCHAR>::Create(Content);
+
+					if (FJsonSerializer::Deserialize(JsonReader, JsonParsed)) {
+						const TArray<TSharedPtr<FJsonValue>> DataObjects = JsonParsed->GetArrayField("data");
+
+						for (const TSharedPtr<FJsonValue>& DataObject : DataObjects) {
+							if (!DataObject.IsValid() || !DataObject->AsObject().IsValid()) {
+								continue;
+							}
+
+							TSharedPtr<FJsonObject> JsonObject = DataObject->AsObject();
+							FString TypeValue;
+
+							// Check if the "Type" field exists and matches "BodySetup"
+							if (JsonObject->TryGetStringField("Type", TypeValue) && TypeValue == "BodySetup") {
+								// Check for "Class" with value "UScriptClass'BodySetup'"
+								FString ClassValue;
+								if (JsonObject->TryGetStringField("Class", ClassValue) && ClassValue == "UScriptClass'BodySetup'") {
+									// Navigate to "Properties"
+									TSharedPtr<FJsonObject> PropertiesObject = JsonObject->GetObjectField("Properties");
+									if (PropertiesObject.IsValid()) {
+										// Navigate to "AggGeom"
+										TSharedPtr<FJsonObject> AggGeomObject = PropertiesObject->GetObjectField("AggGeom");
+										if (AggGeomObject.IsValid()) {
+											FKAggregateGeom AggGeom;
+
+											auto GObjectSerializer = NewObject<UObjectSerializer>();
+											GObjectSerializer->DeserializeObjectProperties(PropertiesObject, StaticMesh->GetBodySetup());
+											StaticMesh->GetBodySetup()->CollisionTraceFlag = ECollisionTraceFlag::CTF_UseDefault;
+											StaticMesh->MarkPackageDirty();
+											StaticMesh->GetBodySetup()->PostEditChange();
+											StaticMesh->Modify(true);
+
+											// Notification
+											AppendNotification(
+												FText::FromString("Imported Convex Collision: " + StaticMeshName),
+												FText::FromString(StaticMeshName),
+												3.5f,
+												FEditorStyle::GetBrush("PhysicsAssetEditor.EnableCollision.Small"),
+												SNotificationItem::CS_Success,
+												false,
+												310.0f
+											);
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+
+			// Notify the editor about the changes
+			StaticMesh->GetBodySetup()->InvalidatePhysicsData();
+			StaticMesh->GetBodySetup()->CreatePhysicsMeshes();
+
+			StaticMesh->MarkPackageDirty();
+			StaticMesh->GetBodySetup()->PostEditChange();
+			StaticMesh->PostLoad();
+		}
+	}
 }
 
 #undef LOCTEXT_NAMESPACE

@@ -68,6 +68,8 @@ class JSONASASSET_API UPropertySerializer : public UObject
 public:
 	UPropertySerializer();
 
+	TMap<FString, UObject*> ReferencedObjects;
+
 	/** Disables property serialization entirely */
 	void DisablePropertySerialization(UStruct* Struct, FName PropertyName);
 	void AddStructSerializer(UScriptStruct* Struct, const TSharedPtr<FStructSerializer>& Serializer);
