@@ -36,6 +36,15 @@ bool ITextureImporter::ImportTexture2D(UTexture*& OutTexture2D, TArray<uint8>& D
 	const int SizeY = Properties->GetNumberField(TEXT("SizeY"));
 	constexpr int SizeZ = 1; // Tex2D doesn't have depth
 
+	const TArray<TSharedPtr<FJsonValue>>* TextureMipsPtr;
+	Properties->TryGetArrayField(TEXT("Mips"), TextureMipsPtr);
+	if (TextureMipsPtr)
+	{
+		auto TextureMips = *TextureMipsPtr;
+		if (TextureMips.Num() == 1)
+	            Texture2D->MipGenSettings = TextureMipGenSettings::TMGS_NoMipmaps;
+	}
+
 	FString PixelFormat;
 	if (Properties->TryGetStringField(TEXT("PixelFormat"), PixelFormat)) PlatformData->PixelFormat = static_cast<EPixelFormat>(Texture2D->GetPixelFormatEnum()->GetValueByNameString(PixelFormat));
 
