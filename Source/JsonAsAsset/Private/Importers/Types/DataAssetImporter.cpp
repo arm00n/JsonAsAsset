@@ -5,10 +5,18 @@
 
 bool IDataAssetImporter::ImportData() {
 	TSharedPtr<FJsonObject> Properties = JsonObject->GetObjectField("Properties");
-	GetObjectSerializer()->SetPackageForDeserialization(Package);
 
 	UDataAsset* DataAsset = NewObject<UDataAsset>(Package, DataAssetClass, FName(FileName), RF_Public | RF_Standalone);
-	GetObjectSerializer()->DeserializeObjectProperties(Properties, DataAsset);
+	DataAsset->MarkPackageDirty();
 
+	UObjectSerializer* ObjectSerializer = GetObjectSerializer();
+	ObjectSerializer->SetPackageForDeserialization(Package);
+	ObjectSerializer->SetExportForDeserialization(JsonObject);
+	ObjectSerializer->ParentAsset = DataAsset;
+
+	ObjectSerializer->DeserializeExports(AllJsonObjects);
+
+	ObjectSerializer->DeserializeObjectProperties(Properties, DataAsset);
+	
 	return OnAssetCreation(DataAsset);
 }

@@ -96,15 +96,15 @@ protected:
     // Shortcut to calling SavePackage and HandleAssetCreation
     bool OnAssetCreation(UObject* Asset);
 
-    template <class T = UObject>
-    TObjectPtr<T> DownloadWrapper(TObjectPtr<T> InObject, FString Type, FString Name, FString Path);
-
     static FName GetExportNameOfSubobject(const FString& PackageIndex);
     TArray<TSharedPtr<FJsonValue>> FilterExportsByOuter(const FString& Outer);
     TSharedPtr<FJsonValue> GetExportByObjectPath(const TSharedPtr<FJsonObject>& Object);
 public:
     /* ------------------------------------ Object Serializer and Property Serializer ------------------------------------ */
     FORCEINLINE UObjectSerializer* GetObjectSerializer() const { return GObjectSerializer; }
+
+    template <class T = UObject>
+    TObjectPtr<T> DownloadWrapper(TObjectPtr<T> InObject, FString Type, FString Name, FString Path);
 
 protected:
     UPropertySerializer* PropertySerializer;

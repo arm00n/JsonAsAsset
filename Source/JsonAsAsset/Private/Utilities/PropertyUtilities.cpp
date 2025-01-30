@@ -2,9 +2,13 @@
 
 #include "Utilities/PropertyUtilities.h"
 
+#include "GameplayTagContainer.h"
 #include "Importers/Constructor/Importer.h"
 #include "Utilities/ObjectUtilities.h"
 #include "UObject/TextProperty.h"
+
+#include "GameplayTagContainer.h"
+#include "Settings/JsonAsAssetSettings.h"
 
 DECLARE_LOG_CATEGORY_CLASS(LogPropertySerializer, Error, Log);
 PRAGMA_DISABLE_OPTIMIZATION
@@ -195,11 +199,44 @@ void UPropertySerializer::DeserializePropertyValueInner(FProperty* Property, con
 			Interface->SetInterface(InterfacePtr);
 		}
 	}
-	else if (Property->IsA<FSoftObjectProperty>()) {
-		// For soft object reference, path is enough too for deserialization.
-		const FString PathString = NewJsonValue->AsString();
-		FSoftObjectPtr* ObjectPtr = static_cast<FSoftObjectPtr*>(Value);
-		*ObjectPtr = FSoftObjectPath(PathString);
+	else if (FSoftObjectProperty* SoftObjectProperty = CastField<FSoftObjectProperty>(Property)) {
+		TSharedPtr<FJsonObject> SoftJsonObjectProperty;
+		FString PathString = "";
+		
+		switch (NewJsonValue->Type)
+		{
+			// FModel, extract it from the object
+			case EJson::Object:
+				SoftJsonObjectProperty = NewJsonValue->AsObject();
+				PathString = SoftJsonObjectProperty->GetStringField("AssetPathName");
+			break;
+
+			// Older versions of FModel ??
+			// Never encountered a case of this except on older game builds
+			default:
+				PathString = NewJsonValue->AsString();
+			break;
+		}
+
+		if (PathString != "")
+		{
+			FSoftObjectPtr* ObjectPtr = static_cast<FSoftObjectPtr*>(Value);
+			*ObjectPtr = FSoftObjectPath(PathString);
+
+			if (!ObjectPtr->LoadSynchronous())
+			{
+				// Try importing it using Local Fetch
+				IImporter* Importer = new IImporter();
+				FString PackagePath;
+				FString AssetName;
+				PathString.Split(".", &PackagePath, &AssetName);
+				TObjectPtr<UObject> T;
+
+				FString PropertyClassName = SoftObjectProperty->PropertyClass->GetName();
+				
+				Importer->DownloadWrapper(T, PropertyClassName, AssetName, PackagePath);
+			}
+		}
 	}
 	else if (const FObjectPropertyBase* ObjectProperty = CastField<const FObjectPropertyBase>(Property)) {
 		// Need to serialize full UObject for object property
@@ -217,6 +254,14 @@ void UPropertySerializer::DeserializePropertyValueInner(FProperty* Property, con
 
 		FString ObjectName = JsonValueAsObject->GetStringField("ObjectName");
 
+		if (UObject** FoundObjectPtr = ReferencedObjects.Find(ObjectName)) {
+			UObject* FoundObject = *FoundObjectPtr;
+
+			if (FoundObject) {
+				ObjectProperty->SetObjectPropertyValue(Value, FoundObject);
+			}
+		}
+
 		if (ObjectName.StartsWith("Distribution")) {
 			FString DistributionSecondaryName;
 			ObjectName.Split(".", nullptr, &DistributionSecondaryName);
@@ -232,6 +277,62 @@ void UPropertySerializer::DeserializePropertyValueInner(FProperty* Property, con
 		}
 	}
 	else if (const FStructProperty* StructProperty = CastField<const FStructProperty>(Property)) {
+		// FGameplayTag
+		if (StructProperty->Struct == FGameplayTag::StaticStruct())
+		{
+			FGameplayTag* GameplayTagStr = static_cast<FGameplayTag*>(Value);
+			*GameplayTagStr = FGameplayTag::RequestGameplayTag(FName(*NewJsonValue->AsString()));
+			
+			return;
+		}
+
+		// FGameplayTagContainer (handled from FModel data)
+		if (StructProperty->Struct == FGameplayTagContainer::StaticStruct())
+		{
+			FGameplayTagContainer* GameplayTagContainerStr = static_cast<FGameplayTagContainer*>(Value);
+
+			auto GameplayTags = JsonValue->AsArray();
+
+			for (TSharedPtr<FJsonValue> GameplayTagValue : GameplayTags)
+			{
+				FString GameplayTagString = GameplayTagValue->AsString();
+				FGameplayTag GameplayTag = FGameplayTag::RequestGameplayTag(FName(*GameplayTagString));
+				
+				GameplayTagContainerStr->AddTag(GameplayTag);
+			}
+			
+			return;
+		}
+
+		if (StructProperty->Struct->GetFName() == "SoftObjectPath")
+		{
+			TSharedPtr<FJsonObject> SoftJsonObjectProperty;
+			FString PathString = "";
+		
+			SoftJsonObjectProperty = NewJsonValue->AsObject();
+			PathString = SoftJsonObjectProperty->GetStringField("AssetPathName");
+			
+			if (PathString != "")
+			{
+				FSoftObjectPtr* ObjectPtr = static_cast<FSoftObjectPtr*>(Value);
+				*ObjectPtr = FSoftObjectPath(PathString);
+
+				if (!ObjectPtr->LoadSynchronous())
+				{
+					// Try importing it using Local Fetch
+					IImporter* Importer = new IImporter();
+					FString PackagePath;
+					FString AssetName;
+					PathString.Split(".", &PackagePath, &AssetName);
+					TObjectPtr<UObject> T;
+
+					FString PropertyClassName = "DataAsset";
+				
+					Importer->DownloadWrapper(T, PropertyClassName, AssetName, PackagePath);
+				}
+			}
+		}
+		
 		// JSON for FGuids are FStrings
 		FString OutString;
 		
@@ -252,8 +353,11 @@ void UPropertySerializer::DeserializePropertyValueInner(FProperty* Property, con
 	else if (const FByteProperty* ByteProperty = CastField<const FByteProperty>(Property)) {
 		// If we have a string provided, make sure Enum is not null
 		if (JsonValue->Type == EJson::String) {
+			FString EnumAsString = JsonValue->AsString();
+
 			check(ByteProperty->Enum);
-			const int64 EnumerationValue = ByteProperty->Enum->GetValueByNameString(NewJsonValue->AsString());
+			int64 EnumerationValue = ByteProperty->Enum->GetValueByNameString(EnumAsString);
+
 			ByteProperty->SetIntPropertyValue(Value, EnumerationValue);
 		}
 		else {
@@ -278,11 +382,13 @@ void UPropertySerializer::DeserializePropertyValueInner(FProperty* Property, con
 		*static_cast<FString*>(Value) = StringValue;
 	}
 	else if (const FEnumProperty* EnumProperty = CastField<const FEnumProperty>(Property)) {
+		const FString EnumAsString = NewJsonValue->AsString();
+
 		// Prefer readable enum names in result json to raw numbers
-		const FString EnumName = NewJsonValue->AsString();
-		const int64 UnderlyingValue = EnumProperty->GetEnum()->GetValueByNameString(EnumName);
-		if (ensure(UnderlyingValue != INDEX_NONE)) {
-			EnumProperty->GetUnderlyingProperty()->SetIntPropertyValue(Value, UnderlyingValue);
+		int64 EnumerationValue = EnumProperty->GetEnum()->GetValueByNameString(EnumAsString);
+		
+		if (ensure(EnumerationValue != INDEX_NONE)) {
+			EnumProperty->GetUnderlyingProperty()->SetIntPropertyValue(Value, EnumerationValue);
 		}
 	}
 	else if (Property->IsA<FNameProperty>()) {

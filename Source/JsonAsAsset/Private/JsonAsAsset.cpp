@@ -376,7 +376,18 @@ void FJsonAsAssetModule::AddToolbarExtension(FToolBarBuilder& Builder)
 		FUIAction(
 			FExecuteAction(),
 			FCanExecuteAction(),
-			FGetActionCheckState()
+			FGetActionCheckState(),
+			FIsActionButtonVisible::CreateLambda([this]()
+			{
+				static const auto CVar = IConsoleManager::Get().FindConsoleVariable(TEXT("Plugin.HideActions"));
+
+				if (CVar)
+				{
+					return CVar && CVar->GetInt() == 0;
+				}
+
+				return true;
+			})
 		),
 		FOnGetContent::CreateRaw(this, &FJsonAsAssetModule::CreateToolbarDropdown),
 		FText::FromString(Plugin->GetDescriptor().VersionName),

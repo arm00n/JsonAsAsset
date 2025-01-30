@@ -141,9 +141,14 @@ bool FAssetUtilities::ConstructAsset(const FString& Path, const FString& Type, T
 	if (Type == "") {
 		return false;
 	}
-	
+
+	UClass* Class = FindObject<UClass>(ANY_PACKAGE, *Type);
+
+	if (Class == nullptr) return false;
+	bool bDataAsset = Class->IsChildOf(UDataAsset::StaticClass());
+
 	// Supported Assets
-	if (LocalFetchAcceptedTypes.Contains(Type))
+	if (LocalFetchAcceptedTypes.Contains(Type) || bDataAsset)
 	{
 		//		Manually supported asset types
 		// (ex: textures have to be handled separately)
@@ -200,9 +205,7 @@ bool FAssetUtilities::ConstructAsset(const FString& Path, const FString& Type, T
 				if (RootName != "Game" && RootName != "Engine" && IPluginManager::Get().FindPlugin(RootName) == nullptr)
 					CreatePlugin(RootName);
 
-				UPackage* OutermostPkg;
 				UPackage* Package = CreatePackage(*NewPath);
-				OutermostPkg = Package->GetOutermost();
 				Package->FullyLoad();
 
 				// Import asset by IImporter

@@ -27,7 +27,9 @@ public class JsonAsAsset : ModuleRules
 			"HTTP",
 			"DeveloperSettings",
 			"Niagara",
-			"UnrealEd"
+			"UnrealEd", 
+			"MainFrame",
+			"GameplayTags"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new[]

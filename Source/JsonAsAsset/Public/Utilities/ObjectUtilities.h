@@ -49,6 +49,11 @@ private:
 public:
     UObjectSerializer();
 
+    TArray<FString> ExportsToNotDeserialize;
+
+    UPROPERTY()
+    UObject* ParentAsset;
+
     FORCEINLINE UPropertySerializer* GetPropertySerializer() const { return PropertySerializer; }
 
     TSharedRef<FJsonObject> SerializeObjectProperties(UObject* Object);
@@ -78,6 +83,8 @@ public:
 
     void InitializeForDeserialization(const TArray<TSharedPtr<FJsonValue>>& ObjectsArray);
     void SetPackageForDeserialization(UPackage* SelfPackage);
+    void SetExportForDeserialization(TSharedPtr<FJsonObject> Object);
+    void DeserializeExports(TArray<TSharedPtr<FJsonValue>> Exports);
 
     UObject* DeserializeObject(int32 Index);
 

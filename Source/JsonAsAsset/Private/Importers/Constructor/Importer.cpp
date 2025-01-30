@@ -317,15 +317,8 @@ bool IImporter::HandleAssetCreation(UObject* Asset) const {
 template <typename T>
 TObjectPtr<T> IImporter::DownloadWrapper(TObjectPtr<T> InObject, FString Type, FString Name, FString Path) {
 	const UJsonAsAssetSettings* Settings = GetDefault<UJsonAsAssetSettings>();
-
-	// If the asset can be found locally
-	if (InObject == nullptr && ImportAssetReference(Path)) {
-		TObjectPtr<T> Object = Cast<T>(StaticLoadObject(T::StaticClass(), nullptr, *(Path + "." + Name)));
-
-		return Object;
-	}
-
 	bool bEnableLocalFetch = Settings->bEnableLocalFetch;
+
 	FMessageLog MessageLogger = FMessageLog(FName("JsonAsAsset"));
 
 	if (bEnableLocalFetch && (
@@ -413,7 +406,12 @@ void IImporter::LoadObject(const TSharedPtr<FJsonObject>* PackageIndex, TObjectP
 		LoadedObject = Cast<T>(StaticLoadObject(T::StaticClass(), nullptr, *(ObjectPath + "." + AssetName + ":" + ObjectName)));
 	}
 
-	Object = DownloadWrapper(LoadedObject, ObjectType, ObjectName, ObjectPath);
+	Object = LoadedObject;
+
+	if (!Object)
+	{
+		Object = DownloadWrapper(LoadedObject, ObjectType, ObjectName, ObjectPath);
+	}
 }
 
 // Loads an array of <T> object ptrs -------------------------------------------------------

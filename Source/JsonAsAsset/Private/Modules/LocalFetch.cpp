@@ -15,6 +15,7 @@ TArray<FString> LocalFetchAcceptedTypes = {
 	"", // separator
 
 	"Material",
+	"MaterialInterface",
 	"MaterialFunction",
 	"MaterialInstanceConstant",
 	"MaterialParameterCollection",

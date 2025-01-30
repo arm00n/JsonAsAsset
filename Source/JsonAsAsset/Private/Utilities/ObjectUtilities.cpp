@@ -1,6 +1,8 @@
 // Copyright JAA Contributors 2024-2025
 
 #include "Utilities/ObjectUtilities.h"
+
+#include "PortableObjectPipeline.h"
 #include "Utilities/PropertyUtilities.h"
 #include "UObject/Package.h"
 
@@ -80,6 +82,45 @@ void UObjectSerializer::InitializeForSerialization(UPackage* NewSourcePackage) {
 void UObjectSerializer::SetPackageForDeserialization(UPackage* SelfPackage) {
 	check(SelfPackage);
 	this->SourcePackage = SelfPackage;
+}
+
+void UObjectSerializer::SetExportForDeserialization(TSharedPtr<FJsonObject> Object)
+{
+	ExportsToNotDeserialize.Add(Object->GetStringField("Name"));
+}
+
+void UObjectSerializer::DeserializeExports(TArray<TSharedPtr<FJsonValue>> Exports)
+{
+	for (TSharedPtr<FJsonValue> Object : Exports)
+	{
+		TSharedPtr<FJsonObject> ExportObject = Object->AsObject();
+
+		// No name = no export!!
+		if (!ExportObject->HasField("Name")) continue;
+
+		FString Name = ExportObject->GetStringField("Name");
+		
+		// Check if it's not supposed to be deserialized
+		if (ExportsToNotDeserialize.Contains(Name)) continue;
+
+		FString ClassName = ExportObject->GetStringField("Class");
+		UClass* FoundClass = FindObject<UClass>(ANY_PACKAGE, *ClassName);
+
+		UObject* NewUObject = NewObject<UObject>(ParentAsset, FoundClass, FName(*Name));
+
+		if (ExportObject->HasField("Properties"))
+		{
+			TSharedPtr<FJsonObject> Properties = ExportObject->GetObjectField("Properties");
+
+			DeserializeObjectProperties(Properties, NewUObject);
+		}
+
+		// Add it to the referenced objects
+		PropertySerializer->ReferencedObjects.Add(Name, NewUObject);
+
+		// Already deserialized
+		ExportsToNotDeserialize.Add(Name);
+	}
 }
 
 void UObjectSerializer::SetObjectMark(UObject* Object, const FString& ObjectMark) {
@@ -377,6 +418,8 @@ void UObjectSerializer::DeserializeObjectProperties(const TSharedPtr<FJsonObject
 		if (PropertySerializer->ShouldSerializeProperty(Property) && Properties->HasField(PropertyName)) {
 			void* PropertyValue = Property->ContainerPtrToValuePtr<void>(Object);
 			const TSharedPtr<FJsonValue>& ValueObject = Properties->Values.FindChecked(PropertyName);
+
+			UE_LOG(LogObjectSerializer, Error, TEXT("Property will be serialized: %s"), *PropertyName);
 
 			PropertySerializer->DeserializePropertyValue(Property, ValueObject.ToSharedRef(), PropertyValue);
 		}
