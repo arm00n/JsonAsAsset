@@ -248,8 +248,20 @@ void UPropertySerializer::DeserializePropertyValueInner(FProperty* Property, con
 		if (bUseDefaultLoadObject) {
 			// Use IImporter to import the object
 			IImporter* Importer = new IImporter();
-			Importer->LoadObject(&NewJsonValue->AsObject(), Object);
+			Importer->LoadObject(&JsonValueAsObject, Object);
 			ObjectProperty->SetObjectPropertyValue(Value, Object);
+
+			if (Object != nullptr) {
+				// Get the export
+				if (TSharedPtr<FJsonObject> Export = GetExport(JsonValueAsObject.Get(), ObjectSerializer->AllObjectsReference))
+				{
+					if (Export->HasField("Properties"))
+					{
+						TSharedPtr<FJsonObject> Properties = Export->GetObjectField("Properties");
+						ObjectSerializer->DeserializeObjectProperties(Properties, Object);
+					}
+				}
+			}
 		}
 
 		FString ObjectName = JsonValueAsObject->GetStringField("ObjectName");

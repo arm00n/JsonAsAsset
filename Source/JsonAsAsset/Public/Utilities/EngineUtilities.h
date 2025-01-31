@@ -5,11 +5,13 @@
 #include "Framework/Notifications/NotificationManager.h"
 #include "Widgets/Notifications/SNotificationList.h"
 #include "AssetRegistry/AssetRegistryModule.h"
+#include "Interfaces/IMainFrameModule.h"
 #include "IContentBrowserSingleton.h"
+#include <Serialization/JsonReader.h>
 #include "ContentBrowserModule.h"
 #include "DesktopPlatformModule.h"
 #include "IDesktopPlatform.h"
-#include "Interfaces/IMainFrameModule.h"
+#include "Json.h"
 
 // Gets all assets in selected folder
 inline TArray<FAssetData> GetAssetsInSelectedFolder() {
@@ -40,6 +42,31 @@ inline TArray<FAssetData> GetAssetsInSelectedFolder() {
 	AssetRegistryModule.Get().GetAssetsByPath(FName(*CurrentFolder), AssetDataList, true);
 
 	return AssetDataList;
+}
+
+inline TSharedPtr<FJsonObject> GetExport(FJsonObject* PackageIndex, TArray<TSharedPtr<FJsonValue>> AllJsonObjects) {
+	FString ObjectName = PackageIndex->GetStringField(TEXT("ObjectName")); // Class'Asset:ExportName'
+	FString ObjectPath = PackageIndex->GetStringField(TEXT("ObjectPath")); // Path/Asset.Index
+
+	// Clean up ObjectName (Class'Asset:ExportName' --> Asset:ExportName --> ExportName)
+	ObjectName.Split("'", nullptr, &ObjectName);
+	ObjectName.Split("'", &ObjectName, nullptr);
+
+	if (ObjectName.Contains(":")) {
+		ObjectName.Split(":", nullptr, &ObjectName); // Asset:ExportName --> ExportName
+	}
+
+	// Search for the object in the AllJsonObjects array
+	for (const TSharedPtr<FJsonValue>& Value : AllJsonObjects) {
+		const TSharedPtr<FJsonObject> ValueObject = Value->AsObject();
+
+		FString Name;
+		if (ValueObject->TryGetStringField(TEXT("Name"), Name) && Name == ObjectName) {
+			return ValueObject;
+		}
+	}
+
+	return nullptr;
 }
 
 inline TArray<FString> OpenFolderDialog(FString Title) {

@@ -49,6 +49,8 @@ private:
 public:
     UObjectSerializer();
 
+    TArray<TSharedPtr<FJsonValue>> AllObjectsReference;
+
     TArray<FString> ExportsToNotDeserialize;
 
     UPROPERTY()

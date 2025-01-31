@@ -530,31 +530,6 @@ bool IImporter::OnAssetCreation(UObject* Asset) {
 	return HandleAssetCreation(Asset);
 }
 
-TSharedPtr<FJsonObject> IImporter::GetExport(FJsonObject* PackageIndex) {
-	FString ObjectName = PackageIndex->GetStringField(TEXT("ObjectName")); // Class'Asset:ExportName'
-	FString ObjectPath = PackageIndex->GetStringField(TEXT("ObjectPath")); // Path/Asset.Index
-
-	// Clean up ObjectName (Class'Asset:ExportName' --> Asset:ExportName --> ExportName)
-	ObjectName.Split("'", nullptr, &ObjectName);
-	ObjectName.Split("'", &ObjectName, nullptr);
-
-	if (ObjectName.Contains(":")) {
-		ObjectName.Split(":", nullptr, &ObjectName); // Asset:ExportName --> ExportName
-	}
-
-	// Search for the object in the AllJsonObjects array
-	for (const TSharedPtr<FJsonValue>& Value : AllJsonObjects) {
-		const TSharedPtr<FJsonObject> ValueObject = Value->AsObject();
-
-		FString Name;
-		if (ValueObject->TryGetStringField(TEXT("Name"), Name) && Name == ObjectName) {
-			return ValueObject;
-		}
-	}
-
-	return nullptr;
-}
-
 FName IImporter::GetExportNameOfSubobject(const FString& PackageIndex) {
 	FString Name;
 	PackageIndex.Split("'", nullptr, &Name);

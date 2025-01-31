@@ -42,7 +42,7 @@ bool ITextureImporter::ImportTexture2D(UTexture*& OutTexture2D, TArray<uint8>& D
 	{
 		auto TextureMips = *TextureMipsPtr;
 		if (TextureMips.Num() == 1)
-	            Texture2D->MipGenSettings = TextureMipGenSettings::TMGS_NoMipmaps;
+			Texture2D->MipGenSettings = TextureMipGenSettings::TMGS_NoMipmaps;
 	}
 
 	FString PixelFormat;
@@ -64,7 +64,8 @@ bool ITextureImporter::ImportTexture2D(UTexture*& OutTexture2D, TArray<uint8>& D
 
 	Texture2D->UpdateResource();
 
-	if (Texture2D) {
+	if (Texture2D && Texture2D->IsValidLowLevel() && Texture2D != nullptr)
+		{
 		OutTexture2D = Texture2D;
 		return true;
 	}

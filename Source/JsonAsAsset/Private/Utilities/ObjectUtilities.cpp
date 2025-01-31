@@ -5,6 +5,7 @@
 #include "PortableObjectPipeline.h"
 #include "Utilities/PropertyUtilities.h"
 #include "UObject/Package.h"
+#include "Utilities/EngineUtilities.h"
 
 DECLARE_LOG_CATEGORY_CLASS(LogObjectSerializer, All, All);
 PRAGMA_DISABLE_OPTIMIZATION
@@ -415,13 +416,66 @@ void UObjectSerializer::DeserializeObjectProperties(const TSharedPtr<FJsonObject
 	for (FProperty* Property = ObjectClass->PropertyLink; Property; Property = Property->PropertyLinkNext) {
 		const FString PropertyName = Property->GetName();
 
-		if (PropertySerializer->ShouldSerializeProperty(Property) && Properties->HasField(PropertyName)) {
+		if (!PropertySerializer->ShouldSerializeProperty(Property)) continue;
+
+		bool HasHandledProperty = false;
+
+		if (Property->ArrayDim != 1) {
+			void* PropertyValue = Property->ContainerPtrToValuePtr<void>(Object);
+			TArray<TSharedPtr<FJsonValue>> ArrayElements;
+
+			for (const auto& Pair : Properties->Values) {
+				const FString& Key = Pair.Key;
+				TSharedPtr<FJsonValue> Value = Pair.Value;
+
+				// If it's not matching
+				if (!Key.StartsWith(PropertyName)) continue;
+
+				// If it is formatted like PropertyName[Index]
+				bool IsIndexed = Key.Contains("[") && Key.Contains("]");
+				int32 CurrentArrayIndex = 0;
+
+				if (IsIndexed) {
+					int32 OpenBracketPos, CloseBracketPos;
+					
+					if (Key.FindChar('[', OpenBracketPos) && Key.FindChar(']', CloseBracketPos) && CloseBracketPos > OpenBracketPos) {
+						FString IndexStr = Key.Mid(OpenBracketPos + 1, CloseBracketPos - OpenBracketPos - 1);
+						CurrentArrayIndex = FCString::Atoi(*IndexStr);
+					}
+				}
+				
+				if (CurrentArrayIndex >= ArrayElements.Num()) {
+					ArrayElements.SetNum(CurrentArrayIndex + 1);
+				}
+				
+				ArrayElements[CurrentArrayIndex] = Value;
+			}
+
+			if (ArrayElements.Num() == 0) continue;
+
+			for (int32 ArrayIndex = 0; ArrayIndex < ArrayElements.Num(); ArrayIndex++) {
+				uint8* ArrayPropertyValue = (uint8*)PropertyValue + Property->ElementSize * ArrayIndex;
+
+				if (!ArrayElements.IsValidIndex(ArrayIndex)) continue;
+				
+				const TSharedRef<FJsonValue> ArrayJsonValue = ArrayElements[ArrayIndex].ToSharedRef();
+
+				PropertySerializer->DeserializePropertyValueInner(Property, ArrayJsonValue, ArrayPropertyValue);
+
+				HasHandledProperty = true;
+			}
+		}
+
+		if (Properties->HasField(PropertyName) && !HasHandledProperty) {
 			void* PropertyValue = Property->ContainerPtrToValuePtr<void>(Object);
 			const TSharedPtr<FJsonValue>& ValueObject = Properties->Values.FindChecked(PropertyName);
 
 			UE_LOG(LogObjectSerializer, Error, TEXT("Property will be serialized: %s"), *PropertyName);
 
-			PropertySerializer->DeserializePropertyValue(Property, ValueObject.ToSharedRef(), PropertyValue);
+			if (Property->ArrayDim == 1 || ValueObject->Type == EJson::Array)
+			{
+				PropertySerializer->DeserializePropertyValue(Property, ValueObject.ToSharedRef(), PropertyValue);
+			}
 		}
 	}
 }
@@ -537,6 +591,7 @@ FString UObjectSerializer::GetObjectFullPath(int32 ObjectIndex) {
 	checkf(0, TEXT("Unknown object type: %s"), *ObjectType);
 	return TEXT("");
 }
+
 UObject* UObjectSerializer::DeserializeExportedObject(int32 ObjectIndex, TSharedPtr<FJsonObject> ObjectJson) {
 	// Object is defined inside our own package, so we should have
 	// NOTE: Probably shouldn't be a export
