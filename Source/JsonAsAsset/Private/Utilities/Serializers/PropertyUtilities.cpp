@@ -1,14 +1,11 @@
 // Copyright JAA Contributors 2024-2025
 
-#include "Utilities/PropertyUtilities.h"
+#include "Utilities/Serializers/PropertyUtilities.h"
 
 #include "GameplayTagContainer.h"
 #include "Importers/Constructor/Importer.h"
-#include "Utilities/ObjectUtilities.h"
+#include "Utilities/Serializers/ObjectUtilities.h"
 #include "UObject/TextProperty.h"
-
-#include "GameplayTagContainer.h"
-#include "Settings/JsonAsAssetSettings.h"
 
 DECLARE_LOG_CATEGORY_CLASS(LogPropertySerializer, Error, Log);
 PRAGMA_DISABLE_OPTIMIZATION
@@ -132,6 +129,8 @@ void UPropertySerializer::DeserializePropertyValueInner(FProperty* Property, con
 
 	TSharedRef<FJsonValue> NewJsonValue = JsonValue;
 
+	if (NewJsonValue->IsNull()) return;
+
 	if (MapProperty) {
 		FProperty* KeyProperty = MapProperty->KeyProp;
 		FProperty* ValueProperty = MapProperty->ValueProp;
@@ -245,13 +244,38 @@ void UPropertySerializer::DeserializePropertyValueInner(FProperty* Property, con
 		auto JsonValueAsObject = NewJsonValue->AsObject();
 		bool bUseDefaultLoadObject = !JsonValueAsObject->GetStringField("ObjectName").Contains(":ParticleModule");
 
-		if (bUseDefaultLoadObject) {
+		if (bUseDefaultLoadObject)
+		{
 			// Use IImporter to import the object
 			IImporter* Importer = new IImporter();
-			Importer->LoadObject(&JsonValueAsObject, Object);
-			ObjectProperty->SetObjectPropertyValue(Value, Object);
 
-			if (Object != nullptr) {
+			Importer->ParentObject = ObjectSerializer->ParentAsset;
+			Importer->LoadObject(&JsonValueAsObject, Object);
+
+			if (Object == nullptr)
+			{
+				if (ObjectProperty && ObjectProperty->PropertyClass)
+				{
+					UStruct* Struct = ObjectProperty->PropertyClass;
+
+					FFailedPropertyInfo PropertyInfo;
+					PropertyInfo.ClassName = ObjectProperty->PropertyClass->GetName();
+					PropertyInfo.SuperStructName = Struct->GetSuperStruct() ? Struct->GetSuperStruct()->GetName() : TEXT("None");
+					PropertyInfo.ObjectPath = JsonValueAsObject->GetStringField("ObjectPath");
+					
+					if (!FailedProperties.Contains(PropertyInfo))
+					{
+						FailedProperties.Add(PropertyInfo);
+					}
+				}
+			}
+
+			if ((Object != nullptr || Object.IsValid()) && !Cast<UActorComponent>(Object.Get()))
+			{
+				ObjectProperty->SetObjectPropertyValue(Value, Object);
+			}
+
+			if (Object != nullptr || Object.IsValid()) {
 				// Get the export
 				if (TSharedPtr<FJsonObject> Export = GetExport(JsonValueAsObject.Get(), ObjectSerializer->AllObjectsReference))
 				{
@@ -428,6 +452,11 @@ void UPropertySerializer::DeserializePropertyValueInner(FProperty* Property, con
 	else {
 		UE_LOG(LogPropertySerializer, Fatal, TEXT("Found unsupported property type when deserializing value: %s"), *Property->GetClass()->GetName());
 	}
+}
+
+void UPropertySerializer::ClearCachedData()
+{
+	FailedProperties.Empty();
 }
 
 void UPropertySerializer::DisablePropertySerialization(UStruct* Struct, FName PropertyName) {

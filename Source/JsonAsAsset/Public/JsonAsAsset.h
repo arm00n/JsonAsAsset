@@ -27,12 +27,8 @@ private:
     void CreateLocalFetchDropdown(FMenuBuilder MenuBuilder);
     void ImportConvexCollision();
 
-    bool bActionRequired;
-    const UJsonAsAssetSettings* Settings;
-
-    // Creates a dialog for a file
-    TArray<FString> OpenFileDialog(FString Title, FString Type);
-    bool IsProcessRunning(const FString& ProcessName);
+    bool bActionRequired = false;
+    const UJsonAsAssetSettings* Settings = nullptr;
 
 #if ENGINE_MAJOR_VERSION == 4
     void AddToolbarExtension(FToolBarBuilder& Builder);

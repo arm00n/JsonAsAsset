@@ -58,8 +58,8 @@ bool IPhysicsAssetImporter::ImportData() {
 		FName ExportName = GetExportNameOfSubobject(ObjectField->GetStringField("ObjectName"));
 		FJsonObject* ExportJson = Exports.Find(ExportName)->Json;
 
-		TSharedPtr<FJsonObject> ExportProperties = ExportJson->GetObjectField("Properties");
-		FName BoneName = FName(*ExportProperties->GetStringField("BoneName"));
+		TSharedPtr<FJsonObject> ExportProperties = ExportJson->GetObjectField(TEXT("Properties"));
+		FName BoneName = FName(*ExportProperties->GetStringField(TEXT("BoneName")));
 		
 		UE_LOG(LogTemp, Log, TEXT("Processing Skeletal Body Setup: %s"), *ExportName.ToString());
 
@@ -70,10 +70,10 @@ bool IPhysicsAssetImporter::ImportData() {
 
 	// ConstraintSetup
 	ProcessJsonArrayField(Properties, TEXT("ConstraintSetup"), [&](const TSharedPtr<FJsonObject>& ObjectField) {
-		FName ExportName = GetExportNameOfSubobject(ObjectField->GetStringField("ObjectName"));
+		FName ExportName = GetExportNameOfSubobject(ObjectField->GetStringField(TEXT("ObjectName")));
 		FJsonObject* ExportJson = Exports.Find(ExportName)->Json;
 
-		TSharedPtr<FJsonObject> ExportProperties = ExportJson->GetObjectField("Properties");
+		TSharedPtr<FJsonObject> ExportProperties = ExportJson->GetObjectField(TEXT("Properties"));
 		UE_LOG(LogTemp, Log, TEXT("Processing Constraint Setup: %s"), *ExportName.ToString());
 
 		UPhysicsConstraintTemplate* PhysicsConstraintTemplate = CreateNewConstraint(PhysicsAsset, ExportName);

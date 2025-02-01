@@ -1,6 +1,6 @@
 // Copyright JAA Contributors 2024-2025
 
-#include "JsonAsAssetStyle.h"
+#include "Modules/UI/StyleModule.h"
 #include "Styling/SlateStyleRegistry.h"
 #include "Interfaces/IPluginManager.h"
 
@@ -25,10 +25,6 @@ FName FJsonAsAssetStyle::GetStyleSetName() {
 }
 
 #define IMAGE_BRUSH(RelativePath, ...) FSlateImageBrush(Style->RootToContentDir(RelativePath, TEXT(".png")), __VA_ARGS__)
-#define BOX_BRUSH(RelativePath, ...) FSlateBoxBrush(Style->RootToContentDir(RelativePath, TEXT(".png")), __VA_ARGS__)
-#define BORDER_BRUSH(RelativePath, ...) FSlateBorderBrush(Style->RootToContentDir(RelativePath, TEXT(".png")), __VA_ARGS__)
-#define TTF_FONT(RelativePath, ...) FSlateFontInfo(Style->RootToContentDir(RelativePath, TEXT(".ttf")), __VA_ARGS__)
-#define OTF_FONT(RelativePath, ...) FSlateFontInfo(Style->RootToContentDir(RelativePath, TEXT(".otf")), __VA_ARGS__)
 
 const FVector2D Icon40x40(40, 40);
 const FVector2D Icon80x80(40, 40);
@@ -44,18 +40,14 @@ TSharedRef<FSlateStyleSet> FJsonAsAssetStyle::Create() {
 	return Style;
 }
 
+const ISlateStyle& FJsonAsAssetStyle::Get() {
+	return *StyleInstance;
+}
+
 #undef IMAGE_BRUSH
-#undef BOX_BRUSH
-#undef BORDER_BRUSH
-#undef TTF_FONT
-#undef OTF_FONT
 
 void FJsonAsAssetStyle::ReloadTextures() {
 	if (FSlateApplication::IsInitialized()) {
 		FSlateApplication::Get().GetRenderer()->ReloadTextureResources();
 	}
-}
-
-const ISlateStyle& FJsonAsAssetStyle::Get() {
-	return *StyleInstance;
 }

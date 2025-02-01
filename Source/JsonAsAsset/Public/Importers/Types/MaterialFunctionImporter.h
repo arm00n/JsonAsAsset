@@ -3,8 +3,6 @@
 #pragma once
 
 #include "../Constructor/MaterialGraph.h"
-#include "Widgets/Notifications/SNotificationList.h"
-#include "Framework/Notifications/NotificationManager.h"
 
 class IMaterialFunctionImporter : public IMaterialGraph {
 public:

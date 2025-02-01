@@ -323,7 +323,7 @@ TObjectPtr<T> IImporter::DownloadWrapper(TObjectPtr<T> InObject, FString Type, F
 
 	if (bEnableLocalFetch && (
 		InObject == nullptr ||
-			Settings->bDownloadExistingTextures &&
+			Settings->AssetSettings.TextureImportSettings.bDownloadExistingTextures &&
 			Type == "Texture2D"
 		)
 	) {
@@ -382,7 +382,7 @@ template void IImporter::LoadObject<USoundNode>(const TSharedPtr<FJsonObject>*, 
 
 template <typename T>
 void IImporter::LoadObject(const TSharedPtr<FJsonObject>* PackageIndex, TObjectPtr<T>& Object) {
-	FString ObjectType, ObjectName, ObjectPath;
+	FString ObjectType, ObjectName, ObjectPath, Outer;
 	PackageIndex->Get()->GetStringField(TEXT("ObjectName")).Split("'", &ObjectType, &ObjectName);
 	PackageIndex->Get()->GetStringField(TEXT("ObjectPath")).Split(".", &ObjectPath, nullptr);
 
@@ -396,9 +396,31 @@ void IImporter::LoadObject(const TSharedPtr<FJsonObject>* PackageIndex, TObjectP
 	ObjectPath = ObjectPath.Replace(TEXT("Engine/Content"), TEXT("/Engine"));
 	ObjectName = ObjectName.Replace(TEXT("'"), TEXT(""));
 
+	if (ObjectName.Contains(".")) {
+		ObjectName.Split(".", nullptr, &ObjectName);
+	}
+
+	if (ObjectName.Contains(".")) {
+		ObjectName.Split(".", &Outer, &ObjectName);
+	}
+
 	// Try to load object using the object path and the object name combined
 	TObjectPtr<T> LoadedObject = Cast<T>(StaticLoadObject(T::StaticClass(), nullptr, *(ObjectPath + "." + ObjectName)));
 
+	if (!Outer.IsEmpty())
+	{
+		AActor* NewLoadedObject = Cast<AActor>(ParentObject);
+		auto Components = NewLoadedObject->GetComponents();
+		
+		for (UActorComponent* Component : Components)
+		{
+			if (ObjectName == Component->GetName())
+			{
+				LoadedObject = Cast<T>(Component);
+			}
+		}
+	}
+	
 	// Material Expression case
 	if (!LoadedObject && ObjectName.Contains("MaterialExpression")) {
 		FString AssetName;

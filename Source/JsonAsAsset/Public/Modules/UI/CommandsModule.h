@@ -1,10 +1,11 @@
-// Copyright JAA Contributors 2024-2025
+﻿// Copyright JAA Contributors 2024-2025
 
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Framework/Commands/Commands.h"
-#include "JsonAsAssetStyle.h"
+#include "Modules/UI/StyleModule.h"
+
+#define LOCTEXT_NAMESPACE "FJsonAsAssetModule"
 
 class FJsonAsAssetCommands : public TCommands<FJsonAsAssetCommands>
 {
@@ -14,7 +15,12 @@ public:
 	}
 
 	// TCommands<> interface
-	virtual void RegisterCommands() override;
+	virtual void RegisterCommands() override
+	{
+		UI_COMMAND(PluginAction, "JsonAsAsset", "Choose a JSON file to Convert", EUserInterfaceActionType::Button, FInputGesture());
+	};
 
 	TSharedPtr<FUICommandInfo> PluginAction;
 };
+
+#undef LOCTEXT_NAMESPACE

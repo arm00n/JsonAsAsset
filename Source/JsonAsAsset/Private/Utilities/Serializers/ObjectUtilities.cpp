@@ -1,11 +1,8 @@
 // Copyright JAA Contributors 2024-2025
 
-#include "Utilities/ObjectUtilities.h"
-
-#include "PortableObjectPipeline.h"
-#include "Utilities/PropertyUtilities.h"
+#include "Utilities/Serializers/ObjectUtilities.h"
+#include "Utilities/Serializers/PropertyUtilities.h"
 #include "UObject/Package.h"
-#include "Utilities/EngineUtilities.h"
 
 DECLARE_LOG_CATEGORY_CLASS(LogObjectSerializer, All, All);
 PRAGMA_DISABLE_OPTIMIZATION
@@ -50,6 +47,13 @@ FObjectCompareSettings FObjectCompareContext::GetObjectSettings(int32 ObjectInde
 
 UObjectSerializer::UObjectSerializer() {
 	this->LastObjectIndex = 0;
+}
+
+void UObjectSerializer::SetupExports(TArray<TSharedPtr<FJsonValue>> InObjects)
+{
+	AllObjectsReference = InObjects;
+	
+	PropertySerializer->ClearCachedData();
 }
 
 UPackage* FindOrLoadPackage(const FString& PackageName) {
@@ -411,6 +415,8 @@ void UObjectSerializer::FlushPropertiesIntoObject(const int32 ObjectIndex, UObje
 }
 
 void UObjectSerializer::DeserializeObjectProperties(const TSharedPtr<FJsonObject>& Properties, UObject* Object) {
+	if (Object == nullptr) return;
+	
 	UClass* ObjectClass = Object->GetClass();
 
 	for (FProperty* Property = ObjectClass->PropertyLink; Property; Property = Property->PropertyLinkNext) {
@@ -457,8 +463,13 @@ void UObjectSerializer::DeserializeObjectProperties(const TSharedPtr<FJsonObject
 				uint8* ArrayPropertyValue = (uint8*)PropertyValue + Property->ElementSize * ArrayIndex;
 
 				if (!ArrayElements.IsValidIndex(ArrayIndex)) continue;
+
+				TSharedPtr<FJsonValue> ArrayJsonElement = ArrayElements[ArrayIndex];
 				
-				const TSharedRef<FJsonValue> ArrayJsonValue = ArrayElements[ArrayIndex].ToSharedRef();
+				if (ArrayJsonElement == nullptr) continue;
+				if (ArrayJsonElement->IsNull()) continue;
+				
+				const TSharedRef<FJsonValue> ArrayJsonValue = ArrayJsonElement.ToSharedRef();
 
 				PropertySerializer->DeserializePropertyValueInner(Property, ArrayJsonValue, ArrayPropertyValue);
 
@@ -466,11 +477,9 @@ void UObjectSerializer::DeserializeObjectProperties(const TSharedPtr<FJsonObject
 			}
 		}
 
-		if (Properties->HasField(PropertyName) && !HasHandledProperty) {
+		if (Properties->HasField(PropertyName) && !HasHandledProperty && PropertyName != "LODParentPrimitive") {
 			void* PropertyValue = Property->ContainerPtrToValuePtr<void>(Object);
 			const TSharedPtr<FJsonValue>& ValueObject = Properties->Values.FindChecked(PropertyName);
-
-			UE_LOG(LogObjectSerializer, Error, TEXT("Property will be serialized: %s"), *PropertyName);
 
 			if (Property->ArrayDim == 1 || ValueObject->Type == EJson::Array)
 			{

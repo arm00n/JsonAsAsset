@@ -7,47 +7,117 @@
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "Interfaces/IMainFrameModule.h"
 #include "IContentBrowserSingleton.h"
-#include <Serialization/JsonReader.h>
-#include "ContentBrowserModule.h"
+#include "Windows/WindowsHWrapper.h"
 #include "DesktopPlatformModule.h"
+#include "ContentBrowserModule.h"
 #include "IDesktopPlatform.h"
+#include "TlHelp32.h"
 #include "Json.h"
 
+inline bool HandlePackageCreation(UObject* Asset, UPackage* Package) {
+	FAssetRegistryModule::AssetCreated(Asset);
+	if (!Asset->MarkPackageDirty()) return false;
+	
+	Package->SetDirtyFlag(true);
+	Asset->PostEditChange();
+	Asset->AddToRoot();
+	
+	Package->FullyLoad();
+
+	// Browse to newly added Asset
+	const TArray<FAssetData>& Assets = {Asset};
+	const FContentBrowserModule& ContentBrowserModule = FModuleManager::Get().LoadModuleChecked<FContentBrowserModule>("ContentBrowser");
+	ContentBrowserModule.Get().SyncBrowserToAssets(Assets);
+
+	return true;
+}
+
+inline void SpawnPrompt(FString Title, FString Text) {
+	FText DialogTitle = FText::FromString(Title);
+	FText DialogMessage = FText::FromString(Text);
+
+	FMessageDialog::Open(EAppMsgType::Ok, DialogMessage);
+}
+
 // Gets all assets in selected folder
-inline TArray<FAssetData> GetAssetsInSelectedFolder() {
+inline TArray<FAssetData> GetAssetsInSelectedFolder()
+{
 	TArray<FAssetData> AssetDataList;
 
 	// Get the Content Browser Module
-	const FContentBrowserModule& ContentBrowserModule = FModuleManager::LoadModuleChecked<FContentBrowserModule>("ContentBrowser");
+	FContentBrowserModule& ContentBrowserModule = FModuleManager::LoadModuleChecked<FContentBrowserModule>("ContentBrowser");
 
 	TArray<FString> SelectedFolders;
 	ContentBrowserModule.Get().GetSelectedPathViewFolders(SelectedFolders);
 
-	if (SelectedFolders.Num() == 0) {
-		return AssetDataList;
+	if (SelectedFolders.Num() == 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No folder selected in the Content Browser."));
+		return AssetDataList; 
 	}
 
-	const auto CurrentFolder = SelectedFolders[0];
+	FString CurrentFolder = SelectedFolders[0];
 
-	// Check if the folder is the root folder
-	if (CurrentFolder == "/Game") {
+	// Check if the folder is the root folder, and show a prompt if so
+	if (CurrentFolder == "/Game")
+	{
+		SpawnPrompt(
+			"Action Not Allowed in Root Content Folder",
+			"You can't do this action in the root folder, this will stall the editor for a long time."
+		);
 		return AssetDataList;
 	}
 
 	// Get the Asset Registry Module
-	const FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
+	FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
 	AssetRegistryModule.Get().SearchAllAssets(true);
 
 	// Get all assets in the folder and its subfolders
 	AssetRegistryModule.Get().GetAssetsByPath(FName(*CurrentFolder), AssetDataList, true);
 
+	// No Assets found
+	if (AssetDataList.Num() == 0) {
+		SpawnPrompt(
+			"No Assets Found",
+			"Please go into a folder with assets in it."
+		);
+	}
+
 	return AssetDataList;
+}
+
+inline bool IsProcessRunning(const FString& ProcessName) {
+	bool bIsRunning = false;
+
+	// Convert FString to WCHAR
+	const TCHAR* ProcessNameChar = *ProcessName;
+	const WCHAR* ProcessNameWChar = (const WCHAR*)ProcessNameChar;
+
+	HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+	if (hSnapshot != INVALID_HANDLE_VALUE) {
+		PROCESSENTRY32 ProcessEntry;
+		ProcessEntry.dwSize = sizeof(ProcessEntry);
+
+		if (Process32First(hSnapshot, &ProcessEntry)) {
+			do {
+				if (_wcsicmp(ProcessEntry.szExeFile, ProcessNameWChar) == 0) {
+					bIsRunning = true;
+					break;
+				}
+			} while (Process32Next(hSnapshot, &ProcessEntry));
+		}
+
+		CloseHandle(hSnapshot);
+	}
+
+	return bIsRunning;
 }
 
 inline TSharedPtr<FJsonObject> GetExport(FJsonObject* PackageIndex, TArray<TSharedPtr<FJsonValue>> AllJsonObjects) {
 	FString ObjectName = PackageIndex->GetStringField(TEXT("ObjectName")); // Class'Asset:ExportName'
 	FString ObjectPath = PackageIndex->GetStringField(TEXT("ObjectPath")); // Path/Asset.Index
-
+	FString Outer;
+	
 	// Clean up ObjectName (Class'Asset:ExportName' --> Asset:ExportName --> ExportName)
 	ObjectName.Split("'", nullptr, &ObjectName);
 	ObjectName.Split("'", &ObjectName, nullptr);
@@ -56,22 +126,70 @@ inline TSharedPtr<FJsonObject> GetExport(FJsonObject* PackageIndex, TArray<TShar
 		ObjectName.Split(":", nullptr, &ObjectName); // Asset:ExportName --> ExportName
 	}
 
+	if (ObjectName.Contains(".")) {
+		ObjectName.Split(".", nullptr, &ObjectName);
+	}
+
+	if (ObjectName.Contains(".")) {
+		ObjectName.Split(".", &Outer, &ObjectName);
+	}
+
+	int Index = 0;
+
 	// Search for the object in the AllJsonObjects array
 	for (const TSharedPtr<FJsonValue>& Value : AllJsonObjects) {
 		const TSharedPtr<FJsonObject> ValueObject = Value->AsObject();
 
 		FString Name;
 		if (ValueObject->TryGetStringField(TEXT("Name"), Name) && Name == ObjectName) {
-			return ValueObject;
+			if (ValueObject->HasField(TEXT("Outer")) && !Outer.IsEmpty())
+			{
+				FString OuterName = ValueObject->GetStringField(TEXT("Outer"));
+
+				if (OuterName == Outer)
+				{
+					return AllJsonObjects[Index]->AsObject();
+				}
+			}
+			else
+			{
+				return ValueObject;
+			}
 		}
+
+		Index++;
 	}
 
 	return nullptr;
 }
 
+inline TArray<FString> OpenFileDialog(FString Title, FString Type) {
+	TArray<FString> ReturnValue;
+
+	// Window Handler for Windows
+	void* ParentWindowHandle = nullptr;
+
+	IMainFrameModule& MainFrameModule = IMainFrameModule::Get();
+	TSharedPtr<SWindow> MainWindow = MainFrameModule.GetParentWindow();
+
+	// Define the window handle, if it's valid
+	if (MainWindow.IsValid() && MainWindow->GetNativeWindow().IsValid()) ParentWindowHandle = MainWindow->GetNativeWindow()->GetOSWindowHandle();
+
+	IDesktopPlatform* DesktopPlatform = FDesktopPlatformModule::Get();
+	if (DesktopPlatform) {
+		uint32 SelectionFlag = 1;
+
+		// Open File Dialog
+		DesktopPlatform->OpenFileDialog(ParentWindowHandle, Title, FString(""), FString(""), Type, SelectionFlag, ReturnValue);
+	}
+
+	return ReturnValue;
+}
+
 inline TArray<FString> OpenFolderDialog(FString Title) {
 	TArray<FString> ReturnValue;
 
+	// Window Handler for Windows
 	void* ParentWindowHandle = nullptr;
 
 	IMainFrameModule& MainFrameModule = IMainFrameModule::Get();

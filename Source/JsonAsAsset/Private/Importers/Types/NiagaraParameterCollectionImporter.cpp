@@ -21,27 +21,27 @@ void CNiagaraParameterCollectionDerived::AddAParameter(FNiagaraVariable Paramete
 }
 
 bool INiagaraParameterCollectionImporter::ImportData() {
-    TSharedPtr<FJsonObject> Properties = JsonObject->GetObjectField("Properties");
+    TSharedPtr<FJsonObject> Properties = JsonObject->GetObjectField(TEXT("Properties"));
 
     CNiagaraParameterCollectionDerived* NiagaraParameterCollection = Cast<CNiagaraParameterCollectionDerived>(
         NewObject<UNiagaraParameterCollection>(Package, UNiagaraParameterCollection::StaticClass(), *FileName, RF_Public | RF_Standalone));
 
-    NiagaraParameterCollection->SetCompileId(FGuid(Properties->GetStringField("CompileId")));
+    NiagaraParameterCollection->SetCompileId(FGuid(Properties->GetStringField(TEXT("CompileId"))));
 
     TObjectPtr<UMaterialParameterCollection> MaterialParameterCollection;
     const TSharedPtr<FJsonObject>* SourceMaterialCollection;
     
-    if (Properties->TryGetObjectField("SourceMaterialCollection", SourceMaterialCollection))
+    if (Properties->TryGetObjectField(TEXT("SourceMaterialCollection"), SourceMaterialCollection))
         LoadObject(SourceMaterialCollection, MaterialParameterCollection);
 
     NiagaraParameterCollection->SetSourceMaterialCollection(MaterialParameterCollection);
 
     const TArray<TSharedPtr<FJsonValue>>* ParametersPtr;
-    if (Properties->TryGetArrayField("Parameters", ParametersPtr)) {
+    if (Properties->TryGetArrayField(TEXT("Parameters"), ParametersPtr)) {
         for (const TSharedPtr<FJsonValue> ParameterPtr : *ParametersPtr) {
             TSharedPtr<FJsonObject> ParameterObj = ParameterPtr->AsObject();
 
-            FName Name = FName(*ParameterObj->GetStringField("Name"));
+            FName Name = FName(*ParameterObj->GetStringField(TEXT("Name")));
         }
     }
 

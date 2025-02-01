@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include "../../Utilities/PropertyUtilities.h"
-#include "../../Utilities/ObjectUtilities.h"
+#include "../../Utilities/Serializers/PropertyUtilities.h"
+#include "../../Utilities/Serializers/ObjectUtilities.h"
 #include "Utilities/AppStyleCompatibility.h"
 #include "Utilities/EngineUtilities.h"
 #include "Utilities/JsonUtilities.h"
@@ -17,7 +17,7 @@ class IImporter {
 public:
     /* Constructors ---------------------------------------------------------------------- */
     IImporter()
-        : Package(nullptr), OutermostPkg(nullptr),
+        : Package(nullptr), OutermostPkg(nullptr), ParentObject(nullptr),
           PropertySerializer(nullptr), GObjectSerializer(nullptr) {}
 
     //  Importer Constructor
@@ -84,7 +84,7 @@ public:
 public:
     TArray<TSharedPtr<FJsonValue>> GetObjectsWithTypeStartingWith(const FString& StartsWithStr);
 
-    TSharedPtr<FJsonObject> GetExport(FJsonObject* PackageIndex);
+    UObject* ParentObject;
     
 protected:
     bool HandleAssetCreation(UObject* Asset) const;
@@ -99,8 +99,9 @@ protected:
     static FName GetExportNameOfSubobject(const FString& PackageIndex);
     TArray<TSharedPtr<FJsonValue>> FilterExportsByOuter(const FString& Outer);
     TSharedPtr<FJsonValue> GetExportByObjectPath(const TSharedPtr<FJsonObject>& Object);
-public:
+
     /* ------------------------------------ Object Serializer and Property Serializer ------------------------------------ */
+public:
     FORCEINLINE UObjectSerializer* GetObjectSerializer() const { return GObjectSerializer; }
 
     template <class T = UObject>

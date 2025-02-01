@@ -5,17 +5,17 @@
 #include "CoreMinimal.h"
 #include "Engine/EngineTypes.h"
 #include "Engine/DeveloperSettings.h"
-#include "Modules/LocalFetch.h"
+#include "Modules/LocalFetchModule.h"
 #include "JsonAsAssetSettings.generated.h"
 
 // Settings for materials
 USTRUCT()
-struct FMaterialImportSettings
+struct FJMaterialImportSettings
 {
 	GENERATED_BODY()
 public:
 	// Constructor to initialize default values
-	FMaterialImportSettings()
+	FJMaterialImportSettings()
 		: bSkipResultNodeConnection(false)
 	{}
 
@@ -33,9 +33,32 @@ public:
 	bool bSkipResultNodeConnection;
 };
 
+// Settings for textures
+USTRUCT()
+struct FJTextureImportSettings
+{
+	GENERATED_BODY()
+public:
+	// Constructor to initialize default values
+	FJTextureImportSettings()
+		: bDownloadExistingTextures(false)
+	{}
+
+	/**
+	* Added to re-download textures if already present in the Unreal Engine project.
+	* 
+	* Use case: 
+	* If you want to re-import textures if they were changed in a newer version of your Local Fetch build.
+	* 
+	* NOTE: Not needed for normal usage, most normal operations never use this option.
+	*/
+	UPROPERTY(EditAnywhere, Config, Category = "Local Fetch - Encryption", meta=(EditCondition="bEnableLocalFetch"), AdvancedDisplay)
+	bool bDownloadExistingTextures;
+};
+
 // Settings for sounds
 USTRUCT()
-struct FSoundImportSettings
+struct FJSoundImportSettings
 {
 	GENERATED_BODY()
 public:
@@ -50,17 +73,21 @@ struct FAssetSettings
 public:
 	// Constructor to initialize default values
 	FAssetSettings()
-		: bSavePackagesOnImport(false)
+		: bSavePackagesOnImport(false), bEnableAssetTools(false)
 	{
-		MaterialImportSettings = FMaterialImportSettings();
-		SoundImportSettings = FSoundImportSettings();
+		MaterialImportSettings = FJMaterialImportSettings();
+		SoundImportSettings = FJSoundImportSettings();
+		TextureImportSettings = FJTextureImportSettings();
 	}
-	
-	UPROPERTY(EditAnywhere, Config, Category = "Asset Settings")
-	FMaterialImportSettings MaterialImportSettings;
 
 	UPROPERTY(EditAnywhere, Config, Category = "Asset Settings")
-	FSoundImportSettings SoundImportSettings;
+	FJTextureImportSettings TextureImportSettings;
+	
+	UPROPERTY(EditAnywhere, Config, Category = "Asset Settings")
+	FJMaterialImportSettings MaterialImportSettings;
+
+	UPROPERTY(EditAnywhere, Config, Category = "Asset Settings")
+	FJSoundImportSettings SoundImportSettings;
 
 	UPROPERTY(EditAnywhere, Config, Category = "Asset Settings", meta = (DisplayName = "Save Assets On Import"))
 	bool bSavePackagesOnImport;
@@ -97,7 +124,7 @@ public:
 	*/
 	UPROPERTY(EditAnywhere, Config, Category = "Configuration")
 	FDirectoryPath ExportDirectory;
-
+	
 	UPROPERTY(EditAnywhere, Config, Category = "Configuration")
 	FAssetSettings AssetSettings;
 
@@ -135,17 +162,6 @@ public:
 	 */
 	UPROPERTY(EditAnywhere, Config, Category = "Local Fetch - Configuration", meta=(EditCondition="bEnableLocalFetch", FilePathFilter="usmap", RelativeToGameDir))
 	FFilePath MappingFilePath;
-
-	/**
-	* Added to re-download textures if already present in the Unreal Engine project.
-	* 
-	* Use case: 
-	* If you want to re-import textures if they were changed in a newer version of your Local Fetch build.
-	* 
-	* NOTE: Not needed for normal usage, most normal operations never use this option.
-	*/
-	UPROPERTY(EditAnywhere, Config, Category = "Local Fetch - Encryption", meta=(EditCondition="bEnableLocalFetch"), AdvancedDisplay)
-	bool bDownloadExistingTextures;
 
 	/**
 	* Main archive key for encrypted game files.

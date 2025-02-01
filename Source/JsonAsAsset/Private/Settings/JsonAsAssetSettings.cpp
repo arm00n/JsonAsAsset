@@ -3,14 +3,13 @@
 #include "JsonAsAssetSettings.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/SBoxPanel.h"
-#include "Modules/LocalFetch.h"
+#include "Modules/LocalFetchModule.h"
 
 #define LOCTEXT_NAMESPACE "JsonAsAsset"
 
 UJsonAsAssetSettings::UJsonAsAssetSettings():
 	// Default Initializers
-	bEnableLocalFetch(false), UnrealVersion(),
-	bDownloadExistingTextures(false), bChangeURL(false)
+	bEnableLocalFetch(false), UnrealVersion(), bChangeURL(false)
 {
 	CategoryName = TEXT("Plugins");
 	SectionName = TEXT("JsonAsAsset");

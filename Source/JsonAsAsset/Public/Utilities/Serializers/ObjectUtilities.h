@@ -51,6 +51,8 @@ public:
 
     TArray<TSharedPtr<FJsonValue>> AllObjectsReference;
 
+    void SetupExports(TArray<TSharedPtr<FJsonValue>> InObjects);
+
     TArray<FString> ExportsToNotDeserialize;
 
     UPROPERTY()

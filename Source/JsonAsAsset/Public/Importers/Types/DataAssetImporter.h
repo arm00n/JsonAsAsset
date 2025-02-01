@@ -1,6 +1,7 @@
 // Copyright JAA Contributors 2024-2025
 
 #pragma once
+
 #include "../Constructor/Importer.h"
 
 class IDataAssetImporter : public IImporter {

@@ -1,7 +1,4 @@
-// Copyright JAA Contributors 2023-2024
-
 #include "TextureNVTT.h"
-
 #include "nvcore/Stream.h"
 
 class NVTTStream : public nv::Stream {

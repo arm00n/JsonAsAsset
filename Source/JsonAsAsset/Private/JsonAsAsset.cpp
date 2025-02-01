@@ -1,13 +1,10 @@
 // Copyright JAA Contributors 2024-2025
 
 #include "JsonAsAsset.h"
-#include "JsonAsAssetCommands.h"
 
 #include "./Importers/Constructor/Importer.h"
 
 // ------------------------------------------------------------------------------------------------------------>
-#include "Developer/DesktopPlatform/Public/IDesktopPlatform.h"
-#include "Developer/DesktopPlatform/Public/DesktopPlatformModule.h"
 
 #if ENGINE_MAJOR_VERSION >= 5
 #include "Interfaces/IMainFrameModule.h"
@@ -37,9 +34,10 @@
 #include "EditorStyleSet.h"
 #include "./Settings/Details/JsonAsAssetSettingsDetails.h"
 
-#include "Modules/AboutJsonAsAsset.h"
+#include "Modules/UI/AboutJsonAsAsset.h"
+#include "Modules/UI/CommandsModule.h"
+#include "Modules/UI/StyleModule.h"
 #include "Utilities/AppStyleCompatibility.h"
-#include "Utilities/AssetUtilities.h"
 // <------------------------------------------------------------------------------------------------------------
 
 #ifdef _MSC_VER
@@ -251,7 +249,6 @@ void FJsonAsAssetModule::StartupModule() {
         InitOptions.bShowFilters = true;
         MessageLogModule.RegisterLogListing("JsonAsAsset", NSLOCTEXT("JsonAsAsset", "JsonAsAssetLogLabel", "JsonAsAsset"), InitOptions);
     }
-	
 
 #if ENGINE_MAJOR_VERSION == 4
 	FLevelEditorModule& LevelEditorModule = FModuleManager::LoadModuleChecked<FLevelEditorModule>("LevelEditor");
@@ -315,56 +312,6 @@ void FJsonAsAssetModule::RegisterMenus() {
 	Entry.StyleNameOverride = "CalloutToolbar";
 #endif
 	Entry.SetCommandList(PluginCommands);
-}
-
-TArray<FString> FJsonAsAssetModule::OpenFileDialog(FString Title, FString Type) {
-	TArray<FString> ReturnValue;
-
-	// Window Handler for Windows
-	void* ParentWindowHandle = nullptr;
-
-	IMainFrameModule& MainFrameModule = IMainFrameModule::Get();
-	TSharedPtr<SWindow> MainWindow = MainFrameModule.GetParentWindow();
-
-	// Define the window handle, if it's valid
-	if (MainWindow.IsValid() && MainWindow->GetNativeWindow().IsValid()) ParentWindowHandle = MainWindow->GetNativeWindow()->GetOSWindowHandle();
-
-	IDesktopPlatform* DesktopPlatform = FDesktopPlatformModule::Get();
-	if (DesktopPlatform) {
-		uint32 SelectionFlag = 1;
-
-		// Open File Dialog
-		DesktopPlatform->OpenFileDialog(ParentWindowHandle, Title, FString(""), FString(""), Type, SelectionFlag, ReturnValue);
-	}
-
-	return ReturnValue;
-}
-
-bool FJsonAsAssetModule::IsProcessRunning(const FString& ProcessName) {
-	bool bIsRunning = false;
-
-	// Convert FString to WCHAR
-	const TCHAR* ProcessNameChar = *ProcessName;
-	const WCHAR* ProcessNameWChar = (const WCHAR*)ProcessNameChar;
-
-	HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-	if (hSnapshot != INVALID_HANDLE_VALUE) {
-		PROCESSENTRY32 ProcessEntry;
-		ProcessEntry.dwSize = sizeof(ProcessEntry);
-
-		if (Process32First(hSnapshot, &ProcessEntry)) {
-			do {
-				if (_wcsicmp(ProcessEntry.szExeFile, ProcessNameWChar) == 0) {
-					bIsRunning = true;
-					break;
-				}
-			} while (Process32Next(hSnapshot, &ProcessEntry));
-		}
-
-		CloseHandle(hSnapshot);
-	}
-
-	return bIsRunning;
 }
 
 #if ENGINE_MAJOR_VERSION == 4
@@ -498,14 +445,14 @@ TSharedRef<SWidget> FJsonAsAssetModule::CreateToolbarDropdown() {
 
 	if (Settings->AssetSettings.bEnableAssetTools) {
 		MenuBuilder.AddSubMenu(
-			LOCTEXT("JsonAsAssetAssetTypesMenu", "Open Asset Tools"),
-			LOCTEXT("JsonAsAssetAssetTypesMenuToolTip", "Extra functionality / tools to do very specific actions with assets."),
+			LOCTEXT("JsonAsAssetAssetToolsMenu", "Open Asset Tools"),
+			LOCTEXT("JsonAsAssetAssetToolsMenuToolTip", "Extra functionality / tools to do very specific actions with assets."),
 			FNewMenuDelegate::CreateLambda([this](FMenuBuilder& InnerMenuBuilder) {
 				InnerMenuBuilder.BeginSection("JsonAsAssetSection", LOCTEXT("JsonAsAssetSection", "Asset Tools"));
 				{
 					InnerMenuBuilder.AddMenuEntry(
-						LOCTEXT("ConvexCollisionExButton", "Import Folder Collision Convex"),
-						LOCTEXT("ConvexCollisionExButtonTooltip", "Imports convex collision data from a folder of JSON files and applies it to the corresponding assets."),
+						LOCTEXT("JsonAsAssetAssetToolsCollisionExButton", "Import Folder Collision Convex"),
+						LOCTEXT("JsonAsAssetAssetToolsButtonTooltip", "Imports convex collision data from a folder of JSON files and applies it to the corresponding assets."),
 						FSlateIcon(FEditorStyle::GetStyleSetName(), "LevelEditor.BspMode"),
 
 						FUIAction(

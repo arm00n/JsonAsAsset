@@ -1,6 +1,6 @@
 ﻿// Copyright JAA Contributors 2024-2025
 
-#include "Modules/LocalFetch.h"
+#include "Modules/LocalFetchModule.h"
 
 /**
  * A list of classes allowed to be used by Local Fetch

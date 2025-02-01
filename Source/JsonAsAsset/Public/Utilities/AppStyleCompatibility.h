@@ -6,6 +6,7 @@
 #include "Styling/AppStyle.h"
 using FAppStyle = FAppStyle;
 #else
+
 #include "EditorStyleSet.h"
 class FAppStyle {
 public:

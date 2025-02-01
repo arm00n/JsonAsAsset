@@ -5,9 +5,32 @@
 #include "ObjectUtilities.h"
 #include "Dom/JsonObject.h"
 #include "UObject/Object.h"
+#include "UObject/UnrealType.h"
 #include "PropertyUtilities.generated.h"
 
 class UObjectSerializer;
+
+USTRUCT(BlueprintType)
+struct FFailedPropertyInfo
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly)
+	FString ClassName;
+
+	UPROPERTY(BlueprintReadOnly)
+	FString ObjectPath;
+
+	UPROPERTY(BlueprintReadOnly)
+	FString SuperStructName;
+
+	bool operator==(const FFailedPropertyInfo& Other) const
+	{
+		return ClassName == Other.ClassName &&
+			   SuperStructName == Other.SuperStructName &&
+			   ObjectPath == Other.ObjectPath;
+	}
+};
 
 /** Handles struct serialization */
 class JSONASASSET_API FStructSerializer
@@ -64,11 +87,14 @@ class JSONASASSET_API UPropertySerializer : public UObject
 
 	TSharedPtr<FStructSerializer> FallbackStructSerializer;
 	TMap<UScriptStruct*, TSharedPtr<FStructSerializer>> StructSerializers;
-
+	
 public:
 	UPropertySerializer();
 
 	TMap<FString, UObject*> ReferencedObjects;
+	
+	TArray<FFailedPropertyInfo> FailedProperties;
+	void ClearCachedData();
 
 	/** Disables property serialization entirely */
 	void DisablePropertySerialization(UStruct* Struct, FName PropertyName);

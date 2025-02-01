@@ -1,7 +1,7 @@
 // Copyright JAA Contributors 2024-2025
 
-#include "./Modules/AboutJsonAsAsset.h"
-#include "JsonAsAssetStyle.h"
+#include "./Modules/UI/AboutJsonAsAsset.h"
+#include "Modules/UI/StyleModule.h"
 
 #include "Interfaces/IPluginManager.h"
 #if ENGINE_MAJOR_VERSION >= 5

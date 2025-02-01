@@ -3,7 +3,7 @@
 #pragma once
 
 // Structures, Enumerations, used for Local Fetch
-#include "LocalFetch.generated.h"
+#include "LocalFetchModule.generated.h"
 
 /**
  * A list of classes allowed to be used by Local Fetch
