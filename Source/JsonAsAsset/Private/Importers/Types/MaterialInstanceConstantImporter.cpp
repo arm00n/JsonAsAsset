@@ -8,7 +8,7 @@
 #include "MaterialShared.h"
 
 bool IMaterialInstanceConstantImporter::ImportData() {
-	TSharedPtr<FJsonObject> Properties = JsonObject->GetObjectField("Properties");
+	TSharedPtr<FJsonObject> Properties = JsonObject->GetObjectField(TEXT("Properties"));
 
 	UMaterialInstanceConstant* MaterialInstanceConstant = NewObject<UMaterialInstanceConstant>(Package, UMaterialInstanceConstant::StaticClass(), *FileName, RF_Public | RF_Standalone);
 	HandleAssetCreation(MaterialInstanceConstant);
@@ -19,7 +19,7 @@ bool IMaterialInstanceConstantImporter::ImportData() {
 	for (const TSharedPtr<FJsonValue> Value : AllJsonObjects) {
 		TSharedPtr<FJsonObject> Object = TSharedPtr<FJsonObject>(Value->AsObject());
 
-		if (Object->GetStringField("Type") == "MaterialInstanceEditorOnlyData") {
+		if (Object->GetStringField(TEXT("Type")) == "MaterialInstanceEditorOnlyData") {
 			EditorOnlyData.Add(Object);
 		}
 	}
@@ -51,28 +51,28 @@ bool IMaterialInstanceConstantImporter::ImportData() {
 		MaterialInstanceConstant->bOverrideSubsurfaceProfile = bOverrideSubsurfaceProfile;
 
 	TArray<FScalarParameterValue> ScalarParameterValues;
-	TArray<TSharedPtr<FJsonValue>> Scalars = Properties->GetArrayField("ScalarParameterValues");
+	TArray<TSharedPtr<FJsonValue>> Scalars = Properties->GetArrayField(TEXT("ScalarParameterValues"));
 
 	for (int32 i = 0; i < Scalars.Num(); i++) {
 		TSharedPtr<FJsonObject> Scalar = Scalars[i]->AsObject();
 
 		FScalarParameterValue Parameter;
-		Parameter.ParameterValue = Scalar->GetNumberField("ParameterValue");
-		Parameter.ExpressionGUID = FGuid(Scalar->GetStringField("ExpressionGUID"));
+		Parameter.ParameterValue = Scalar->GetNumberField(TEXT("ParameterValue"));
+		Parameter.ExpressionGUID = FGuid(Scalar->GetStringField(TEXT("ExpressionGUID")));
 
 		const TSharedPtr<FJsonObject>* ParameterInfoPtr;
 		if (Scalar->TryGetObjectField("ParameterInfo", ParameterInfoPtr)) {
-			TSharedPtr<FJsonObject> ParameterInfoJson = Scalar->GetObjectField("ParameterInfo");
+			TSharedPtr<FJsonObject> ParameterInfoJson = Scalar->GetObjectField(TEXT("ParameterInfo"));
 			FMaterialParameterInfo ParameterInfo;
-			ParameterInfo.Index = ParameterInfoJson->GetIntegerField("Index");
-			ParameterInfo.Name = FName(ParameterInfoJson->GetStringField("Name"));
+			ParameterInfo.Index = ParameterInfoJson->GetIntegerField(TEXT("Index"));
+			ParameterInfo.Name = FName(ParameterInfoJson->GetStringField(TEXT("Name")));
 			ParameterInfo.Association = GlobalParameter;
 
 			Parameter.ParameterInfo = ParameterInfo;
 		} else {
 			FMaterialParameterInfo ParameterInfo;
 			ParameterInfo.Index = -1;
-			ParameterInfo.Name = FName(Scalar->GetStringField("ParameterName"));
+			ParameterInfo.Name = FName(Scalar->GetStringField(TEXT("ParameterName")));
 			ParameterInfo.Association = GlobalParameter;
 
 			Parameter.ParameterInfo = ParameterInfo;
@@ -84,29 +84,29 @@ bool IMaterialInstanceConstantImporter::ImportData() {
 	MaterialInstanceConstant->ScalarParameterValues = ScalarParameterValues;
 	TArray<FVectorParameterValue> VectorParameterValues;
 
-	TArray<TSharedPtr<FJsonValue>> Vectors = Properties->GetArrayField("VectorParameterValues");
+	TArray<TSharedPtr<FJsonValue>> Vectors = Properties->GetArrayField(TEXT("VectorParameterValues"));
 	for (int32 i = 0; i < Vectors.Num(); i++) {
 		TSharedPtr<FJsonObject> Vector = Vectors[i]->AsObject();
 
 		FVectorParameterValue Parameter;
-		Parameter.ExpressionGUID = FGuid(Vector->GetStringField("ExpressionGUID"));
+		Parameter.ExpressionGUID = FGuid(Vector->GetStringField(TEXT("ExpressionGUID")));
 
-		Parameter.ParameterValue = FMathUtilities::ObjectToLinearColor(Vector->GetObjectField("ParameterValue").Get());
+		Parameter.ParameterValue = FMathUtilities::ObjectToLinearColor(Vector->GetObjectField(TEXT("ParameterValue")).Get());
 
 		const TSharedPtr<FJsonObject>* ParameterInfoPtr;
 		
 		if (Vector->TryGetObjectField("ParameterInfo", ParameterInfoPtr)) {
-			TSharedPtr<FJsonObject> ParameterInfoJson = Vector->GetObjectField("ParameterInfo");
+			TSharedPtr<FJsonObject> ParameterInfoJson = Vector->GetObjectField(TEXT("ParameterInfo"));
 			FMaterialParameterInfo ParameterInfo;
-			ParameterInfo.Index = ParameterInfoJson->GetIntegerField("Index");
-			ParameterInfo.Name = FName(ParameterInfoJson->GetStringField("Name"));
+			ParameterInfo.Index = ParameterInfoJson->GetIntegerField(TEXT("Index"));
+			ParameterInfo.Name = FName(ParameterInfoJson->GetStringField(TEXT("Name")));
 			ParameterInfo.Association = GlobalParameter;
 
 			Parameter.ParameterInfo = ParameterInfo;
 		} else {
 			FMaterialParameterInfo ParameterInfo;
 			ParameterInfo.Index = -1;
-			ParameterInfo.Name = FName(Vector->GetStringField("ParameterName"));
+			ParameterInfo.Name = FName(Vector->GetStringField(TEXT("ParameterName")));
 			ParameterInfo.Association = GlobalParameter;
 
 			Parameter.ParameterInfo = ParameterInfo;
@@ -118,12 +118,12 @@ bool IMaterialInstanceConstantImporter::ImportData() {
 	MaterialInstanceConstant->VectorParameterValues = VectorParameterValues;
 	TArray<FTextureParameterValue> TextureParameterValues;
 
-	TArray<TSharedPtr<FJsonValue>> Textures = Properties->GetArrayField("TextureParameterValues");
+	TArray<TSharedPtr<FJsonValue>> Textures = Properties->GetArrayField(TEXT("TextureParameterValues"));
 	for (int32 i = 0; i < Textures.Num(); i++) {
 		TSharedPtr<FJsonObject> Texture = Textures[i]->AsObject();
 
 		FTextureParameterValue Parameter;
-		Parameter.ExpressionGUID = FGuid(Texture->GetStringField("ExpressionGUID"));
+		Parameter.ExpressionGUID = FGuid(Texture->GetStringField(TEXT("ExpressionGUID")));
 
 		const TSharedPtr<FJsonObject>* TexturePtr = nullptr;
 		if (Texture->TryGetObjectField("ParameterValue", TexturePtr) && TexturePtr != nullptr) {
@@ -139,17 +139,17 @@ bool IMaterialInstanceConstantImporter::ImportData() {
 		const TSharedPtr<FJsonObject>* ParameterInfoPtr;
 		
 		if (Texture->TryGetObjectField("ParameterInfo", ParameterInfoPtr)) {
-			TSharedPtr<FJsonObject> ParameterInfoJson = Texture->GetObjectField("ParameterInfo");
+			TSharedPtr<FJsonObject> ParameterInfoJson = Texture->GetObjectField(TEXT("ParameterInfo"));
 			FMaterialParameterInfo ParameterInfo;
-			ParameterInfo.Index = ParameterInfoJson->GetIntegerField("Index");
-			ParameterInfo.Name = FName(ParameterInfoJson->GetStringField("Name"));
+			ParameterInfo.Index = ParameterInfoJson->GetIntegerField(TEXT("Index"));
+			ParameterInfo.Name = FName(ParameterInfoJson->GetStringField(TEXT("Name")));
 			ParameterInfo.Association = GlobalParameter;
 
 			Parameter.ParameterInfo = ParameterInfo;
 		} else {
 			FMaterialParameterInfo ParameterInfo;
 			ParameterInfo.Index = -1;
-			ParameterInfo.Name = FName(Texture->GetStringField("ParameterName"));
+			ParameterInfo.Name = FName(Texture->GetStringField(TEXT("ParameterName")));
 			ParameterInfo.Association = GlobalParameter;
 
 			Parameter.ParameterInfo = ParameterInfo;
@@ -165,23 +165,23 @@ bool IMaterialInstanceConstantImporter::ImportData() {
 	const TSharedPtr<FJsonObject>* StaticParams;
 
 	if (Properties->TryGetObjectField("StaticParametersRuntime", StaticParams)) {
-		Local_StaticParameterObjects = StaticParams->Get()->GetArrayField("StaticSwitchParameters");
+		Local_StaticParameterObjects = StaticParams->Get()->GetArrayField(TEXT("StaticSwitchParameters"));
 	} else if (EditorOnlyData.Num() > 0) {
 		for (TSharedPtr<FJsonObject> Ed : EditorOnlyData) {
-			const TSharedPtr<FJsonObject> Props = Ed->GetObjectField("Properties");
+			const TSharedPtr<FJsonObject> Props = Ed->GetObjectField(TEXT("Properties"));
 
 			if (Props->TryGetObjectField("StaticParameters", StaticParams)) {
-				for (TSharedPtr<FJsonValue> Parameter : StaticParams->Get()->GetArrayField("StaticSwitchParameters")) {
+				for (TSharedPtr<FJsonValue> Parameter : StaticParams->Get()->GetArrayField(TEXT("StaticSwitchParameters"))) {
 					Local_StaticParameterObjects.Add(TSharedPtr<FJsonValue>(Parameter));
 				}
 
-				for (TSharedPtr<FJsonValue> Parameter : StaticParams->Get()->GetArrayField("StaticComponentMaskParameters")) {
+				for (TSharedPtr<FJsonValue> Parameter : StaticParams->Get()->GetArrayField(TEXT("StaticComponentMaskParameters"))) {
 					Local_StaticComponentMaskParametersObjects.Add(TSharedPtr<FJsonValue>(Parameter));
 				}
 			}
 		}
 	} else if (Properties->TryGetObjectField("StaticParameters", StaticParams)) {
-		Local_StaticParameterObjects = StaticParams->Get()->GetArrayField("StaticSwitchParameters");
+		Local_StaticParameterObjects = StaticParams->Get()->GetArrayField(TEXT("StaticSwitchParameters"));
 	}
 
 	// --------- STATIC PARAMETERS -----------
@@ -192,21 +192,21 @@ bool IMaterialInstanceConstantImporter::ImportData() {
 	TArray<FStaticSwitchParameter> StaticSwitchParameters;
 	for (const TSharedPtr<FJsonValue> StaticParameter_Value : Local_StaticParameterObjects) {
 		TSharedPtr<FJsonObject> ParameterObject = StaticParameter_Value->AsObject();
-		TSharedPtr<FJsonObject> Local_MaterialParameterInfo = ParameterObject->GetObjectField("ParameterInfo");
+		TSharedPtr<FJsonObject> Local_MaterialParameterInfo = ParameterObject->GetObjectField(TEXT("ParameterInfo"));
 
 		// Create Material Parameter Info
 		FMaterialParameterInfo MaterialParameterParameterInfo = FMaterialParameterInfo(
-			FName(Local_MaterialParameterInfo->GetStringField("Name")),
-			static_cast<EMaterialParameterAssociation>(StaticEnum<EMaterialParameterAssociation>()->GetValueByNameString(Local_MaterialParameterInfo->GetStringField("Association"))),
-			Local_MaterialParameterInfo->GetIntegerField("Index")
+			FName(Local_MaterialParameterInfo->GetStringField(TEXT("Name"))),
+			static_cast<EMaterialParameterAssociation>(StaticEnum<EMaterialParameterAssociation>()->GetValueByNameString(Local_MaterialParameterInfo->GetStringField(TEXT("Association")))),
+			Local_MaterialParameterInfo->GetIntegerField(TEXT("Index"))
 		);
 
 		// Now, create the actual switch parameter
 		FStaticSwitchParameter Parameter = FStaticSwitchParameter(
 			MaterialParameterParameterInfo,
-			ParameterObject->GetBoolField("Value"),
-			ParameterObject->GetBoolField("bOverride"),
-			FGuid(ParameterObject->GetStringField("ExpressionGUID"))
+			ParameterObject->GetBoolField(TEXT("Value")),
+			ParameterObject->GetBoolField(TEXT("bOverride")),
+			FGuid(ParameterObject->GetStringField(TEXT("ExpressionGUID")))
 		);
 
 		StaticSwitchParameters.Add(Parameter);
@@ -222,23 +222,23 @@ bool IMaterialInstanceConstantImporter::ImportData() {
 	TArray<FStaticComponentMaskParameter> StaticSwitchMaskParameters;
 	for (const TSharedPtr<FJsonValue> StaticParameter_Value : Local_StaticComponentMaskParametersObjects) {
 		TSharedPtr<FJsonObject> ParameterObject = StaticParameter_Value->AsObject();
-		TSharedPtr<FJsonObject> Local_MaterialParameterInfo = ParameterObject->GetObjectField("ParameterInfo");
+		TSharedPtr<FJsonObject> Local_MaterialParameterInfo = ParameterObject->GetObjectField(TEXT("ParameterInfo"));
 
 		// Create Material Parameter Info
 		FMaterialParameterInfo MaterialParameterParameterInfo = FMaterialParameterInfo(
-			FName(Local_MaterialParameterInfo->GetStringField("Name")),
-			static_cast<EMaterialParameterAssociation>(StaticEnum<EMaterialParameterAssociation>()->GetValueByNameString(Local_MaterialParameterInfo->GetStringField("Association"))),
-			Local_MaterialParameterInfo->GetIntegerField("Index")
+			FName(Local_MaterialParameterInfo->GetStringField(TEXT("Name"))),
+			static_cast<EMaterialParameterAssociation>(StaticEnum<EMaterialParameterAssociation>()->GetValueByNameString(Local_MaterialParameterInfo->GetStringField(TEXT("Association")))),
+			Local_MaterialParameterInfo->GetIntegerField(TEXT("Index"))
 		);
 
 		FStaticComponentMaskParameter Parameter = FStaticComponentMaskParameter(
 			MaterialParameterParameterInfo,
-			ParameterObject->GetBoolField("R"),
-			ParameterObject->GetBoolField("G"),
-			ParameterObject->GetBoolField("B"),
-			ParameterObject->GetBoolField("A"),
-			ParameterObject->GetBoolField("bOverride"),
-			FGuid(ParameterObject->GetStringField("ExpressionGUID"))
+			ParameterObject->GetBoolField(TEXT("R")),
+			ParameterObject->GetBoolField(TEXT("G")),
+			ParameterObject->GetBoolField(TEXT("B")),
+			ParameterObject->GetBoolField(TEXT("A")),
+			ParameterObject->GetBoolField(TEXT("bOverride")),
+			FGuid(ParameterObject->GetStringField(TEXT("ExpressionGUID")))
 		);
 
 		StaticSwitchMaskParameters.Add(Parameter);

@@ -14,7 +14,7 @@ void CCurveTableDerived::ChangeTableMode(ECurveTableMode Mode) {
 }
 
 bool ICurveTableImporter::ImportData() {
-	TSharedPtr<FJsonObject> RowData = JsonObject->GetObjectField("Rows");
+	TSharedPtr<FJsonObject> RowData = JsonObject->GetObjectField(TEXT("Rows"));
 	UCurveTable* CurveTable = NewObject<UCurveTable>(Package, UCurveTable::StaticClass(), *FileName, RF_Public | RF_Standalone);
 	CCurveTableDerived* DerivedCurveTable = Cast<CCurveTableDerived>(CurveTable);
 
@@ -44,26 +44,26 @@ bool ICurveTableImporter::ImportData() {
 			if (CurveData->TryGetArrayField("Keys", KeysPtr))
 				for (const TSharedPtr<FJsonValue> KeyPtr : *KeysPtr) {
 					TSharedPtr<FJsonObject> Key = KeyPtr->AsObject(); {
-						NewRichCurve.AddKey(Key->GetNumberField("Time"), Key->GetNumberField("Value"));
+						NewRichCurve.AddKey(Key->GetNumberField(TEXT("Time")), Key->GetNumberField(TEXT("Value")));
 						FRichCurveKey RichKey = NewRichCurve.Keys.Last();
 
 						RichKey.InterpMode =
 							static_cast<ERichCurveInterpMode>(
-								StaticEnum<ERichCurveInterpMode>()->GetValueByNameString(Key->GetStringField("InterpMode"))
+								StaticEnum<ERichCurveInterpMode>()->GetValueByNameString(Key->GetStringField(TEXT("InterpMode")))
 							);
 						RichKey.TangentMode =
 							static_cast<ERichCurveTangentMode>(
-								StaticEnum<ERichCurveTangentMode>()->GetValueByNameString(Key->GetStringField("TangentMode"))
+								StaticEnum<ERichCurveTangentMode>()->GetValueByNameString(Key->GetStringField(TEXT("TangentMode")))
 							);
 						RichKey.TangentWeightMode =
 							static_cast<ERichCurveTangentWeightMode>(
-								StaticEnum<ERichCurveTangentWeightMode>()->GetValueByNameString(Key->GetStringField("TangentWeightMode"))
+								StaticEnum<ERichCurveTangentWeightMode>()->GetValueByNameString(Key->GetStringField(TEXT("TangentWeightMode")))
 							);
 
-						RichKey.ArriveTangent = Key->GetNumberField("ArriveTangent");
-						RichKey.ArriveTangentWeight = Key->GetNumberField("ArriveTangentWeight");
-						RichKey.LeaveTangent = Key->GetNumberField("LeaveTangent");
-						RichKey.LeaveTangentWeight = Key->GetNumberField("LeaveTangentWeight");
+						RichKey.ArriveTangent = Key->GetNumberField(TEXT("ArriveTangent"));
+						RichKey.ArriveTangentWeight = Key->GetNumberField(TEXT("ArriveTangentWeight"));
+						RichKey.LeaveTangent = Key->GetNumberField(TEXT("LeaveTangent"));
+						RichKey.LeaveTangentWeight = Key->GetNumberField(TEXT("LeaveTangentWeight"));
 					}
 				}
 		} else {
@@ -74,7 +74,7 @@ bool ICurveTableImporter::ImportData() {
 			// Method of Interpolation
 			NewSimpleCurve.InterpMode =
 				static_cast<ERichCurveInterpMode>(
-					StaticEnum<ERichCurveInterpMode>()->GetValueByNameString(CurveData->GetStringField("InterpMode"))
+					StaticEnum<ERichCurveInterpMode>()->GetValueByNameString(CurveData->GetStringField(TEXT("InterpMode")))
 				);
 
 			const TArray<TSharedPtr<FJsonValue>>* KeysPtr;
@@ -82,20 +82,20 @@ bool ICurveTableImporter::ImportData() {
 			if (CurveData->TryGetArrayField("Keys", KeysPtr))
 				for (const TSharedPtr<FJsonValue> KeyPtr : *KeysPtr) {
 					TSharedPtr<FJsonObject> Key = KeyPtr->AsObject(); {
-						NewSimpleCurve.AddKey(Key->GetNumberField("Time"), Key->GetNumberField("Value"));
+						NewSimpleCurve.AddKey(Key->GetNumberField(TEXT("Time")), Key->GetNumberField(TEXT("Value")));
 					}
 				}
 		}
 
 		// Inherited data from FRealCurve
-		RealCurve.SetDefaultValue(CurveData->GetNumberField("DefaultValue"));
+		RealCurve.SetDefaultValue(CurveData->GetNumberField(TEXT("DefaultValue")));
 		RealCurve.PreInfinityExtrap = 
 			static_cast<ERichCurveExtrapolation>(
-				StaticEnum<ERichCurveExtrapolation>()->GetValueByNameString(CurveData->GetStringField("PreInfinityExtrap"))
+				StaticEnum<ERichCurveExtrapolation>()->GetValueByNameString(CurveData->GetStringField(TEXT("PreInfinityExtrap")))
 			);
 		RealCurve.PostInfinityExtrap =
 			static_cast<ERichCurveExtrapolation>(
-				StaticEnum<ERichCurveExtrapolation>()->GetValueByNameString(CurveData->GetStringField("PostInfinityExtrap"))
+				StaticEnum<ERichCurveExtrapolation>()->GetValueByNameString(CurveData->GetStringField(TEXT("PostInfinityExtrap")))
 			);
 
 		// Update Curve Table

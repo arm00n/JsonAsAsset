@@ -6,8 +6,6 @@
 #include "Sound/SoundNode.h"
 #include "Engine/SubsurfaceProfile.h"
 #include "Materials/MaterialParameterCollection.h"
-#include "ContentBrowserModule.h"
-#include "IContentBrowserSingleton.h"
 #include "Interfaces/IPluginManager.h"
 #include "Widgets/Notifications/SNotificationList.h"
 #include "Framework/Notifications/NotificationManager.h"
@@ -103,24 +101,8 @@ UPackage* FAssetUtilities::CreateAssetPackage(const FString& Name, const FString
 
 	return Package;
 }
+
 // <-------------------------------------------------------------------------------------------------------------------------
-
-UObject* FAssetUtilities::GetSelectedAsset() {
-	const FContentBrowserModule& ContentBrowserModule = FModuleManager::LoadModuleChecked<FContentBrowserModule>("ContentBrowser");
-	TArray<FAssetData> SelectedAssets;
-	ContentBrowserModule.Get().GetSelectedAssets(SelectedAssets);
-
-	if (SelectedAssets.Num() == 0) {
-		GLog->Log("JsonAsAsset: [GetSelectedAsset] None selected, returning nullptr.");
-
-		const FText DialogText = FText::FromString(TEXT("A function to find a selected asset failed, please select a asset to go further."));
-		FMessageDialog::Open(EAppMsgType::Ok, DialogText);
-
-		return nullptr;
-	}
-
-	return SelectedAssets[0].GetAsset();
-}
 
 template bool FAssetUtilities::ConstructAsset<UMaterialInterface>(const FString& Path, const FString& Type, TObjectPtr<UMaterialInterface>& OutObject, bool& bSuccess);
 template bool FAssetUtilities::ConstructAsset<USubsurfaceProfile>(const FString& Path, const FString& Type, TObjectPtr<USubsurfaceProfile>& OutObject, bool& bSuccess);
@@ -182,12 +164,12 @@ bool FAssetUtilities::ConstructAsset(const FString& Path, const FString& Type, T
 			const TSharedPtr<FJsonObject> Response = API_RequestExports(Path);
 			if (Response == nullptr || Path.IsEmpty()) return true;
 
-			if (Response->HasField("errored")) {
+			if (Response->HasField(TEXT("errored"))) {
 				UE_LOG(LogJson, Log, TEXT("Error from response \"%s\""), *Path);
 				return true;
 			}
 
-			TSharedPtr<FJsonObject> JsonObject = Response->GetArrayField("jsonOutput")[0]->AsObject();
+			TSharedPtr<FJsonObject> JsonObject = Response->GetArrayField(TEXT("jsonOutput"))[0]->AsObject();
 			FString PackagePath;
 			FString AssetName;
 			Path.Split(".", &PackagePath, &AssetName);
@@ -210,7 +192,7 @@ bool FAssetUtilities::ConstructAsset(const FString& Path, const FString& Type, T
 
 				// Import asset by IImporter
 				IImporter* Importer = new IImporter();
-				bSuccess = Importer->ImportExports(Response->GetArrayField("jsonOutput"), PackagePath, true);
+				bSuccess = Importer->ImportExports(Response->GetArrayField(TEXT("jsonOutput")), PackagePath, true);
 
 				// Define found object
 				OutObject = Cast<T>(StaticLoadObject(T::StaticClass(), nullptr, *Path));
@@ -232,13 +214,13 @@ bool FAssetUtilities::Construct_TypeTexture(const FString& Path, const FString& 
 	if (JsonObject == nullptr)
 		return false;
 
-	TArray<TSharedPtr<FJsonValue>> Response = JsonObject->GetArrayField("jsonOutput");
+	TArray<TSharedPtr<FJsonValue>> Response = JsonObject->GetArrayField(TEXT("jsonOutput"));
 	if (Response.Num() == 0)
 		return false;
 
 	const UJsonAsAssetSettings* Settings = GetDefault<UJsonAsAssetSettings>();
 	TSharedPtr<FJsonObject> JsonExport = Response[0]->AsObject();
-	FString Type = JsonExport->GetStringField("Type");
+	FString Type = JsonExport->GetStringField(TEXT("Type"));
 	UTexture* Texture = nullptr;
 	TArray<uint8> Data = TArray<uint8>();
 
@@ -294,7 +276,7 @@ bool FAssetUtilities::Construct_TypeTexture(const FString& Path, const FString& 
 	if (Type == "VolumeTexture")
 		Importer->ImportVolumeTexture(Texture, Data, JsonExport);
 	if (Type == "TextureRenderTarget2D")
-		Importer->ImportRenderTarget2D(Texture, JsonExport->GetObjectField("Properties"));
+		Importer->ImportRenderTarget2D(Texture, JsonExport->GetObjectField(TEXT("Properties")));
 
 	if (Texture == nullptr)
 		return false;

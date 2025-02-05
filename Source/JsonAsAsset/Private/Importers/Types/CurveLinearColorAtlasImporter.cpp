@@ -7,7 +7,7 @@
 #include "Dom/JsonObject.h"
 
 bool ICurveLinearColorAtlasImporter::ImportData() {
-	TSharedPtr<FJsonObject> Properties = JsonObject->GetObjectField("Properties");
+	TSharedPtr<FJsonObject> Properties = JsonObject->GetObjectField(TEXT("Properties"));
 	
 	float Width = 256;
 	float Height = 256;
@@ -78,7 +78,7 @@ bool ICurveLinearColorAtlasImporter::ImportData() {
 	FProperty* GradientCurvesProperty = FindFProperty<FProperty>(Object->GetClass(), "GradientCurves");
 	FPropertyChangedEvent PropertyChangedEvent(GradientCurvesProperty, EPropertyChangeType::ArrayAdd);
 
-	const TArray<TSharedPtr<FJsonValue>> GradientCurves = Properties->GetArrayField("GradientCurves");
+	const TArray<TSharedPtr<FJsonValue>> GradientCurves = Properties->GetArrayField(TEXT("GradientCurves"));
 	TArray<TObjectPtr<UCurveLinearColor>> CurvesLocal;
 
 #if ENGINE_MAJOR_VERSION >= 5

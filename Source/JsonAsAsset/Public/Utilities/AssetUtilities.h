@@ -1,7 +1,10 @@
 // Copyright JAA Contributors 2024-2025
 
 #pragma once
+
 #include "AppStyleCompatibility.h"
+#include "ContentBrowserModule.h"
+#include "IContentBrowserSingleton.h"
 
 class FAssetUtilities {
 public:
@@ -19,7 +22,41 @@ public:
 	 * 
 	 * @return Selected Asset
 	 */
-	static UObject* GetSelectedAsset();
+	template <typename T>
+	static T* GetSelectedAsset() {
+		const FContentBrowserModule& ContentBrowserModule = FModuleManager::LoadModuleChecked<FContentBrowserModule>("ContentBrowser");
+		TArray<FAssetData> SelectedAssets;
+		ContentBrowserModule.Get().GetSelectedAssets(SelectedAssets);
+
+		if (SelectedAssets.Num() == 0) {
+			GLog->Log("JsonAsAsset: [GetSelectedAsset] None selected, returning nullptr.");
+
+			const FText DialogText = FText::Format(
+				FText::FromString(TEXT("Importing an asset of type '{0}' requires a base asset selected. Select one in your content browser.")),
+				FText::FromString(T::StaticClass()->GetName())
+			);
+
+			FMessageDialog::Open(EAppMsgType::Ok, DialogText);
+			return nullptr;
+		}
+
+		UObject* SelectedAsset = SelectedAssets[0].GetAsset();
+		T* CastedAsset = Cast<T>(SelectedAsset);
+
+		if (!CastedAsset) {
+			GLog->Log("JsonAsAsset: [GetSelectedAsset] Selected asset is not of the required class, returning nullptr.");
+
+			const FText DialogText = FText::Format(
+				FText::FromString(TEXT("The selected asset is not of type '{0}'. Please select a valid asset.")),
+				FText::FromString(T::StaticClass()->GetName())
+			);
+
+			FMessageDialog::Open(EAppMsgType::Ok, DialogText);
+			return nullptr;
+		}
+
+		return CastedAsset;
+	}
 	
 public:
 	template <class T = UObject>

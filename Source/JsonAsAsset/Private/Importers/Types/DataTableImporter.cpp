@@ -5,15 +5,15 @@
 
 // Shout-out to UEAssetToolkit
 bool IDataTableImporter::ImportData() {
-	TSharedPtr<FJsonObject> AssetData = JsonObject->GetObjectField("Properties");
+	TSharedPtr<FJsonObject> AssetData = JsonObject->GetObjectField(TEXT("Properties"));
 	UDataTable* DataTable = NewObject<UDataTable>(Package, UDataTable::StaticClass(), *FileName, RF_Public | RF_Standalone);
 	
 	// ScriptClass for the Data Table
 	FString TableStruct; {
 		// --- Properties --> RowStruct --> ObjectName
 		// --- Class'StructClass' --> StructClass
-		AssetData->GetObjectField("RowStruct")
-			->GetStringField("ObjectName").
+		AssetData->GetObjectField(TEXT("RowStruct"))
+			->GetStringField(TEXT("ObjectName")).
 			Split("'", nullptr, &TableStruct);
 		TableStruct.Split("'", &TableStruct, nullptr);
 	}
@@ -31,7 +31,7 @@ bool IDataTableImporter::ImportData() {
 
 	// Access Property Serializer
 	UPropertySerializer* ObjectPropertySerializer = GetObjectSerializer()->GetPropertySerializer();
-	TSharedPtr<FJsonObject> RowData = JsonObject->GetObjectField("Rows");
+	TSharedPtr<FJsonObject> RowData = JsonObject->GetObjectField(TEXT("Rows"));
 
 	// Loop throughout row data, and deserialize
 	for (TPair<FString, TSharedPtr<FJsonValue>>& Pair : RowData->Values) {

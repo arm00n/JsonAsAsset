@@ -17,8 +17,8 @@
 
 bool IAnimationBaseImporter::ImportData() {
 	// Properties of the object
-	TSharedPtr<FJsonObject> Properties = JsonObject->GetObjectField("Properties");
-	FString AssetName = JsonObject->GetStringField("Name");
+	TSharedPtr<FJsonObject> Properties = JsonObject->GetObjectField(TEXT("Properties"));
+	FString AssetName = JsonObject->GetStringField(TEXT("Name"));
 
 	TArray<TSharedPtr<FJsonValue>> FloatCurves;
 	TArray<TSharedPtr<FJsonValue>> Notifies;
@@ -40,7 +40,7 @@ bool IAnimationBaseImporter::ImportData() {
 	}
 
 	if (!AnimSequenceBase) {
-		AnimSequenceBase = Cast<UAnimSequenceBase>(FAssetUtilities::GetSelectedAsset());
+		AnimSequenceBase = FAssetUtilities::GetSelectedAsset<UAnimSequenceBase>();
 	}
 
 	ensure(AnimSequenceBase);
@@ -70,22 +70,22 @@ bool IAnimationBaseImporter::ImportData() {
 	// Some CUE4Parse versions have different named objects for curves
 	const TSharedPtr<FJsonObject>* RawCurveData;
 	
-	if (Properties->TryGetObjectField("RawCurveData", RawCurveData)) FloatCurves = Properties->GetObjectField("RawCurveData")->GetArrayField("FloatCurves");
-	else if (JsonObject->TryGetObjectField("CompressedCurveData", RawCurveData)) FloatCurves = JsonObject->GetObjectField("CompressedCurveData")->GetArrayField("FloatCurves");
+	if (Properties->TryGetObjectField("RawCurveData", RawCurveData)) FloatCurves = Properties->GetObjectField(TEXT("RawCurveData"))->GetArrayField(TEXT("FloatCurves"));
+	else if (JsonObject->TryGetObjectField("CompressedCurveData", RawCurveData)) FloatCurves = JsonObject->GetObjectField(TEXT("CompressedCurveData"))->GetArrayField(TEXT("FloatCurves"));
 
 	for (TSharedPtr<FJsonValue> FloatCurveObject : FloatCurves)
 	{
 		// Display Name (for example: jaw_open_pose)
 		FString DisplayName = "";
-		if (FloatCurveObject->AsObject()->HasField("Name")) {
-			DisplayName = FloatCurveObject->AsObject()->GetObjectField("Name")->GetStringField("DisplayName");
+		if (FloatCurveObject->AsObject()->HasField(TEXT("Name"))) {
+			DisplayName = FloatCurveObject->AsObject()->GetObjectField(TEXT("Name"))->GetStringField(TEXT("DisplayName"));
 		} else {
-			DisplayName = FloatCurveObject->AsObject()->GetStringField("CurveName");
+			DisplayName = FloatCurveObject->AsObject()->GetStringField(TEXT("CurveName"));
 		}
 
 		// Curve Type Flags:
 		// Used to define if a curve is a curve is metadata or not.
-		int CurveTypeFlags = FloatCurveObject->AsObject()->GetIntegerField("CurveTypeFlags");
+		int CurveTypeFlags = FloatCurveObject->AsObject()->GetIntegerField(TEXT("CurveTypeFlags"));
 
 #if ENGINE_MAJOR_VERSION == 4
 		FSmartName NewTrackName;
@@ -161,7 +161,7 @@ bool IAnimationBaseImporter::ImportData() {
 #endif
 
 		// Each key of the curve
-		TArray<TSharedPtr<FJsonValue>> Keys = FloatCurveObject->AsObject()->GetObjectField("FloatCurve")->GetArrayField("Keys");
+		TArray<TSharedPtr<FJsonValue>> Keys = FloatCurveObject->AsObject()->GetObjectField(TEXT("FloatCurve"))->GetArrayField(TEXT("Keys"));
 
 		for (TSharedPtr<FJsonValue> JsonKey : Keys) {
 			TSharedPtr<FJsonObject> Key = JsonKey->AsObject();
@@ -191,13 +191,13 @@ bool IAnimationBaseImporter::ImportData() {
 	
 	if (Properties->TryGetArrayField("AuthoredSyncMarkers", AuthoredSyncMarkers1) && CastedAnimSequence)
 	{
-		TArray<TSharedPtr<FJsonValue>> AuthoredSyncMarkers = Properties->GetArrayField("AuthoredSyncMarkers");
+		TArray<TSharedPtr<FJsonValue>> AuthoredSyncMarkers = Properties->GetArrayField(TEXT("AuthoredSyncMarkers"));
 
 		for (TSharedPtr<FJsonValue> SyncMarker : AuthoredSyncMarkers)
 		{
 			FAnimSyncMarker AuthoredSyncMarker = FAnimSyncMarker();
-			AuthoredSyncMarker.MarkerName = FName(*SyncMarker.Get()->AsObject().Get()->GetStringField("MarkerName"));
-			AuthoredSyncMarker.Time = SyncMarker.Get()->AsObject().Get()->GetNumberField("Time");
+			AuthoredSyncMarker.MarkerName = FName(*SyncMarker.Get()->AsObject().Get()->GetStringField(TEXT("MarkerName")));
+			AuthoredSyncMarker.Time = SyncMarker.Get()->AsObject().Get()->GetNumberField(TEXT("Time"));
 			CastedAnimSequence->AuthoredSyncMarkers.Add(AuthoredSyncMarker);
 		}
 	}

@@ -54,6 +54,7 @@ public class JsonAsAsset : ModuleRules
 			"RHI",
 			"Detex",
 			"NVTT",
+			"RenderCore",
 
 #if UE_5_0_OR_LATER
 			// Only Unreal Engine 5

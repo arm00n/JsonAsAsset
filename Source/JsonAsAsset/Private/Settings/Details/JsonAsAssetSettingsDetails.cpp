@@ -75,27 +75,27 @@ void FJsonAsAssetSettingsDetails::EditConfiguration(TWeakObjectPtr<UJsonAsAssetS
 
                 if (FJsonSerializer::Deserialize(Reader, JsonObject) && JsonObject.IsValid()) {
                     // Load the PropertiesDirectory and GameDirectory
-                    PluginSettings->ExportDirectory.Path = JsonObject->GetStringField("PropertiesDirectory").Replace(TEXT("\\"), TEXT("/"));
-                    PluginSettings->ArchiveDirectory.Path = JsonObject->GetStringField("GameDirectory").Replace(TEXT("\\"), TEXT("/"));
+                    PluginSettings->ExportDirectory.Path = JsonObject->GetStringField(TEXT("PropertiesDirectory")).Replace(TEXT("\\"), TEXT("/"));
+                    PluginSettings->ArchiveDirectory.Path = JsonObject->GetStringField(TEXT("GameDirectory")).Replace(TEXT("\\"), TEXT("/"));
 
-					FString GameDirectory = JsonObject->GetStringField("GameDirectory");
+					FString GameDirectory = JsonObject->GetStringField(TEXT("GameDirectory"));
 
                     // Handling AES Keys
-                    if (JsonObject->HasField("PerDirectory")) {
-                        const TSharedPtr<FJsonObject> PerDirectoryObject = JsonObject->GetObjectField("PerDirectory");
+                    if (JsonObject->HasField(TEXT("PerDirectory"))) {
+                        const TSharedPtr<FJsonObject> PerDirectoryObject = JsonObject->GetObjectField(TEXT("PerDirectory"));
 
                         if (PerDirectoryObject->HasField(GameDirectory)) {
                             const TSharedPtr<FJsonObject> PakSettings = PerDirectoryObject->GetObjectField(GameDirectory);
 
-                            if (PakSettings->HasField("AesKeys")) {
-                                const TSharedPtr<FJsonObject> AesKeysObject = PakSettings->GetObjectField("AesKeys");
+                            if (PakSettings->HasField(TEXT("AesKeys"))) {
+                                const TSharedPtr<FJsonObject> AesKeysObject = PakSettings->GetObjectField(TEXT("AesKeys"));
 
-                                if (AesKeysObject->HasField("mainKey")) {
-                                    PluginSettings->ArchiveKey = AesKeysObject->GetStringField("mainKey");
+                                if (AesKeysObject->HasField(TEXT("mainKey"))) {
+                                    PluginSettings->ArchiveKey = AesKeysObject->GetStringField(TEXT("mainKey"));
                                 }
 
-                                if (AesKeysObject->HasField("dynamicKeys")) {
-                                    const TArray<TSharedPtr<FJsonValue>> DynamicKeysArray = AesKeysObject->GetArrayField("dynamicKeys");
+                                if (AesKeysObject->HasField(TEXT("dynamicKeys"))) {
+                                    const TArray<TSharedPtr<FJsonValue>> DynamicKeysArray = AesKeysObject->GetArrayField(TEXT("dynamicKeys"));
                                     PluginSettings->DynamicKeys.Empty();
 
                                     for (const auto& KeyValue : DynamicKeysArray) {
@@ -103,8 +103,8 @@ void FJsonAsAssetSettingsDetails::EditConfiguration(TWeakObjectPtr<UJsonAsAssetS
 
                                         if (KeyObject.IsValid()) {
                                             FAesKey NewKey;
-                                            NewKey.Guid = KeyObject->GetStringField("guid");
-                                            NewKey.Value = KeyObject->GetStringField("key");
+                                            NewKey.Guid = KeyObject->GetStringField(TEXT("guid"));
+                                            NewKey.Value = KeyObject->GetStringField(TEXT("key"));
                                             PluginSettings->DynamicKeys.Add(NewKey);
                                         }
                                     }
@@ -168,14 +168,14 @@ void FJsonAsAssetSettingsDetails::EditEncryption(TWeakObjectPtr<UJsonAsAssetSett
 			
 			if (FJsonSerializer::Deserialize(JsonReader, JsonObject))
 			{
-				PluginSettings->ArchiveKey = JsonObject->GetStringField("mainKey");
+				PluginSettings->ArchiveKey = JsonObject->GetStringField(TEXT("mainKey"));
 
-				for (const TSharedPtr<FJsonValue> Value : JsonObject->GetArrayField("dynamicKeys"))
+				for (const TSharedPtr<FJsonValue> Value : JsonObject->GetArrayField(TEXT("dynamicKeys")))
 				{
 					const TSharedPtr<FJsonObject> Object = Value->AsObject();
 
-					FString GUID = Object->GetStringField("guid");
-					FString Key = Object->GetStringField("key");
+					FString GUID = Object->GetStringField(TEXT("guid"));
+					FString Key = Object->GetStringField(TEXT("key"));
 
 					PluginSettings->DynamicKeys.Add(FAesKey(GUID, Key));
 				}
@@ -229,8 +229,8 @@ void FJsonAsAssetSettingsDetails::EditEncryption(TWeakObjectPtr<UJsonAsAssetSett
 					if (Value == nullptr) return FReply::Handled();
 					TSharedPtr<FJsonObject> MappingsObject = Value->AsObject();
 
-					FString FileName = MappingsObject->GetStringField("fileName");
-					FString URL = MappingsObject->GetStringField("url");
+					FString FileName = MappingsObject->GetStringField(TEXT("fileName"));
+					FString URL = MappingsObject->GetStringField(TEXT("url"));
 
 					auto OnRequestComplete = [DataFolder, FileName](FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
 					{

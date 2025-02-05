@@ -7,7 +7,7 @@
 
 bool ICurveFloatImporter::ImportData() {
 	// Quick way to access the curve keys
-	TArray<TSharedPtr<FJsonValue>> Keys = JsonObject->GetObjectField("Properties")->GetObjectField("FloatCurve")->GetArrayField("Keys");
+	TArray<TSharedPtr<FJsonValue>> Keys = JsonObject->GetObjectField(TEXT("Properties"))->GetObjectField(TEXT("FloatCurve"))->GetArrayField(TEXT("Keys"));
 
 	UCurveFloatFactory* CurveFactory = NewObject<UCurveFloatFactory>();
 	UCurveFloat* CurveAsset = Cast<UCurveFloat>(CurveFactory->FactoryCreateNew(UCurveFloat::StaticClass(), OutermostPkg, *FileName, RF_Standalone | RF_Public, nullptr, GWarn));

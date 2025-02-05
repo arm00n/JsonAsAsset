@@ -23,12 +23,12 @@
 #include <Editor/UnrealEd/Classes/MaterialGraph/MaterialGraphNode_Composite.h>
 
 void IMaterialImporter::ComposeExpressionPinBase(UMaterialExpressionPinBase* Pin, TMap<FName, UMaterialExpression*>& CreatedExpressionMap, const TSharedPtr<FJsonObject>& _JsonObject, TMap<FName, FExportData>& Exports) {
-	FJsonObject* Expression = (Exports.Find(GetExportNameOfSubobject(_JsonObject->GetStringField("ObjectName")))->Json)->GetObjectField("Properties").Get();
+	FJsonObject* Expression = (Exports.Find(GetExportNameOfSubobject(_JsonObject->GetStringField(TEXT("ObjectName"))))->Json)->GetObjectField(TEXT("Properties")).Get();
 
-	Pin->GraphNode->NodePosX = Expression->GetNumberField("MaterialExpressionEditorX");
-	Pin->GraphNode->NodePosY = Expression->GetNumberField("MaterialExpressionEditorY");
-	Pin->MaterialExpressionEditorX = Expression->GetNumberField("MaterialExpressionEditorX");
-	Pin->MaterialExpressionEditorY = Expression->GetNumberField("MaterialExpressionEditorY");
+	Pin->GraphNode->NodePosX = Expression->GetNumberField(TEXT("MaterialExpressionEditorX"));
+	Pin->GraphNode->NodePosY = Expression->GetNumberField(TEXT("MaterialExpressionEditorY"));
+	Pin->MaterialExpressionEditorX = Expression->GetNumberField(TEXT("MaterialExpressionEditorX"));
+	Pin->MaterialExpressionEditorY = Expression->GetNumberField(TEXT("MaterialExpressionEditorY"));
 
 	FString MaterialExpressionGuid;
 	if (Expression->TryGetStringField("MaterialExpressionGuid", MaterialExpressionGuid)) Pin->MaterialExpressionGuid = FGuid(MaterialExpressionGuid);
@@ -38,11 +38,11 @@ void IMaterialImporter::ComposeExpressionPinBase(UMaterialExpressionPinBase* Pin
 		for (const TSharedPtr<FJsonValue> ReroutePin : *ReroutePins) {
 			if (ReroutePin->IsNull()) continue;
 			TSharedPtr<FJsonObject> ReroutePinObject = ReroutePin->AsObject();
-			TSharedPtr<FJsonObject> RerouteObj = GetExportByObjectPath(ReroutePinObject->GetObjectField("Expression"))->AsObject();
-			UMaterialExpressionReroute* RerouteExpression = Cast<UMaterialExpressionReroute>(*CreatedExpressionMap.Find(FName(RerouteObj->GetStringField("Name"))));
+			TSharedPtr<FJsonObject> RerouteObj = GetExportByObjectPath(ReroutePinObject->GetObjectField(TEXT("Expression")))->AsObject();
+			UMaterialExpressionReroute* RerouteExpression = Cast<UMaterialExpressionReroute>(*CreatedExpressionMap.Find(FName(RerouteObj->GetStringField(TEXT("Name")))));
 
 			// Add reroute to pin
-			Pin->ReroutePins.Add(FCompositeReroute(FName(ReroutePinObject->GetStringField("Name")), RerouteExpression));
+			Pin->ReroutePins.Add(FCompositeReroute(FName(ReroutePinObject->GetStringField(TEXT("Name"))), RerouteExpression));
 		}
 	}
 
@@ -77,7 +77,7 @@ bool IMaterialImporter::ImportData() {
 	UMaterialFactoryNew* MaterialFactory = NewObject<UMaterialFactoryNew>();
 	UMaterial* Material = Cast<UMaterial>(MaterialFactory->FactoryCreateNew(UMaterial::StaticClass(), OutermostPkg, *FileName, RF_Standalone | RF_Public, nullptr, GWarn));
 
-	TSharedPtr<FJsonObject> Properties = JsonObject->GetObjectField("Properties");
+	TSharedPtr<FJsonObject> Properties = JsonObject->GetObjectField(TEXT("Properties"));
 
 	Material->GetReferencedTextures();
 
@@ -91,8 +91,8 @@ bool IMaterialImporter::ImportData() {
 	// Define editor only data from the JSON
 	TMap<FName, FExportData> Exports;
 	TArray<FName> ExpressionNames;
-	TSharedPtr<FJsonObject> EdProps = FindEditorOnlyData(JsonObject->GetStringField("Type"), Material->GetName(), Exports, ExpressionNames, false)->GetObjectField("Properties");
-	const TSharedPtr<FJsonObject> StringExpressionCollection = EdProps->GetObjectField("ExpressionCollection");
+	TSharedPtr<FJsonObject> EdProps = FindEditorOnlyData(JsonObject->GetStringField(TEXT("Type")), Material->GetName(), Exports, ExpressionNames, false)->GetObjectField(TEXT("Properties"));
+	const TSharedPtr<FJsonObject> StringExpressionCollection = EdProps->GetObjectField(TEXT("ExpressionCollection"));
 
 	// Map out each expression for easier access
 	TMap<FName, UMaterialExpression*> CreatedExpressionMap = ConstructExpressions(Material, Material->GetName(), ExpressionNames, Exports);
@@ -194,11 +194,11 @@ bool IMaterialImporter::ImportData() {
 	for (const TSharedPtr<FJsonValue> Value : AllJsonObjects) {
 		TSharedPtr<FJsonObject> Object = TSharedPtr<FJsonObject>(Value->AsObject());
 
-		FString ExType = Object->GetStringField("Type");
-		FString Name = Object->GetStringField("Name");
+		FString ExType = Object->GetStringField(TEXT("Type"));
+		FString Name = Object->GetStringField(TEXT("Name"));
 
 		if (ExType == "MaterialGraph" && Name != "MaterialGraph_0") {
-			TSharedPtr<FJsonObject> GraphProperties = Object->GetObjectField("Properties");
+			TSharedPtr<FJsonObject> GraphProperties = Object->GetObjectField(TEXT("Properties"));
 			TSharedPtr<FJsonObject> SubgraphExpression;
 
 			FString SubgraphExpressionName;
@@ -215,11 +215,11 @@ bool IMaterialImporter::ImportData() {
 			const TSharedPtr<FJsonObject>* SubgraphExpressionPtr = nullptr;
 			if (GraphProperties->TryGetObjectField("SubgraphExpression", SubgraphExpressionPtr) && SubgraphExpressionPtr != nullptr) {
 				FJsonObject* SubgraphExpressionObject = SubgraphExpressionPtr->Get();
-				FName ExportName = GetExportNameOfSubobject(SubgraphExpressionObject->GetStringField("ObjectName"));
+				FName ExportName = GetExportNameOfSubobject(SubgraphExpressionObject->GetStringField(TEXT("ObjectName")));
 
 				SubgraphExpressionName = ExportName.ToString();
 				FExportData Export = *Exports.Find(ExportName);
-				SubgraphExpression = Export.Json->GetObjectField("Properties");
+				SubgraphExpression = Export.Json->GetObjectField(TEXT("Properties"));
 			}
 
 			// Find Material Graph
@@ -234,7 +234,7 @@ bool IMaterialImporter::ImportData() {
 			// Create the composite node that will serve as the gateway into the subgraph
 			UMaterialGraphNode_Composite* GatewayNode = nullptr;
 			{
-				GatewayNode = Cast<UMaterialGraphNode_Composite>(FMaterialGraphSchemaAction_NewComposite::SpawnNode(MaterialGraph, FVector2D(SubgraphExpression->GetNumberField("MaterialExpressionEditorX"), SubgraphExpression->GetNumberField("MaterialExpressionEditorY"))));
+				GatewayNode = Cast<UMaterialGraphNode_Composite>(FMaterialGraphSchemaAction_NewComposite::SpawnNode(MaterialGraph, FVector2D(SubgraphExpression->GetNumberField(TEXT("MaterialExpressionEditorX")), SubgraphExpression->GetNumberField(TEXT("MaterialExpressionEditorY")))));
 				GatewayNode->bCanRenameNode = true;
 				check(GatewayNode);
 			}
@@ -274,8 +274,8 @@ bool IMaterialImporter::ImportData() {
 				for (const TSharedPtr<FJsonValue> _GraphNode : MaterialGraphNodes) {
 					const TSharedPtr<FJsonObject> MaterialGraphObject = TSharedPtr(_GraphNode->AsObject());
 
-					FString GraphNode_Type = MaterialGraphObject->GetStringField("Type");
-					FString GraphNode_Name = MaterialGraphObject->GetStringField("Name");
+					FString GraphNode_Type = MaterialGraphObject->GetStringField(TEXT("Type"));
+					FString GraphNode_Name = MaterialGraphObject->GetStringField(TEXT("Name"));
 
 					FName GraphNodeNameName = FName(GraphNode_Name);
 
@@ -362,8 +362,8 @@ bool IMaterialImporter::ImportData() {
 	}
 
 	TSharedPtr<FJsonObject> SerializerProperties = TSharedPtr<FJsonObject>(Properties);
-	if (SerializerProperties->HasField("ShadingModel")) // ShadingModel set manually
-		SerializerProperties->RemoveField("ShadingModel");
+	if (SerializerProperties->HasField(TEXT("ShadingModel"))) // ShadingModel set manually
+		SerializerProperties->RemoveField(TEXT("ShadingModel"));
 
 	GetObjectSerializer()->DeserializeObjectProperties(SerializerProperties, Material);
 
@@ -396,17 +396,17 @@ TArray<TSharedPtr<FJsonValue>> IMaterialImporter::FilterGraphNodesBySubgraphExpr
 	*/
 	for (const TSharedPtr<FJsonValue> Value : AllJsonObjects) {
 		const TSharedPtr<FJsonObject> ValueObject = TSharedPtr<FJsonObject>(Value->AsObject());
-		const TSharedPtr<FJsonObject> Properties = TSharedPtr<FJsonObject>(ValueObject->GetObjectField("Properties"));
+		const TSharedPtr<FJsonObject> Properties = TSharedPtr<FJsonObject>(ValueObject->GetObjectField(TEXT("Properties")));
 
 		const TSharedPtr<FJsonObject>* MaterialExpression;
 		if (Properties->TryGetObjectField("MaterialExpression", MaterialExpression)) {
 			TSharedPtr<FJsonValue> ExpValue = GetExportByObjectPath(*MaterialExpression);
 			TSharedPtr<FJsonObject> Expression = TSharedPtr<FJsonObject>(ExpValue->AsObject());
-			const TSharedPtr<FJsonObject> _Properties = TSharedPtr<FJsonObject>(Expression->GetObjectField("Properties"));
+			const TSharedPtr<FJsonObject> _Properties = TSharedPtr<FJsonObject>(Expression->GetObjectField(TEXT("Properties")));
 
 			const TSharedPtr<FJsonObject>* _SubgraphExpression;
 			if (_Properties->TryGetObjectField("SubgraphExpression", _SubgraphExpression)) {
-				if (Outer == GetExportNameOfSubobject(_SubgraphExpression->Get()->GetStringField("ObjectName")).ToString()) {
+				if (Outer == GetExportNameOfSubobject(_SubgraphExpression->Get()->GetStringField(TEXT("ObjectName"))).ToString()) {
 					ReturnValue.Add(ExpValue);
 				}
 			}

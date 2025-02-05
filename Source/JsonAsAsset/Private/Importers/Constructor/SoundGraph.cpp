@@ -18,7 +18,7 @@ bool ISoundGraph::ImportData() {
 		USoundCue* SoundCue = NewObject<USoundCue>(Package, *FileName, RF_Public | RF_Standalone);
 		SoundCue->PreEditChange(nullptr);
 
-		TSharedPtr<FJsonObject> Properties = JsonObject->GetObjectField("Properties");
+		TSharedPtr<FJsonObject> Properties = JsonObject->GetObjectField(TEXT("Properties"));
 		
 		// Start -------------------------------------------
 		if (SoundCue) {
@@ -50,12 +50,12 @@ void ISoundGraph::ConstructNodes(USoundCue* SoundCue, TArray<TSharedPtr<FJsonVal
 	for (TSharedPtr<FJsonValue> JsonValue : JsonArray) {
 		TSharedPtr<FJsonObject> CurrentNodeObject = JsonValue->AsObject();
 
-		if (!CurrentNodeObject->HasField("Type")) {
+		if (!CurrentNodeObject->HasField(TEXT("Type"))) {
 			continue;
 		}
 		
-		FString NodeType = CurrentNodeObject->GetStringField("Type");
-		FString NodeName = CurrentNodeObject->GetStringField("Name");
+		FString NodeType = CurrentNodeObject->GetStringField(TEXT("Type"));
+		FString NodeName = CurrentNodeObject->GetStringField(TEXT("Name"));
 
 		// Filter only exports with SoundNode at the start
 		if (NodeType.StartsWith("SoundNode")) {
@@ -78,12 +78,12 @@ USoundNode* ISoundGraph::CreateEmptyNode(FName Name, FName Type, USoundCue* Soun
 
 void ISoundGraph::SetupNodes(USoundCue* SoundCueAsset, TMap<FString, USoundNode*> SoundCueNodes, TArray<TSharedPtr<FJsonValue>> JsonObjectArray) {
 	auto MainJsonObject = JsonObjectArray[0]->AsObject();
-	auto MainJsonObjectProperties = MainJsonObject->TryGetField("Properties")->AsObject();
+	auto MainJsonObjectProperties = MainJsonObject->TryGetField(TEXT("Properties"))->AsObject();
 
 	// If Node is connected to Root Node
-	if (MainJsonObjectProperties->HasField("FirstNode")) {
-		auto FirstNodeProp = MainJsonObjectProperties->TryGetField("FirstNode")->AsObject();
-		auto FirstNodeName = FirstNodeProp->TryGetField("ObjectName")->AsString();
+	if (MainJsonObjectProperties->HasField(TEXT("FirstNode"))) {
+		auto FirstNodeProp = MainJsonObjectProperties->TryGetField(TEXT("FirstNode"))->AsObject();
+		auto FirstNodeName = FirstNodeProp->TryGetField(TEXT("ObjectName"))->AsString();
 
 		int32 ColonIndex = FirstNodeName.Find(TEXT(":"));
 		int32 QuoteIndex = FirstNodeName.Find(TEXT("'"), ESearchCase::CaseSensitive, ESearchDir::FromEnd);
@@ -102,26 +102,26 @@ void ISoundGraph::SetupNodes(USoundCue* SoundCueAsset, TMap<FString, USoundNode*
 	for (TSharedPtr<FJsonValue> JsonValue : JsonObjectArray) {
 		TSharedPtr<FJsonObject> CurrentNodeObject = JsonValue->AsObject();
 
-		if (!CurrentNodeObject->HasField("Type")) {
+		if (!CurrentNodeObject->HasField(TEXT("Type"))) {
 			continue;
 		}
 		
-		FString NodeType = CurrentNodeObject->GetStringField("Type");
-		FString NodeName = CurrentNodeObject->GetStringField("Name");
+		FString NodeType = CurrentNodeObject->GetStringField(TEXT("Type"));
+		FString NodeName = CurrentNodeObject->GetStringField(TEXT("Name"));
 
 		// Make sure it has Properties and it's a SoundNode
-		if (!CurrentNodeObject->HasField("Properties") || !NodeType.StartsWith("SoundNode")) {
+		if (!CurrentNodeObject->HasField(TEXT("Properties")) || !NodeType.StartsWith("SoundNode")) {
 			continue;
 		}
 
-		TSharedPtr<FJsonObject> NodeProperties = CurrentNodeObject->TryGetField("Properties")->AsObject();
+		TSharedPtr<FJsonObject> NodeProperties = CurrentNodeObject->TryGetField(TEXT("Properties"))->AsObject();
 
 		USoundNode** CurrentNode = SoundCueNodes.Find(NodeName);
 		USoundNode* Node = *CurrentNode;
 		
 		// Filter only node with ChildNodes and handle the pins
-		if (NodeProperties->HasField("ChildNodes")) {
-			TArray<TSharedPtr<FJsonValue>> CurrentNodeChildNodes = NodeProperties->TryGetField("ChildNodes")->AsArray();
+		if (NodeProperties->HasField(TEXT("ChildNodes"))) {
+			TArray<TSharedPtr<FJsonValue>> CurrentNodeChildNodes = NodeProperties->TryGetField(TEXT("ChildNodes"))->AsArray();
 
 			// Save an index of the current connection
 			int32 ConnectionIndex = 0;
@@ -134,8 +134,8 @@ void ISoundGraph::SetupNodes(USoundCue* SoundCueAsset, TMap<FString, USoundNode*
 					Node->InsertChildNode(ConnectionIndex);
 				}
 
-				if (CurrentNodeChildNode->HasField("ObjectName")) {
-					auto CurrentChildNodeObjectName = CurrentNodeChildNode->TryGetField("ObjectName")->AsString();
+				if (CurrentNodeChildNode->HasField(TEXT("ObjectName"))) {
+					auto CurrentChildNodeObjectName = CurrentNodeChildNode->TryGetField(TEXT("ObjectName"))->AsString();
 
 					int32 ColonIndex = CurrentChildNodeObjectName.Find(TEXT(":"));
 					int32 QuoteIndex = CurrentChildNodeObjectName.Find(TEXT("'"), ESearchCase::CaseSensitive, ESearchDir::FromEnd);
@@ -164,8 +164,8 @@ void ISoundGraph::SetupNodes(USoundCue* SoundCueAsset, TMap<FString, USoundNode*
 		if (Cast<USoundNodeWavePlayer>(Node) != nullptr) {
 			auto WavePlayerNode = Cast<USoundNodeWavePlayer>(Node);
 
-			if (NodeProperties->HasField("SoundWaveAssetPtr")) {
-				FString AssetPtr = NodeProperties->TryGetField("SoundWaveAssetPtr")->AsObject()->GetStringField("AssetPathName");
+			if (NodeProperties->HasField(TEXT("SoundWaveAssetPtr"))) {
+				FString AssetPtr = NodeProperties->TryGetField(TEXT("SoundWaveAssetPtr"))->AsObject()->GetStringField(TEXT("AssetPathName"));
 
 				USoundWave* SoundWave = Cast<USoundWave>(StaticLoadObject(USoundWave::StaticClass(), nullptr, *AssetPtr));
 				

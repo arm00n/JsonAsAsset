@@ -207,7 +207,7 @@ void UPropertySerializer::DeserializePropertyValueInner(FProperty* Property, con
 			// FModel, extract it from the object
 			case EJson::Object:
 				SoftJsonObjectProperty = NewJsonValue->AsObject();
-				PathString = SoftJsonObjectProperty->GetStringField("AssetPathName");
+				PathString = SoftJsonObjectProperty->GetStringField(TEXT("AssetPathName"));
 			break;
 
 			// Older versions of FModel ??
@@ -242,7 +242,7 @@ void UPropertySerializer::DeserializePropertyValueInner(FProperty* Property, con
 		TObjectPtr<UObject> Object = NULL;
 
 		auto JsonValueAsObject = NewJsonValue->AsObject();
-		bool bUseDefaultLoadObject = !JsonValueAsObject->GetStringField("ObjectName").Contains(":ParticleModule");
+		bool bUseDefaultLoadObject = !JsonValueAsObject->GetStringField(TEXT("ObjectName")).Contains(":ParticleModule");
 
 		if (bUseDefaultLoadObject)
 		{
@@ -261,7 +261,7 @@ void UPropertySerializer::DeserializePropertyValueInner(FProperty* Property, con
 					FFailedPropertyInfo PropertyInfo;
 					PropertyInfo.ClassName = ObjectProperty->PropertyClass->GetName();
 					PropertyInfo.SuperStructName = Struct->GetSuperStruct() ? Struct->GetSuperStruct()->GetName() : TEXT("None");
-					PropertyInfo.ObjectPath = JsonValueAsObject->GetStringField("ObjectPath");
+					PropertyInfo.ObjectPath = JsonValueAsObject->GetStringField(TEXT("ObjectPath"));
 					
 					if (!FailedProperties.Contains(PropertyInfo))
 					{
@@ -279,16 +279,22 @@ void UPropertySerializer::DeserializePropertyValueInner(FProperty* Property, con
 				// Get the export
 				if (TSharedPtr<FJsonObject> Export = GetExport(JsonValueAsObject.Get(), ObjectSerializer->AllObjectsReference))
 				{
-					if (Export->HasField("Properties"))
+					if (Export->HasField(TEXT("Properties")))
 					{
-						TSharedPtr<FJsonObject> Properties = Export->GetObjectField("Properties");
+						TSharedPtr<FJsonObject> Properties = Export->GetObjectField(TEXT("Properties"));
+
+						if (Export->HasField(TEXT("LODData")))
+						{
+							Properties->SetArrayField("LODData", Export->GetArrayField(TEXT("LODData")));
+						}
+						
 						ObjectSerializer->DeserializeObjectProperties(Properties, Object);
 					}
 				}
 			}
 		}
 
-		FString ObjectName = JsonValueAsObject->GetStringField("ObjectName");
+		FString ObjectName = JsonValueAsObject->GetStringField(TEXT("ObjectName"));
 
 		if (UObject** FoundObjectPtr = ReferencedObjects.Find(ObjectName)) {
 			UObject* FoundObject = *FoundObjectPtr;
@@ -346,7 +352,7 @@ void UPropertySerializer::DeserializePropertyValueInner(FProperty* Property, con
 			FString PathString = "";
 		
 			SoftJsonObjectProperty = NewJsonValue->AsObject();
-			PathString = SoftJsonObjectProperty->GetStringField("AssetPathName");
+			PathString = SoftJsonObjectProperty->GetStringField(TEXT("AssetPathName"));
 			
 			if (PathString != "")
 			{
@@ -441,7 +447,7 @@ void UPropertySerializer::DeserializePropertyValueInner(FProperty* Property, con
 			// TODO: Somehow add other needed things like Namespace, Key, and LocalizedString 
 			TSharedPtr<FJsonObject> Object = NewJsonValue->AsObject().ToSharedRef();
 
-			TextProperty->SetPropertyValue(Value, FText::FromString(Object->GetStringField("SourceString")));
+			TextProperty->SetPropertyValue(Value, FText::FromString(Object->GetStringField(TEXT("SourceString"))));
 		}
 	}
 	else if (const FFieldPathProperty* FieldPathProperty = CastField<const FFieldPathProperty>(Property)) {
@@ -474,7 +480,7 @@ void UPropertySerializer::AddStructSerializer(UScriptStruct* Struct, const TShar
 bool UPropertySerializer::ShouldSerializeProperty(FProperty* Property) const {
 	// Skip transient properties
 	if (Property->HasAnyPropertyFlags(CPF_Transient)) {
-		return false;
+		return true;
 	}
 	// Skip editor only properties altogether
 	if (Property->HasAnyPropertyFlags(CPF_EditorOnly)) {

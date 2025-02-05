@@ -91,7 +91,7 @@ void UObjectSerializer::SetPackageForDeserialization(UPackage* SelfPackage) {
 
 void UObjectSerializer::SetExportForDeserialization(TSharedPtr<FJsonObject> Object)
 {
-	ExportsToNotDeserialize.Add(Object->GetStringField("Name"));
+	ExportsToNotDeserialize.Add(Object->GetStringField(TEXT("Name")));
 }
 
 void UObjectSerializer::DeserializeExports(TArray<TSharedPtr<FJsonValue>> Exports)
@@ -101,21 +101,21 @@ void UObjectSerializer::DeserializeExports(TArray<TSharedPtr<FJsonValue>> Export
 		TSharedPtr<FJsonObject> ExportObject = Object->AsObject();
 
 		// No name = no export!!
-		if (!ExportObject->HasField("Name")) continue;
+		if (!ExportObject->HasField(TEXT("Name"))) continue;
 
-		FString Name = ExportObject->GetStringField("Name");
+		FString Name = ExportObject->GetStringField(TEXT("Name"));
 		
 		// Check if it's not supposed to be deserialized
 		if (ExportsToNotDeserialize.Contains(Name)) continue;
 
-		FString ClassName = ExportObject->GetStringField("Class");
+		FString ClassName = ExportObject->GetStringField(TEXT("Class"));
 		UClass* FoundClass = FindObject<UClass>(ANY_PACKAGE, *ClassName);
 
 		UObject* NewUObject = NewObject<UObject>(ParentAsset, FoundClass, FName(*Name));
 
-		if (ExportObject->HasField("Properties"))
+		if (ExportObject->HasField(TEXT("Properties")))
 		{
-			TSharedPtr<FJsonObject> Properties = ExportObject->GetObjectField("Properties");
+			TSharedPtr<FJsonObject> Properties = ExportObject->GetObjectField(TEXT("Properties"));
 
 			DeserializeObjectProperties(Properties, NewUObject);
 		}
@@ -418,6 +418,78 @@ void UObjectSerializer::DeserializeObjectProperties(const TSharedPtr<FJsonObject
 	if (Object == nullptr) return;
 	
 	UClass* ObjectClass = Object->GetClass();
+
+	// this is a use case for importing maps and parsing static mesh components
+	// using the object and property serializer, this was initially wanted to be
+	// done completely without any manual work (using the de-serializers)
+	// however I don't think it's possible to do so. as I haven't seen any native
+	// property that can do this using the data provided in CUE4Parse
+	if (Properties->HasField(TEXT("LODData")))
+	{
+		UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(Object);
+		TArray<TSharedPtr<FJsonValue>> ObjectLODData = Properties->GetArrayField(TEXT("LODData"));
+
+		if (ObjectLODData.Num() > 0)
+		{
+			StaticMeshComponent->SetLODDataCount(ObjectLODData.Num() + 1, ObjectLODData.Num() + 1);
+		}
+
+		int CurrentLOD = 0;
+		for (TSharedPtr<FJsonValue> CurrentLODValue : ObjectLODData)
+		{
+			TSharedPtr<FJsonObject> CurrentLODObject = CurrentLODValue->AsObject();
+
+			if (!CurrentLODObject->HasField(TEXT("OverrideVertexColors"))) continue;
+
+			FStaticMeshComponentLODInfo& LODInfo = StaticMeshComponent->LODData[CurrentLOD];
+
+			StaticMeshComponent->RemoveInstanceVertexColorsFromLOD(CurrentLOD);
+
+			// may not be null at the start (could have been initialized 
+			// from a blueprint component template with vert coloring), but 
+			// should be null by this point, after RemoveInstanceVertexColorsFromLOD()
+			check(LODInfo.OverrideVertexColors == nullptr);
+
+			LODInfo.OverrideVertexColors = new FColorVertexBuffer;
+			FColorVertexBuffer* OverrideVertexColors = LODInfo.OverrideVertexColors;
+
+			// -----------------------------------------------------------------------------------
+			// at the time of this code creation I've decided to import the vertex colors using
+			// ImportText, a native function that takes in a string and parses the data
+			// why? because the variables that we would override are private of course :)
+			TSharedPtr<FJsonObject> OverrideVertexColorsObject = CurrentLODObject->GetObjectField(TEXT("OverrideVertexColors"));
+			
+			int32 NumVertices = OverrideVertexColorsObject->GetIntegerField(TEXT("NumVertices"));
+			const TArray<TSharedPtr<FJsonValue>> DataArray = OverrideVertexColorsObject->GetArrayField(TEXT("Data"));
+
+			// sample template of the target data
+			FString Output = FString::Printf(TEXT("CustomProperties CustomLODData LOD=0 ColorVertexData(%d)=("), NumVertices);
+
+			// Append the colors in the expected format
+			for (int32 i = 0; i < DataArray.Num(); ++i)
+			{
+				FString ColorValue = DataArray.operator[](i)->AsString();
+				Output.Append(ColorValue);
+
+				// Add a comma unless it's the last element
+				if (i < DataArray.Num() - 1)
+				{
+					Output.Append(TEXT(", "));
+				}
+			}
+
+			Output.Append(TEXT(")")); // Close the parentheses
+			
+			const TCHAR* SourceText = *Output;
+
+			// this doesn't comileeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+			// LODInfo.OverrideVertexColors->ImportText(SourceText);
+
+			check(LODInfo.OverrideVertexColors->GetStride() > 0);
+		
+			CurrentLOD++;
+		}
+	}
 
 	for (FProperty* Property = ObjectClass->PropertyLink; Property; Property = Property->PropertyLinkNext) {
 		const FString PropertyName = Property->GetName();

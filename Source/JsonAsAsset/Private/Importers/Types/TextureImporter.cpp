@@ -138,7 +138,7 @@ bool ITextureImporter::ImportVolumeTexture(UTexture*& OutVolumeTexture, TArray<u
 
 	const int SizeX = Properties->GetNumberField(TEXT("SizeX"));
 	const int SizeY = Properties->GetNumberField(TEXT("SizeY"));
-	// const int SizeZ = Properties->GetNumberField("SizeZ"); // Need to add the property
+	// const int SizeZ = Properties->GetNumberField(TEXT("SizeZ")); // Need to add the property
 	const int SizeZ = 1;
 	int Size = SizeX * SizeY * SizeZ;
 

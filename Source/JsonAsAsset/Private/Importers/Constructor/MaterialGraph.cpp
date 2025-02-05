@@ -38,8 +38,8 @@ TSharedPtr<FJsonObject> IMaterialGraph::FindEditorOnlyData(const FString& Type, 
 	for (const TSharedPtr<FJsonValue> Value : bFilterByOuter ? FilterExportsByOuter(Outer) : AllJsonObjects) {
 		TSharedPtr<FJsonObject> Object = TSharedPtr<FJsonObject>(Value->AsObject());
 
-		FString ExType = Object->GetStringField("Type");
-		FString Name = Object->GetStringField("Name");
+		FString ExType = Object->GetStringField(TEXT("Type"));
+		FString Name = Object->GetStringField(TEXT("Name"));
 
 		if (ExType == Type + "EditorOnlyData") {
 			EditorOnlyData = Object;
@@ -118,7 +118,7 @@ FMaterialAttributesInput IMaterialGraph::CreateMaterialAttributesInput(TSharedPt
 void IMaterialGraph::PropagateExpressions(UObject* Parent, TArray<FName>& ExpressionNames, TMap<FName, FExportData>& Exports, TMap<FName, UMaterialExpression*>& CreatedExpressionMap, bool bCheckOuter, bool bSubgraph) {
 	for (FName Name : ExpressionNames) {
 		FExportData* Type = Exports.Find(Name);
-		TSharedPtr<FJsonObject> Properties = Type->Json->GetObjectField("Properties");
+		TSharedPtr<FJsonObject> Properties = Type->Json->GetObjectField(TEXT("Properties"));
 
 		// Find the expression from FName
 		if (!CreatedExpressionMap.Contains(Name)) continue;
@@ -153,7 +153,7 @@ void IMaterialGraph::PropagateExpressions(UObject* Parent, TArray<FName>& Expres
 				// Notify material function is missing
 				if (MaterialFunctionCall->MaterialFunction == nullptr) {
 					FString ObjectPath;
-					MaterialFunctionPtr->Get()->GetStringField("ObjectPath").Split(".", &ObjectPath, nullptr);
+					MaterialFunctionPtr->Get()->GetStringField(TEXT("ObjectPath")).Split(".", &ObjectPath, nullptr);
 					if (!ImportAssetReference(ObjectPath)) {} // AppendNotification(FText::FromString("Material Function Missing: " + ObjectPath), FText::FromString("Material Graph"), 2.0f, SNotificationItem::CS_Fail, true);
 					else {
 #if ENGINE_MAJOR_VERSION >= 5
@@ -269,10 +269,10 @@ void IMaterialGraph::MaterialGraphNode_ConstructComments(UObject* Parent, const 
 		for (const TSharedPtr<FJsonValue> ExpressionComment : *StringExpressionComments) {
 			if (ExpressionComment->IsNull()) continue; // just in-case
 
-			FName ExportName = GetExportNameOfSubobject(ExpressionComment.Get()->AsObject()->GetStringField("ObjectName"));
+			FName ExportName = GetExportNameOfSubobject(ExpressionComment.Get()->AsObject()->GetStringField(TEXT("ObjectName")));
 
 			// Get properties of comment, and create it relative to parent
-			const TSharedPtr<FJsonObject> Properties = Exports.Find(ExportName)->Json->GetObjectField("Properties");
+			const TSharedPtr<FJsonObject> Properties = Exports.Find(ExportName)->Json->GetObjectField(TEXT("Properties"));
 			UMaterialExpressionComment* Comment = NewObject<UMaterialExpressionComment>(Parent, UMaterialExpressionComment::StaticClass(), ExportName, RF_Transactional);
 
 			// Deserialize and send it off to the material
@@ -285,7 +285,7 @@ void IMaterialGraph::MaterialGraphNode_ConstructComments(UObject* Parent, const 
 	for (TTuple<FString, FJsonObject*>& Key : MissingNodeClasses) {
 		TSharedPtr<FJsonObject>* SharedObject = new TSharedPtr<FJsonObject>(Key.Value);
 
-		const TSharedPtr<FJsonObject> Properties = SharedObject->Get()->GetObjectField("Properties");
+		const TSharedPtr<FJsonObject> Properties = SharedObject->Get()->GetObjectField(TEXT("Properties"));
 		UMaterialExpressionComment* Comment = NewObject<UMaterialExpressionComment>(Parent, UMaterialExpressionComment::StaticClass(), *("UMaterialExpressionComment_" + Key.Key), RF_Transactional);
 
 		Comment->Text = *("Missing Node Class " + Key.Key);
@@ -463,7 +463,7 @@ FName IMaterialGraph::GetExpressionName(const FJsonObject* JsonProperties, FStri
 
 	if (ExpressionField == nullptr || ExpressionField->IsNull()) {
 		// Must be from < 4.25
-		return FName(JsonProperties->GetStringField("ExpressionName"));
+		return FName(JsonProperties->GetStringField(TEXT("ExpressionName")));
 	}
 
 	const TSharedPtr<FJsonObject> ExpressionObject = ExpressionField->AsObject();

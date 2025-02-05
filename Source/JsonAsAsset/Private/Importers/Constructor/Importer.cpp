@@ -280,8 +280,8 @@ TArray<TSharedPtr<FJsonValue>> IImporter::GetObjectsWithTypeStartingWith(const F
 		if (JsonObjectValue->Type == EJson::Object) {
 			TSharedPtr<FJsonObject> JsonObjectType = JsonObjectValue->AsObject();
 
-			if (JsonObjectType.IsValid() && JsonObjectType->HasField("Type")) {
-				FString TypeValue = JsonObjectType->GetStringField("Type");
+			if (JsonObjectType.IsValid() && JsonObjectType->HasField(TEXT("Type"))) {
+				FString TypeValue = JsonObjectType->GetStringField(TEXT("Type"));
 
 				// Check if the "Type" field starts with the specified string
 				if (TypeValue.StartsWith(StartsWithStr)) {
@@ -503,12 +503,12 @@ TMap<FName, FExportData> IImporter::CreateExports() {
 	for (const TSharedPtr<FJsonValue> Value : AllJsonObjects) {
 		TSharedPtr<FJsonObject> Object = TSharedPtr<FJsonObject>(Value->AsObject());
 
-		FString ExType = Object->GetStringField("Type");
-		FString Name = Object->GetStringField("Name");
+		FString ExType = Object->GetStringField(TEXT("Type"));
+		FString Name = Object->GetStringField(TEXT("Name"));
 		FString Outer = "None";
 
-		if (Object->HasField("Outer")) {
-			Outer = Object->GetStringField("Outer");
+		if (Object->HasField(TEXT("Outer"))) {
+			Outer = Object->GetStringField(TEXT("Outer"));
 		}
 
 		OutExports.Add(FName(Name), FExportData(ExType, Outer, Object));

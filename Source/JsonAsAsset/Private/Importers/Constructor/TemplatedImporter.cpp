@@ -9,11 +9,11 @@ template <typename AssetType>
 bool ITemplatedImporter<AssetType>::ImportData() {
 	try {
 		// Make Properties if it doesn't exist
-		if (!JsonObject->HasField("Properties")) {
+		if (!JsonObject->HasField(TEXT("Properties"))) {
 			JsonObject->SetObjectField("Properties", TSharedPtr<FJsonObject>());
 		}
 		
-		TSharedPtr<FJsonObject> Properties = JsonObject->GetObjectField("Properties");
+		TSharedPtr<FJsonObject> Properties = JsonObject->GetObjectField(TEXT("Properties"));
 		GetObjectSerializer()->SetPackageForDeserialization(Package);
 
 		AssetType* Asset = NewObject<AssetType>(Package, AssetClass ? AssetClass : AssetType::StaticClass(), FName(FileName), RF_Public | RF_Standalone);

@@ -50,12 +50,12 @@ bool IPhysicsAssetImporter::ImportData() {
 	 * I'm not quite sure how to fix it, but maybe an idea pops up later on.
 	*/
 
-	TSharedPtr<FJsonObject> Properties = JsonObject->GetObjectField("Properties");
+	TSharedPtr<FJsonObject> Properties = JsonObject->GetObjectField(TEXT("Properties"));
 	TMap<FName, FExportData> Exports = CreateExports();
 
 	// SkeletalBodySetups
 	ProcessJsonArrayField(Properties, TEXT("SkeletalBodySetups"), [&](const TSharedPtr<FJsonObject>& ObjectField) {
-		FName ExportName = GetExportNameOfSubobject(ObjectField->GetStringField("ObjectName"));
+		FName ExportName = GetExportNameOfSubobject(ObjectField->GetStringField(TEXT("ObjectName")));
 		FJsonObject* ExportJson = Exports.Find(ExportName)->Json;
 
 		TSharedPtr<FJsonObject> ExportProperties = ExportJson->GetObjectField(TEXT("Properties"));
@@ -81,11 +81,6 @@ bool IPhysicsAssetImporter::ImportData() {
 		GetObjectSerializer()->DeserializeObjectProperties(ExportProperties, PhysicsConstraintTemplate);
 	});
 
-	PhysicsAsset->RefreshPhysicsAssetChange();
-	PhysicsAsset->PostEditChange();
-	PhysicsAsset->UpdateBoundsBodiesArray();
-	PhysicsAsset->UpdateBodySetupIndexMap();
-	
 	// ---------------------------------------------------------
 	// Simple data at end
 	GetObjectSerializer()->DeserializeObjectProperties(RemovePropertiesShared(Properties,
@@ -94,6 +89,11 @@ bool IPhysicsAssetImporter::ImportData() {
 		"ConstraintSetup",
 		"BoundsBodies"
 	}), PhysicsAsset);
+
+	PhysicsAsset->RefreshPhysicsAssetChange();
+	PhysicsAsset->PostEditChange();
+	PhysicsAsset->UpdateBoundsBodiesArray();
+	PhysicsAsset->UpdateBodySetupIndexMap();
 	
 	return OnAssetCreation(PhysicsAsset);
 }

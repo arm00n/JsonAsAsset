@@ -16,22 +16,22 @@ bool IMaterialFunctionImporter::ImportData() {
 	// Handle edit changes, and add it to the content browser
 	if (!HandleAssetCreation(MaterialFunction)) return false;
 
-	MaterialFunction->StateId = FGuid(JsonObject->GetObjectField("Properties")->GetStringField("StateId"));
+	MaterialFunction->StateId = FGuid(JsonObject->GetObjectField(TEXT("Properties"))->GetStringField(TEXT("StateId")));
 	
 	// Misc properties
 	bool bPrefixParameterNames;
 	FString Description;
 	bool bExposeToLibrary;
 	
-	if (JsonObject->GetObjectField("Properties")->TryGetStringField("Description", Description)) MaterialFunction->Description = Description;
-	if (JsonObject->GetObjectField("Properties")->TryGetBoolField("bExposeToLibrary", bExposeToLibrary)) MaterialFunction->bExposeToLibrary = bExposeToLibrary;
-	if (JsonObject->GetObjectField("Properties")->TryGetBoolField("bPrefixParameterNames", bPrefixParameterNames)) MaterialFunction->bPrefixParameterNames = bPrefixParameterNames;
+	if (JsonObject->GetObjectField(TEXT("Properties"))->TryGetStringField("Description", Description)) MaterialFunction->Description = Description;
+	if (JsonObject->GetObjectField(TEXT("Properties"))->TryGetBoolField("bExposeToLibrary", bExposeToLibrary)) MaterialFunction->bExposeToLibrary = bExposeToLibrary;
+	if (JsonObject->GetObjectField(TEXT("Properties"))->TryGetBoolField("bPrefixParameterNames", bPrefixParameterNames)) MaterialFunction->bPrefixParameterNames = bPrefixParameterNames;
 
 	// Define editor only data from the JSON
 	TMap<FName, FExportData> Exports;
 	TArray<FName> ExpressionNames;
-	const TSharedPtr<FJsonObject> EdProps = FindEditorOnlyData(JsonObject->GetStringField("Type"), MaterialFunction->GetName(), Exports, ExpressionNames, false)->GetObjectField("Properties");
-	const TSharedPtr<FJsonObject> StringExpressionCollection = EdProps->GetObjectField("ExpressionCollection");
+	const TSharedPtr<FJsonObject> EdProps = FindEditorOnlyData(JsonObject->GetStringField(TEXT("Type")), MaterialFunction->GetName(), Exports, ExpressionNames, false)->GetObjectField(TEXT("Properties"));
+	const TSharedPtr<FJsonObject> StringExpressionCollection = EdProps->GetObjectField(TEXT("ExpressionCollection"));
 
 	// Map out each expression for easier access
 	TMap<FName, UMaterialExpression*> CreatedExpressionMap = ConstructExpressions(MaterialFunction, MaterialFunction->GetName(), ExpressionNames, Exports);

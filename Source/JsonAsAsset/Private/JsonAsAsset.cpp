@@ -692,7 +692,7 @@ void FJsonAsAssetModule::ImportConvexCollision()
 					const TSharedRef<TJsonReader<TCHAR>> JsonReader = TJsonReaderFactory<TCHAR>::Create(Content);
 
 					if (FJsonSerializer::Deserialize(JsonReader, JsonParsed)) {
-						const TArray<TSharedPtr<FJsonValue>> DataObjects = JsonParsed->GetArrayField("data");
+						const TArray<TSharedPtr<FJsonValue>> DataObjects = JsonParsed->GetArrayField(TEXT("data"));
 
 						for (const TSharedPtr<FJsonValue>& DataObject : DataObjects) {
 							if (!DataObject.IsValid() || !DataObject->AsObject().IsValid()) {
@@ -708,10 +708,10 @@ void FJsonAsAssetModule::ImportConvexCollision()
 								FString ClassValue;
 								if (JsonObject->TryGetStringField("Class", ClassValue) && ClassValue == "UScriptClass'BodySetup'") {
 									// Navigate to "Properties"
-									TSharedPtr<FJsonObject> PropertiesObject = JsonObject->GetObjectField("Properties");
+									TSharedPtr<FJsonObject> PropertiesObject = JsonObject->GetObjectField(TEXT("Properties"));
 									if (PropertiesObject.IsValid()) {
 										// Navigate to "AggGeom"
-										TSharedPtr<FJsonObject> AggGeomObject = PropertiesObject->GetObjectField("AggGeom");
+										TSharedPtr<FJsonObject> AggGeomObject = PropertiesObject->GetObjectField(TEXT("AggGeom"));
 										if (AggGeomObject.IsValid()) {
 											FKAggregateGeom AggGeom;
 
