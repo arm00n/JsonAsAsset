@@ -40,7 +40,7 @@ bool IAnimationBaseImporter::ImportData() {
 	}
 
 	if (!AnimSequenceBase) {
-		AnimSequenceBase = FAssetUtilities::GetSelectedAsset<UAnimSequenceBase>();
+		AnimSequenceBase = GetSelectedAsset<UAnimSequenceBase>();
 	}
 
 	ensure(AnimSequenceBase);

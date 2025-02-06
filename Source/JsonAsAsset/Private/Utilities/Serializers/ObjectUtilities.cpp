@@ -424,9 +424,10 @@ void UObjectSerializer::DeserializeObjectProperties(const TSharedPtr<FJsonObject
 	// done completely without any manual work (using the de-serializers)
 	// however I don't think it's possible to do so. as I haven't seen any native
 	// property that can do this using the data provided in CUE4Parse
-	if (Properties->HasField(TEXT("LODData")))
+	if (Properties->HasField(TEXT("LODData")) && Cast<UStaticMeshComponent>(ObjectClass))
 	{
 		UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(Object);
+
 		TArray<TSharedPtr<FJsonValue>> ObjectLODData = Properties->GetArrayField(TEXT("LODData"));
 
 		if (ObjectLODData.Num() > 0)

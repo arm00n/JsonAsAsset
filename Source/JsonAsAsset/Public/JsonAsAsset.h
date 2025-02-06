@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Utilities/Serializers/PropertyUtilities.h"
 
 #if ENGINE_MAJOR_VERSION == 4
 #include "Modules/ModuleInterface.h"
@@ -20,6 +21,12 @@ public:
     void PluginButtonClicked();
 
 private:
+    UPROPERTY()
+    UPropertySerializer* PropertySerializer;
+
+    UPROPERTY()
+    UObjectSerializer* GObjectSerializer;
+    
     void RegisterMenus();
 
     TSharedPtr<FUICommandList> PluginCommands;

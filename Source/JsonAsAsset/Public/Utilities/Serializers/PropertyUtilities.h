@@ -10,18 +10,15 @@
 
 class UObjectSerializer;
 
-USTRUCT(BlueprintType)
+USTRUCT()
 struct FFailedPropertyInfo
 {
 	GENERATED_BODY()
 
-	UPROPERTY(BlueprintReadOnly)
+public:
+
 	FString ClassName;
-
-	UPROPERTY(BlueprintReadOnly)
 	FString ObjectPath;
-
-	UPROPERTY(BlueprintReadOnly)
 	FString SuperStructName;
 
 	bool operator==(const FFailedPropertyInfo& Other) const

@@ -32,6 +32,47 @@ inline bool HandlePackageCreation(UObject* Asset, UPackage* Package) {
 	return true;
 }
 
+/**
+ * Get the asset currently selected in the Content Browser.
+ * 
+ * @return Selected Asset
+ */
+template <typename T>
+T* GetSelectedAsset() {
+	const FContentBrowserModule& ContentBrowserModule = FModuleManager::LoadModuleChecked<FContentBrowserModule>("ContentBrowser");
+	TArray<FAssetData> SelectedAssets;
+	ContentBrowserModule.Get().GetSelectedAssets(SelectedAssets);
+
+	if (SelectedAssets.Num() == 0) {
+		GLog->Log("JsonAsAsset: [GetSelectedAsset] None selected, returning nullptr.");
+
+		const FText DialogText = FText::Format(
+			FText::FromString(TEXT("Importing an asset of type '{0}' requires a base asset selected. Select one in your content browser.")),
+			FText::FromString(T::StaticClass()->GetName())
+		);
+
+		FMessageDialog::Open(EAppMsgType::Ok, DialogText);
+		return nullptr;
+	}
+
+	UObject* SelectedAsset = SelectedAssets[0].GetAsset();
+	T* CastedAsset = Cast<T>(SelectedAsset);
+
+	if (!CastedAsset) {
+		GLog->Log("JsonAsAsset: [GetSelectedAsset] Selected asset is not of the required class, returning nullptr.");
+
+		const FText DialogText = FText::Format(
+			FText::FromString(TEXT("The selected asset is not of type '{0}'. Please select a valid asset.")),
+			FText::FromString(T::StaticClass()->GetName())
+		);
+
+		FMessageDialog::Open(EAppMsgType::Ok, DialogText);
+		return nullptr;
+	}
+
+	return CastedAsset;
+}
+
 inline void SpawnPrompt(FString Title, FString Text) {
 	FText DialogTitle = FText::FromString(Title);
 	FText DialogMessage = FText::FromString(Text);
@@ -161,6 +202,42 @@ inline TSharedPtr<FJsonObject> GetExport(FJsonObject* PackageIndex, TArray<TShar
 	}
 
 	return nullptr;
+}
+
+inline bool IsProperExportData(const TSharedPtr<FJsonObject>& JsonObject)
+{
+	// Property checks
+	if (!JsonObject.IsValid() ||
+		!JsonObject->HasField("Type") ||
+		!JsonObject->HasField("Name") ||
+		!JsonObject->HasField("Properties")
+	) return false;
+
+	return true;
+}
+
+inline bool DeserializeJSON(const FString& FilePath, TArray<TSharedPtr<FJsonValue>>& JsonParsed)
+{
+	if (FPaths::FileExists(FilePath)) {
+
+		FString ContentBefore;
+		if (FFileHelper::LoadFileToString(ContentBefore, *FilePath)) {
+			FString Content = FString(TEXT("{\"data\": "));
+			Content.Append(ContentBefore);
+			Content.Append(FString("}"));
+
+			const TSharedRef<TJsonReader<TCHAR>> JsonReader = TJsonReaderFactory<TCHAR>::Create(Content);
+
+			TSharedPtr<FJsonObject> JsonObject;
+			if (FJsonSerializer::Deserialize(JsonReader, JsonObject)) {
+				JsonParsed = JsonObject->GetArrayField("data");
+			
+				return true;
+			}
+		}
+	}
+
+	return false;
 }
 
 inline TArray<FString> OpenFileDialog(FString Title, FString Type) {

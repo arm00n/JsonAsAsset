@@ -490,6 +490,7 @@ bool UPropertySerializer::ShouldSerializeProperty(FProperty* Property) const {
 	if (Property->HasAnyPropertyFlags(CPF_Deprecated)) {
 		return false;
 	}
+	// Skip blacklisted properties
 	if (BlacklistedProperties.Contains(Property)) {
 		return false;
 	}

@@ -177,6 +177,11 @@ void FJsonAsAssetModule::StartupModule() {
     FJsonAsAssetStyle::ReloadTextures();
     FJsonAsAssetCommands::Register();
 
+	this->PropertySerializer = NewObject<UPropertySerializer>();
+	this->GObjectSerializer = NewObject<UObjectSerializer>();
+
+	GObjectSerializer->SetPropertySerializer(PropertySerializer);
+
     // Set up plugin command list and map actions
     PluginCommands = MakeShareable(new FUICommandList);
     PluginCommands->MapAction(
@@ -409,6 +414,48 @@ TSharedRef<SWidget> FJsonAsAssetModule::CreateToolbarDropdown() {
 			),
 			NAME_None
 		);
+
+		if (Settings->AssetSettings.bEnableAssetTools) {
+			MenuBuilder.AddSubMenu(
+				LOCTEXT("JsonAsAssetAssetToolsMenu", "Open Asset Tools"),
+				LOCTEXT("JsonAsAssetAssetToolsMenuToolTip", "Extra functionality / tools to do very specific actions with assets."),
+				FNewMenuDelegate::CreateLambda([this](FMenuBuilder& InnerMenuBuilder) {
+					InnerMenuBuilder.BeginSection("JsonAsAssetSection", LOCTEXT("JsonAsAssetSection", "Asset Tools"));
+					{
+						InnerMenuBuilder.AddMenuEntry(
+							LOCTEXT("JsonAsAssetAssetToolsCollisionExButton", "Import Folder Collision Convex"),
+							LOCTEXT("JsonAsAssetAssetToolsButtonTooltip", "Imports convex collision data from a folder of JSON files and applies it to the corresponding assets."),
+							FSlateIcon(FEditorStyle::GetStyleSetName(), "LevelEditor.BspMode"),
+
+							FUIAction(
+								FExecuteAction::CreateRaw(this, &FJsonAsAssetModule::ImportConvexCollision),
+								FCanExecuteAction::CreateLambda([this]() {
+									return true;
+								})
+							),
+							NAME_None
+						);
+
+						/*InnerMenuBuilder.AddMenuEntry(
+							LOCTEXT("JsonAsAssetAssetToolsClothingAssetExButton", "Import Clothing Assets [Skeletal Mesh]"),
+							LOCTEXT("JsonAsAssetAssetToolsClothingAssetButtonTooltip", "Imports clothing assets from JSON into a selected skeletal mesh in the browser."),
+							FSlateIcon(FEditorStyle::GetStyleSetName(), "DataTableEditor.Paste.Small"),
+
+							FUIAction(
+								FExecuteAction::CreateRaw(this, &FJsonAsAssetModule::ImportClothingAssets),
+								FCanExecuteAction::CreateLambda([this]() {
+									return true;
+								})
+							),
+							NAME_None
+						);*/
+					}
+					InnerMenuBuilder.EndSection();
+				}),
+				false,
+				FSlateIcon(FAppStyle::Get().GetStyleSetName(), "ProjectSettings.TabIcon")
+			);
+		}
 	}
 
 	MenuBuilder.EndSection();
@@ -440,36 +487,6 @@ TSharedRef<SWidget> FJsonAsAssetModule::CreateToolbarDropdown() {
 	}
 
 	CreateLocalFetchDropdown(MenuBuilder);
-
-	MenuBuilder.AddSeparator();
-
-	if (Settings->AssetSettings.bEnableAssetTools) {
-		MenuBuilder.AddSubMenu(
-			LOCTEXT("JsonAsAssetAssetToolsMenu", "Open Asset Tools"),
-			LOCTEXT("JsonAsAssetAssetToolsMenuToolTip", "Extra functionality / tools to do very specific actions with assets."),
-			FNewMenuDelegate::CreateLambda([this](FMenuBuilder& InnerMenuBuilder) {
-				InnerMenuBuilder.BeginSection("JsonAsAssetSection", LOCTEXT("JsonAsAssetSection", "Asset Tools"));
-				{
-					InnerMenuBuilder.AddMenuEntry(
-						LOCTEXT("JsonAsAssetAssetToolsCollisionExButton", "Import Folder Collision Convex"),
-						LOCTEXT("JsonAsAssetAssetToolsButtonTooltip", "Imports convex collision data from a folder of JSON files and applies it to the corresponding assets."),
-						FSlateIcon(FEditorStyle::GetStyleSetName(), "LevelEditor.BspMode"),
-
-						FUIAction(
-							FExecuteAction::CreateRaw(this, &FJsonAsAssetModule::ImportConvexCollision),
-							FCanExecuteAction::CreateLambda([this]() {
-								return true;
-							})
-						),
-						NAME_None
-					);
-				}
-				InnerMenuBuilder.EndSection();
-			}),
-			false,
-			FSlateIcon(FAppStyle::Get().GetStyleSetName(), "ProjectSettings.TabIcon")
-		);	
-	}
 
 	MenuBuilder.AddSeparator();
 
@@ -715,7 +732,6 @@ void FJsonAsAssetModule::ImportConvexCollision()
 										if (AggGeomObject.IsValid()) {
 											FKAggregateGeom AggGeom;
 
-											auto GObjectSerializer = NewObject<UObjectSerializer>();
 											GObjectSerializer->DeserializeObjectProperties(PropertiesObject, StaticMesh->GetBodySetup());
 											StaticMesh->GetBodySetup()->CollisionTraceFlag = ECollisionTraceFlag::CTF_UseDefault;
 											StaticMesh->MarkPackageDirty();
@@ -751,6 +767,95 @@ void FJsonAsAssetModule::ImportConvexCollision()
 		}
 	}
 }
+
+/*void FJsonAsAssetModule::ImportClothingAssets()
+{
+	USkeletalMesh* SkeletalMesh = GetSelectedAsset<USkeletalMesh>();
+	// I don't think it's possible to do this, I'm keeping the code to save it
+	// There is no weight paint property inside of the JSON.
+
+	if (!SkeletalMesh) return;
+
+	// Dialog for a JSON File
+	TArray<FString> OutFilePath = OpenFileDialog("Open JSON file", "JSON Files|*.json");
+	if (OutFilePath.Num() == 0)
+		return;
+
+	FString FilePath = OutFilePath[0];
+
+	TArray<TSharedPtr<FJsonValue>> DeserializedJSON;
+	if (!DeserializeJSON(FilePath, DeserializedJSON)) return;
+
+	for (const TSharedPtr<FJsonValue> Json : DeserializedJSON)
+	{
+		TSharedPtr<FJsonObject> ExportObject = Json->AsObject();
+
+		// Must be a proper export
+		if (!IsProperExportData(ExportObject)) continue;
+
+		FString Name = ExportObject->GetStringField(TEXT("Name"));
+		FString Type = ExportObject->GetStringField(TEXT("Type"));
+
+		// Filter
+		if (Type != "ClothingAsset") continue;
+		
+		FString ClassName = ExportObject->GetStringField(TEXT("Class"));
+		
+		FClothingSystemEditorInterfaceModule& ClothingEditorModule = FModuleManager::LoadModuleChecked<FClothingSystemEditorInterfaceModule>( "ClothingSystemEditorInterface" );
+		UClothingAssetFactoryBase* AssetFactory = ClothingEditorModule.GetClothingAssetFactory();
+
+		SkeletalMesh->Modify();
+		
+		FSkeletalMeshClothBuildParams* Params = new FSkeletalMeshClothBuildParams();
+		Params->LodIndex = 0;
+		Params->SourceSection = 1;
+		Params->AssetName = Name;
+
+		UClothingAssetBase* ClothingAsset = AssetFactory->CreateFromSkeletalMesh(SkeletalMesh, *Params);
+		UClothingAssetCommon* ClothingAssetCommon = Cast<UClothingAssetCommon>(ClothingAsset);
+		
+		SkeletalMesh->AddClothingAsset(ClothingAsset);
+
+		if (ExportObject->HasField(TEXT("Properties")))
+		{
+			TSharedPtr<FJsonObject> Properties = ExportObject->GetObjectField(TEXT("Properties"));
+
+			GObjectSerializer->DeserializeObjectProperties(RemovePropertiesShared(Properties, {
+				"LodMap",
+				"UsedBoneNames",
+				"UsedBoneIndices",
+				"AssetGuid"
+			}), ClothingAssetCommon);
+		}
+
+		ClothingAssetCommon->ApplyParameterMasks();
+		ClothingAssetCommon->RefreshBoneMapping(SkeletalMesh);
+		ClothingAssetCommon->BuildLodTransitionData();
+		ClothingAssetCommon->InvalidateCachedData();
+		ClothingAssetCommon->MarkPackageDirty();
+		ClothingAssetCommon->PostEditChange();
+
+		if (ClothingAssetCommon->BindToSkeletalMesh(SkeletalMesh, Params->LodIndex, Params->SourceSection, Params->LodIndex))
+		{
+			SkeletalMesh->MarkPackageDirty();
+			SkeletalMesh->PostEditChange();
+		}
+
+		UClothConfigNv* ClothConfigNv = ClothingAssetCommon->GetClothConfig<UClothConfigNv>();
+		
+		if (ExportObject->HasField(TEXT("Properties")))
+		{
+			TSharedPtr<FJsonObject> Properties = ExportObject->GetObjectField(TEXT("Properties"));
+
+			if (Properties->HasField(TEXT("ClothConfig")))
+			{
+				TSharedPtr<FJsonObject> ClothConfigObject = Properties->GetObjectField(TEXT("ClothConfig"));
+
+				GObjectSerializer->DeserializeObjectProperties(ClothConfigObject, ClothConfigNv);
+			}
+		}
+	}
+}*/
 
 #undef LOCTEXT_NAMESPACE
 

@@ -30,15 +30,38 @@ bool CSkeletonAssetDerived::AddVirtualBone(const FName SourceBoneName, const FNa
 
 bool ISkeletonImporter::ImportData() {
 	TSharedPtr<FJsonObject> Properties = JsonObject->GetObjectField(TEXT("Properties"));
-	USkeleton* Skeleton = FAssetUtilities::GetSelectedAsset<USkeleton>();
+	USkeleton* Skeleton = GetSelectedAsset<USkeleton>();
 
 	// Must have a skeleton selected
 	if (!Skeleton) return false;
 
-	for (int i = 0; i < Properties->GetArrayField(TEXT("BoneTree")).Num(); i++) {
-		const TSharedPtr<FJsonObject> BoneNode = Properties->GetArrayField(TEXT("BoneTree"))[i]->AsObject();
-		FString TranslationRetargetingMode = BoneNode->GetStringField(TEXT("TranslationRetargetingMode"));
-		Skeleton->SetBoneTranslationRetargetingMode(i, static_cast<EBoneTranslationRetargetingMode::Type>(StaticEnum<EBoneTranslationRetargetingMode::Type>()->GetValueByNameString(TranslationRetargetingMode)), false);
+	CSkeletonAssetDerived* SkeletonAsset = Cast<CSkeletonAssetDerived>(Skeleton);
+
+	const TArray<TSharedPtr<FJsonValue>>& BoneTree = Properties->GetArrayField(TEXT("BoneTree"));
+
+	for (int i = 0; i < BoneTree.Num(); i++) {
+		if (!BoneTree[i].IsValid()) {
+			continue;
+		}
+
+		const TSharedPtr<FJsonObject> BoneNode = BoneTree[i]->AsObject();
+		if (!BoneNode.IsValid()) {
+			continue;
+		}
+
+		FString TranslationRetargetingMode;
+		if (!BoneNode->TryGetStringField(TEXT("TranslationRetargetingMode"), TranslationRetargetingMode)) {
+			continue;
+		}
+
+		int64 EnumValue = StaticEnum<EBoneTranslationRetargetingMode::Type>()->GetValueByNameString(TranslationRetargetingMode);
+		
+		if (EnumValue == INDEX_NONE) {
+			UE_LOG(LogTemp, Warning, TEXT("Invalid TranslationRetargetingMode: %s"), *TranslationRetargetingMode);
+			continue;
+		}
+
+		Skeleton->SetBoneTranslationRetargetingMode(i, static_cast<EBoneTranslationRetargetingMode::Type>(EnumValue), false);
 	}
 
 	for (const TSharedPtr<FJsonValue> SlotGroupValue : Properties->GetArrayField(TEXT("SlotGroups"))) {
@@ -56,9 +79,11 @@ bool ISkeletonImporter::ImportData() {
 	for (const TSharedPtr<FJsonValue> VirtualBoneValue : Properties->GetArrayField(TEXT("VirtualBones"))) {
 		const TSharedPtr<FJsonObject> VirtualBoneObject = VirtualBoneValue->AsObject();
 
-		Cast<CSkeletonAssetDerived>(Skeleton)->AddVirtualBone(FName(*VirtualBoneObject->GetStringField(TEXT("SourceBoneName"))),
-		                                                      FName(*VirtualBoneObject->GetStringField(TEXT("TargetBoneName"))),
-		                                                      FName(*VirtualBoneObject->GetStringField(TEXT("VirtualBoneName"))));
+		const FString SourceBone = VirtualBoneObject->GetStringField(TEXT("SourceBoneName"));
+		const FString TargetBone = VirtualBoneObject->GetStringField(TEXT("TargetBoneName"));
+		const FString VirtualBone = VirtualBoneObject->GetStringField(TEXT("VirtualBoneName"));
+
+		SkeletonAsset->AddVirtualBone(FName(*SourceBone), FName(*TargetBone), FName(*VirtualBone));
 	}
 
 	for (const TSharedPtr<FJsonValue> SecondaryPurposeValueObject : AllJsonObjects) {
