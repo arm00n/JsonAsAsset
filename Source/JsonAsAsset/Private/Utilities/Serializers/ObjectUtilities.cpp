@@ -419,79 +419,6 @@ void UObjectSerializer::DeserializeObjectProperties(const TSharedPtr<FJsonObject
 	
 	UClass* ObjectClass = Object->GetClass();
 
-	// this is a use case for importing maps and parsing static mesh components
-	// using the object and property serializer, this was initially wanted to be
-	// done completely without any manual work (using the de-serializers)
-	// however I don't think it's possible to do so. as I haven't seen any native
-	// property that can do this using the data provided in CUE4Parse
-	if (Properties->HasField(TEXT("LODData")) && Cast<UStaticMeshComponent>(ObjectClass))
-	{
-		UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(Object);
-
-		TArray<TSharedPtr<FJsonValue>> ObjectLODData = Properties->GetArrayField(TEXT("LODData"));
-
-		if (ObjectLODData.Num() > 0)
-		{
-			StaticMeshComponent->SetLODDataCount(ObjectLODData.Num() + 1, ObjectLODData.Num() + 1);
-		}
-
-		int CurrentLOD = 0;
-		for (TSharedPtr<FJsonValue> CurrentLODValue : ObjectLODData)
-		{
-			TSharedPtr<FJsonObject> CurrentLODObject = CurrentLODValue->AsObject();
-
-			if (!CurrentLODObject->HasField(TEXT("OverrideVertexColors"))) continue;
-
-			FStaticMeshComponentLODInfo& LODInfo = StaticMeshComponent->LODData[CurrentLOD];
-
-			StaticMeshComponent->RemoveInstanceVertexColorsFromLOD(CurrentLOD);
-
-			// may not be null at the start (could have been initialized 
-			// from a blueprint component template with vert coloring), but 
-			// should be null by this point, after RemoveInstanceVertexColorsFromLOD()
-			check(LODInfo.OverrideVertexColors == nullptr);
-
-			LODInfo.OverrideVertexColors = new FColorVertexBuffer;
-			FColorVertexBuffer* OverrideVertexColors = LODInfo.OverrideVertexColors;
-
-			// -----------------------------------------------------------------------------------
-			// at the time of this code creation I've decided to import the vertex colors using
-			// ImportText, a native function that takes in a string and parses the data
-			// why? because the variables that we would override are private of course :)
-			TSharedPtr<FJsonObject> OverrideVertexColorsObject = CurrentLODObject->GetObjectField(TEXT("OverrideVertexColors"));
-			
-			int32 NumVertices = OverrideVertexColorsObject->GetIntegerField(TEXT("NumVertices"));
-			const TArray<TSharedPtr<FJsonValue>> DataArray = OverrideVertexColorsObject->GetArrayField(TEXT("Data"));
-
-			// sample template of the target data
-			FString Output = FString::Printf(TEXT("CustomProperties CustomLODData LOD=0 ColorVertexData(%d)=("), NumVertices);
-
-			// Append the colors in the expected format
-			for (int32 i = 0; i < DataArray.Num(); ++i)
-			{
-				FString ColorValue = DataArray.operator[](i)->AsString();
-				Output.Append(ColorValue);
-
-				// Add a comma unless it's the last element
-				if (i < DataArray.Num() - 1)
-				{
-					Output.Append(TEXT(", "));
-				}
-			}
-
-			Output.Append(TEXT(")")); // Close the parentheses
-			
-			const TCHAR* SourceText = *Output;
-
-			// this doesn't comileeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
-			// LODInfo.OverrideVertexColors->ImportText(SourceText);
-
-			check(LODInfo.OverrideVertexColors->GetStride() > 0);
-		
-			CurrentLOD++;
-		}
-	}
-
 	for (FProperty* Property = ObjectClass->PropertyLink; Property; Property = Property->PropertyLinkNext) {
 		const FString PropertyName = Property->GetName();
 
@@ -558,6 +485,59 @@ void UObjectSerializer::DeserializeObjectProperties(const TSharedPtr<FJsonObject
 			{
 				PropertySerializer->DeserializePropertyValue(Property, ValueObject.ToSharedRef(), PropertyValue);
 			}
+		}
+	}
+
+	// this is a use case for importing maps and parsing static mesh components
+	// using the object and property serializer, this was initially wanted to be
+	// done completely without any manual work (using the de-serializers)
+	// however I don't think it's possible to do so. as I haven't seen any native
+	// property that can do this using the data provided in CUE4Parse
+	if (Properties->HasField(TEXT("LODData")) && Cast<UStaticMeshComponent>(Object))
+	{
+		UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(Object);
+
+		if (!StaticMeshComponent) return;
+		
+		TArray<TSharedPtr<FJsonValue>> ObjectLODData = Properties->GetArrayField(TEXT("LODData"));
+		
+		int CurrentLOD = 0;
+
+		for (TSharedPtr<FJsonValue> CurrentLODValue : ObjectLODData)
+		{
+			TSharedPtr<FJsonObject> CurrentLODObject = CurrentLODValue->AsObject();
+
+			// Must contain vertex colors, or else it's an empty LOD
+			if (!CurrentLODObject->HasField(TEXT("OverrideVertexColors"))) continue;
+			
+			TSharedPtr<FJsonObject> OverrideVertexColorsObject = CurrentLODObject->GetObjectField(TEXT("OverrideVertexColors"));
+
+			int32 NumVertices = OverrideVertexColorsObject->GetIntegerField(TEXT("NumVertices"));
+			const TArray<TSharedPtr<FJsonValue>> DataArray = OverrideVertexColorsObject->GetArrayField(TEXT("Data"));
+
+			// sample template of the target data
+			FString Output = FString::Printf(TEXT("CustomLODData LOD=%d, ColorVertexData(%d)=("), CurrentLOD, NumVertices);
+
+			// Append the colors in the expected format
+			for (int32 i = 0; i < DataArray.Num(); ++i)
+			{
+				FString ColorValue = DataArray.operator[](i)->AsString();
+				Output.Append(ColorValue);
+
+				// Add a comma unless it's the last element
+				if (i < DataArray.Num() - 1)
+				{
+					Output.Append(TEXT(","));
+				}
+			}
+
+			Output.Append(TEXT(")"));
+		
+			const TCHAR* SourceText = *Output;
+
+			StaticMeshComponent->ImportCustomProperties(SourceText, GWarn);
+	
+			CurrentLOD++;
 		}
 	}
 }
