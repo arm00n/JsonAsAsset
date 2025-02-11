@@ -270,12 +270,12 @@ void UPropertySerializer::DeserializePropertyValueInner(FProperty* Property, con
 				}
 			}
 
-			if ((Object != nullptr || Object.IsValid()) && !Cast<UActorComponent>(Object.Get()))
+			if (Object != nullptr && !Cast<UActorComponent>(Object.Get()))
 			{
 				ObjectProperty->SetObjectPropertyValue(Value, Object);
 			}
 
-			if (Object != nullptr || Object.IsValid()) {
+			if (Object != nullptr) {
 				// Get the export
 				if (TSharedPtr<FJsonObject> Export = GetExport(JsonValueAsObject.Get(), ObjectSerializer->AllObjectsReference))
 				{
