@@ -64,7 +64,7 @@ IImporter::IImporter(const FString& FileName, const FString& FilePath,
 		  const TSharedPtr<FJsonObject>& JsonObject, UPackage* Package, 
 		  UPackage* OutermostPkg, const TArray<TSharedPtr<FJsonValue>>& AllJsonObjects)
 	: FileName(FileName), FilePath(FilePath), JsonObject(JsonObject),
-	  Package(Package), OutermostPkg(OutermostPkg), AllJsonObjects(AllJsonObjects) 
+	  Package(Package), OutermostPkg(OutermostPkg), ParentObject(nullptr), AllJsonObjects(AllJsonObjects)
 {
 	PropertySerializer = NewObject<UPropertySerializer>();
 	GObjectSerializer = NewObject<UObjectSerializer>();

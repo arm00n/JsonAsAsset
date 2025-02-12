@@ -3,7 +3,6 @@
 #include "Importers/Types/AnimationBaseImporter.h"
 
 #include "Dom/JsonObject.h"
-#include "Utilities/AssetUtilities.h"
 #include "Utilities/MathUtilities.h"
 #include "Animation/AnimSequence.h"
 

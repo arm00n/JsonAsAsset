@@ -32,6 +32,7 @@
 
 // Settings
 #include "EditorStyleSet.h"
+#include "Logging/MessageLog.h"
 #include "./Settings/Details/JsonAsAssetSettingsDetails.h"
 
 #include "Modules/UI/AboutJsonAsAsset.h"
@@ -592,80 +593,142 @@ void FJsonAsAssetModule::CreateLocalFetchDropdown(FMenuBuilder MenuBuilder) {
 		FNewMenuDelegate::CreateLambda([this](FMenuBuilder& InnerMenuBuilder) {
 			InnerMenuBuilder.BeginSection("JsonAsAssetSection", LOCTEXT("JsonAsAssetSection", "Console"));
 			{
-				InnerMenuBuilder.AddMenuEntry(
-					FText::FromString("Execute Local Fetch (.EXE)"),
-					FText::FromString(""),
-					FSlateIcon(),
-					FUIAction(
-						FExecuteAction::CreateLambda([this]() {
-							TSharedPtr<SNotificationItem> NotificationItem = LocalFetchNotificationPtr.Pin();
+				bool bIsLocalFetchRunning = IsProcessRunning("LocalFetch.exe");
 
-							if (NotificationItem.IsValid()) {
-								NotificationItem->SetFadeOutDuration(0.001);
-								NotificationItem->Fadeout();
-								LocalFetchNotificationPtr.Reset();
-							}
+				if (bIsLocalFetchRunning)
+				{
+					InnerMenuBuilder.AddMenuEntry(
+						FText::FromString("Restart Local Fetch (.EXE)"),
+						FText::FromString(""),
+						FSlateIcon(),
+						FUIAction(
+							FExecuteAction::CreateLambda([this]() {
+								FString ProcessName = TEXT("LocalFetch.exe");
+								TCHAR* ProcessNameChar = ProcessName.GetCharArray().GetData();
 
-							FString PluginBinariesFolder;
+								DWORD ProcessID = 0;
+								HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+								if (hSnapshot != INVALID_HANDLE_VALUE) {
+									PROCESSENTRY32 ProcessEntry;
+									ProcessEntry.dwSize = sizeof(PROCESSENTRY32);
 
-							const TSharedPtr<IPlugin> PluginInfo = IPluginManager::Get().FindPlugin("JsonAsAsset");
-							if (PluginInfo.IsValid()) {
-								const FString PluginBaseDir = PluginInfo->GetBaseDir();
-								PluginBinariesFolder = FPaths::Combine(PluginBaseDir, TEXT("Binaries"));
-
-								if (!FPaths::DirectoryExists(PluginBinariesFolder)) {
-									PluginBinariesFolder = FPaths::Combine(PluginBaseDir, TEXT("JsonAsAsset/Binaries"));
+									if (Process32First(hSnapshot, &ProcessEntry)) {
+										do {
+											if (FCString::Stricmp(ProcessEntry.szExeFile, ProcessNameChar) == 0) {
+												ProcessID = ProcessEntry.th32ProcessID;
+												break;
+											}
+										} while (Process32Next(hSnapshot, &ProcessEntry));
+									}
+									CloseHandle(hSnapshot);
 								}
-							}
 
-							FString FullPath = FPaths::ConvertRelativePathToFull(PluginBinariesFolder + "/Win64/LocalFetch/LocalFetch.exe");
-							FPlatformProcess::LaunchFileInDefaultExternalApplication(*FullPath, TEXT("--urls=http://localhost:1500/"), ELaunchVerb::Open);
-						}),
-						FCanExecuteAction::CreateLambda([this]() {
-							return !IsProcessRunning("LocalFetch.exe");
-						})
-					)
-				);
-
-				InnerMenuBuilder.AddMenuEntry(
-					FText::FromString("Shutdown Local Fetch (.EXE)"),
-					FText::FromString(""),
-					FSlateIcon(),
-					FUIAction(
-						FExecuteAction::CreateLambda([this]() {
-							FString ProcessName = TEXT("LocalFetch.exe");
-							TCHAR* ProcessNameChar = ProcessName.GetCharArray().GetData();
-
-							DWORD ProcessID = 0;
-							HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-							if (hSnapshot != INVALID_HANDLE_VALUE) {
-								PROCESSENTRY32 ProcessEntry;
-								ProcessEntry.dwSize = sizeof(PROCESSENTRY32);
-
-								if (Process32First(hSnapshot, &ProcessEntry)) {
-									do {
-										if (FCString::Stricmp(ProcessEntry.szExeFile, ProcessNameChar) == 0) {
-											ProcessID = ProcessEntry.th32ProcessID;
-											break;
-										}
-									} while (Process32Next(hSnapshot, &ProcessEntry));
+								if (ProcessID != 0) {
+									HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, false, ProcessID);
+									if (hProcess != nullptr) {
+										TerminateProcess(hProcess, 0);
+										CloseHandle(hProcess);
+									}
 								}
-								CloseHandle(hSnapshot);
-							}
 
-							if (ProcessID != 0) {
-								HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, false, ProcessID);
-								if (hProcess != nullptr) {
-									TerminateProcess(hProcess, 0);
-									CloseHandle(hProcess);
+								FString PluginBinariesFolder;
+
+								const TSharedPtr<IPlugin> PluginInfo = IPluginManager::Get().FindPlugin("JsonAsAsset");
+								if (PluginInfo.IsValid()) {
+									const FString PluginBaseDir = PluginInfo->GetBaseDir();
+									PluginBinariesFolder = FPaths::Combine(PluginBaseDir, TEXT("Binaries"));
+
+									if (!FPaths::DirectoryExists(PluginBinariesFolder)) {
+										PluginBinariesFolder = FPaths::Combine(PluginBaseDir, TEXT("JsonAsAsset/Binaries"));
+									}
 								}
-							}
-						}),
-						FCanExecuteAction::CreateLambda([this]() {
-							return IsProcessRunning("LocalFetch.exe");
-						})
-					)
-				);
+
+								FString FullPath = FPaths::ConvertRelativePathToFull(PluginBinariesFolder + "/Win64/LocalFetch/LocalFetch.exe");
+								FPlatformProcess::LaunchFileInDefaultExternalApplication(*FullPath, TEXT("--urls=http://localhost:1500/"), ELaunchVerb::Open);
+							}),
+							FCanExecuteAction::CreateLambda([this]() {
+								return IsProcessRunning("LocalFetch.exe");
+							})
+						)
+					);
+
+					InnerMenuBuilder.AddMenuEntry(
+						FText::FromString("Shutdown Local Fetch (.EXE)"),
+						FText::FromString(""),
+						FSlateIcon(),
+						FUIAction(
+							FExecuteAction::CreateLambda([this]() {
+								FString ProcessName = TEXT("LocalFetch.exe");
+								TCHAR* ProcessNameChar = ProcessName.GetCharArray().GetData();
+
+								DWORD ProcessID = 0;
+								HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+								if (hSnapshot != INVALID_HANDLE_VALUE) {
+									PROCESSENTRY32 ProcessEntry;
+									ProcessEntry.dwSize = sizeof(PROCESSENTRY32);
+
+									if (Process32First(hSnapshot, &ProcessEntry)) {
+										do {
+											if (FCString::Stricmp(ProcessEntry.szExeFile, ProcessNameChar) == 0) {
+												ProcessID = ProcessEntry.th32ProcessID;
+												break;
+											}
+										} while (Process32Next(hSnapshot, &ProcessEntry));
+									}
+									CloseHandle(hSnapshot);
+								}
+
+								if (ProcessID != 0) {
+									HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, false, ProcessID);
+									if (hProcess != nullptr) {
+										TerminateProcess(hProcess, 0);
+										CloseHandle(hProcess);
+									}
+								}
+							}),
+							FCanExecuteAction::CreateLambda([this]() {
+								return IsProcessRunning("LocalFetch.exe");
+							})
+						)
+					);
+				}
+				else
+				{
+					InnerMenuBuilder.AddMenuEntry(
+						FText::FromString("Execute Local Fetch (.EXE)"),
+						FText::FromString(""),
+						FSlateIcon(),
+						FUIAction(
+							FExecuteAction::CreateLambda([this]() {
+								TSharedPtr<SNotificationItem> NotificationItem = LocalFetchNotificationPtr.Pin();
+
+								if (NotificationItem.IsValid()) {
+									NotificationItem->SetFadeOutDuration(0.001);
+									NotificationItem->Fadeout();
+									LocalFetchNotificationPtr.Reset();
+								}
+
+								FString PluginBinariesFolder;
+
+								const TSharedPtr<IPlugin> PluginInfo = IPluginManager::Get().FindPlugin("JsonAsAsset");
+								if (PluginInfo.IsValid()) {
+									const FString PluginBaseDir = PluginInfo->GetBaseDir();
+									PluginBinariesFolder = FPaths::Combine(PluginBaseDir, TEXT("Binaries"));
+
+									if (!FPaths::DirectoryExists(PluginBinariesFolder)) {
+										PluginBinariesFolder = FPaths::Combine(PluginBaseDir, TEXT("JsonAsAsset/Binaries"));
+									}
+								}
+
+								FString FullPath = FPaths::ConvertRelativePathToFull(PluginBinariesFolder + "/Win64/LocalFetch/LocalFetch.exe");
+								FPlatformProcess::LaunchFileInDefaultExternalApplication(*FullPath, TEXT("--urls=http://localhost:1500/"), ELaunchVerb::Open);
+							}),
+							FCanExecuteAction::CreateLambda([this]() {
+								return !IsProcessRunning("LocalFetch.exe");
+							})
+						)
+					);
+				}
 			}
 			InnerMenuBuilder.EndSection();
 		}),
@@ -767,95 +830,6 @@ void FJsonAsAssetModule::ImportConvexCollision()
 		}
 	}
 }
-
-/*void FJsonAsAssetModule::ImportClothingAssets()
-{
-	USkeletalMesh* SkeletalMesh = GetSelectedAsset<USkeletalMesh>();
-	// I don't think it's possible to do this, I'm keeping the code to save it
-	// There is no weight paint property inside of the JSON.
-
-	if (!SkeletalMesh) return;
-
-	// Dialog for a JSON File
-	TArray<FString> OutFilePath = OpenFileDialog("Open JSON file", "JSON Files|*.json");
-	if (OutFilePath.Num() == 0)
-		return;
-
-	FString FilePath = OutFilePath[0];
-
-	TArray<TSharedPtr<FJsonValue>> DeserializedJSON;
-	if (!DeserializeJSON(FilePath, DeserializedJSON)) return;
-
-	for (const TSharedPtr<FJsonValue> Json : DeserializedJSON)
-	{
-		TSharedPtr<FJsonObject> ExportObject = Json->AsObject();
-
-		// Must be a proper export
-		if (!IsProperExportData(ExportObject)) continue;
-
-		FString Name = ExportObject->GetStringField(TEXT("Name"));
-		FString Type = ExportObject->GetStringField(TEXT("Type"));
-
-		// Filter
-		if (Type != "ClothingAsset") continue;
-		
-		FString ClassName = ExportObject->GetStringField(TEXT("Class"));
-		
-		FClothingSystemEditorInterfaceModule& ClothingEditorModule = FModuleManager::LoadModuleChecked<FClothingSystemEditorInterfaceModule>( "ClothingSystemEditorInterface" );
-		UClothingAssetFactoryBase* AssetFactory = ClothingEditorModule.GetClothingAssetFactory();
-
-		SkeletalMesh->Modify();
-		
-		FSkeletalMeshClothBuildParams* Params = new FSkeletalMeshClothBuildParams();
-		Params->LodIndex = 0;
-		Params->SourceSection = 1;
-		Params->AssetName = Name;
-
-		UClothingAssetBase* ClothingAsset = AssetFactory->CreateFromSkeletalMesh(SkeletalMesh, *Params);
-		UClothingAssetCommon* ClothingAssetCommon = Cast<UClothingAssetCommon>(ClothingAsset);
-		
-		SkeletalMesh->AddClothingAsset(ClothingAsset);
-
-		if (ExportObject->HasField(TEXT("Properties")))
-		{
-			TSharedPtr<FJsonObject> Properties = ExportObject->GetObjectField(TEXT("Properties"));
-
-			GObjectSerializer->DeserializeObjectProperties(RemovePropertiesShared(Properties, {
-				"LodMap",
-				"UsedBoneNames",
-				"UsedBoneIndices",
-				"AssetGuid"
-			}), ClothingAssetCommon);
-		}
-
-		ClothingAssetCommon->ApplyParameterMasks();
-		ClothingAssetCommon->RefreshBoneMapping(SkeletalMesh);
-		ClothingAssetCommon->BuildLodTransitionData();
-		ClothingAssetCommon->InvalidateCachedData();
-		ClothingAssetCommon->MarkPackageDirty();
-		ClothingAssetCommon->PostEditChange();
-
-		if (ClothingAssetCommon->BindToSkeletalMesh(SkeletalMesh, Params->LodIndex, Params->SourceSection, Params->LodIndex))
-		{
-			SkeletalMesh->MarkPackageDirty();
-			SkeletalMesh->PostEditChange();
-		}
-
-		UClothConfigNv* ClothConfigNv = ClothingAssetCommon->GetClothConfig<UClothConfigNv>();
-		
-		if (ExportObject->HasField(TEXT("Properties")))
-		{
-			TSharedPtr<FJsonObject> Properties = ExportObject->GetObjectField(TEXT("Properties"));
-
-			if (Properties->HasField(TEXT("ClothConfig")))
-			{
-				TSharedPtr<FJsonObject> ClothConfigObject = Properties->GetObjectField(TEXT("ClothConfig"));
-
-				GObjectSerializer->DeserializeObjectProperties(ClothConfigObject, ClothConfigNv);
-			}
-		}
-	}
-}*/
 
 #undef LOCTEXT_NAMESPACE
 
