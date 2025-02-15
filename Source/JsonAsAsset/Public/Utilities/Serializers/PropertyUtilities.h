@@ -108,10 +108,69 @@ public:
 
 	bool ComparePropertyValues(FProperty* Property, const TSharedRef<FJsonValue>& JsonValue, const void* CurrentValue, const TSharedPtr<FObjectCompareContext> Context = MakeShareable(new FObjectCompareContext));
 	bool CompareStructs(UScriptStruct* Struct, const TSharedRef<FJsonObject>& JsonValue, const void* CurrentValue, const TSharedPtr<FObjectCompareContext> Context = MakeShareable(new FObjectCompareContext));
+	void DeserializePropertyValueInner(FProperty* Property, const TSharedRef<FJsonValue>& Value, void* OutValue);
 
 private:
 	FStructSerializer* GetStructSerializer(UScriptStruct* Struct) const;
 	bool ComparePropertyValuesInner(FProperty* Property, const TSharedRef<FJsonValue>& JsonValue, const void* CurrentValue, const TSharedPtr<FObjectCompareContext> Context);
-	void DeserializePropertyValueInner(FProperty* Property, const TSharedRef<FJsonValue>& Value, void* OutValue);
 	TSharedRef<FJsonValue> SerializePropertyValueInner(FProperty* Property, const void* Value, TArray<int32>* OutReferencedSubobjects);
 };
+
+/* Use to handle differentiating formats produced by CUE4Parse */
+inline bool PassthroughPropertyHandler(FProperty* Property, const FString& PropertyName, void* PropertyValue, const TSharedPtr<FJsonObject>& Properties, UPropertySerializer* PropertySerializer) {
+	/* Handles static arrays in the format of: PropertyName[Index] */
+	if (Property->ArrayDim != 1) {
+		TArray<TSharedPtr<FJsonValue>> ArrayElements;
+
+		/* Finds array elements with the format: PropertyName[Index] and sets them properly into an array */
+		for (const auto& Pair : Properties->Values) {
+			const FString& Key = Pair.Key;
+			TSharedPtr<FJsonValue> Value = Pair.Value;
+
+			/* If it doesn't start with the same property name */
+			if (!Key.StartsWith(PropertyName)) continue;
+
+			/* By default, it should be 0 */
+			int32 CurrentArrayIndex = 0;
+
+			/* If it is formatted like PropertyName[Index] */
+			if (Key.Contains("[") && Key.Contains("]")) {
+				int32 OpenBracketPos, CloseBracketPos;
+
+				/* Find the index in PropertyName[Index] (integer) */
+				if (Key.FindChar('[', OpenBracketPos) && Key.FindChar(']', CloseBracketPos) && CloseBracketPos > OpenBracketPos) {
+					FString IndexStr = Key.Mid(OpenBracketPos + 1, CloseBracketPos - OpenBracketPos - 1);
+					
+					CurrentArrayIndex = FCString::Atoi(*IndexStr);
+				}
+			}
+
+			/* Fail-save? */
+			if (CurrentArrayIndex >= ArrayElements.Num()) {
+				ArrayElements.SetNum(CurrentArrayIndex + 1);
+			}
+			
+			ArrayElements[CurrentArrayIndex] = Value;
+		}
+
+		/* Array elements is filled up, now we set them in the property value */
+		for (int32 ArrayIndex = 0; ArrayIndex < ArrayElements.Num(); ArrayIndex++) {
+			uint8* ArrayPropertyValue = static_cast<uint8*>(PropertyValue) + Property->ElementSize * ArrayIndex;
+
+			if (!ArrayElements.IsValidIndex(ArrayIndex)) continue;
+
+			TSharedPtr<FJsonValue> ArrayJsonElement = ArrayElements[ArrayIndex];
+
+			/* Check to see if it's null */
+			if (ArrayJsonElement == nullptr || ArrayJsonElement->IsNull()) continue;
+			
+			const TSharedRef<FJsonValue> ArrayJsonValue = ArrayJsonElement.ToSharedRef();
+
+			PropertySerializer->DeserializePropertyValueInner(Property, ArrayJsonValue, ArrayPropertyValue);
+
+			return true;
+		}
+	}
+
+	return false;
+}

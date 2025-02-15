@@ -424,61 +424,10 @@ void UObjectSerializer::DeserializeObjectProperties(const TSharedPtr<FJsonObject
 
 		if (!PropertySerializer->ShouldSerializeProperty(Property)) continue;
 
-		bool HasHandledProperty = false;
-
-		if (Property->ArrayDim != 1) {
-			void* PropertyValue = Property->ContainerPtrToValuePtr<void>(Object);
-			TArray<TSharedPtr<FJsonValue>> ArrayElements;
-
-			for (const auto& Pair : Properties->Values) {
-				const FString& Key = Pair.Key;
-				TSharedPtr<FJsonValue> Value = Pair.Value;
-
-				// If it's not matching
-				if (!Key.StartsWith(PropertyName)) continue;
-
-				// If it is formatted like PropertyName[Index]
-				bool IsIndexed = Key.Contains("[") && Key.Contains("]");
-				int32 CurrentArrayIndex = 0;
-
-				if (IsIndexed) {
-					int32 OpenBracketPos, CloseBracketPos;
-					
-					if (Key.FindChar('[', OpenBracketPos) && Key.FindChar(']', CloseBracketPos) && CloseBracketPos > OpenBracketPos) {
-						FString IndexStr = Key.Mid(OpenBracketPos + 1, CloseBracketPos - OpenBracketPos - 1);
-						CurrentArrayIndex = FCString::Atoi(*IndexStr);
-					}
-				}
-				
-				if (CurrentArrayIndex >= ArrayElements.Num()) {
-					ArrayElements.SetNum(CurrentArrayIndex + 1);
-				}
-				
-				ArrayElements[CurrentArrayIndex] = Value;
-			}
-
-			if (ArrayElements.Num() == 0) continue;
-
-			for (int32 ArrayIndex = 0; ArrayIndex < ArrayElements.Num(); ArrayIndex++) {
-				uint8* ArrayPropertyValue = (uint8*)PropertyValue + Property->ElementSize * ArrayIndex;
-
-				if (!ArrayElements.IsValidIndex(ArrayIndex)) continue;
-
-				TSharedPtr<FJsonValue> ArrayJsonElement = ArrayElements[ArrayIndex];
-				
-				if (ArrayJsonElement == nullptr) continue;
-				if (ArrayJsonElement->IsNull()) continue;
-				
-				const TSharedRef<FJsonValue> ArrayJsonValue = ArrayJsonElement.ToSharedRef();
-
-				PropertySerializer->DeserializePropertyValueInner(Property, ArrayJsonValue, ArrayPropertyValue);
-
-				HasHandledProperty = true;
-			}
-		}
+		void* PropertyValue = Property->ContainerPtrToValuePtr<void>(Object);
+		bool HasHandledProperty = PassthroughPropertyHandler(Property, PropertyName, PropertyValue, Properties, PropertySerializer);
 
 		if (Properties->HasField(PropertyName) && !HasHandledProperty && PropertyName != "LODParentPrimitive") {
-			void* PropertyValue = Property->ContainerPtrToValuePtr<void>(Object);
 			const TSharedPtr<FJsonValue>& ValueObject = Properties->Values.FindChecked(PropertyName);
 
 			if (Property->ArrayDim == 1 || ValueObject->Type == EJson::Array)
@@ -511,6 +460,8 @@ void UObjectSerializer::DeserializeObjectProperties(const TSharedPtr<FJsonObject
 			if (!CurrentLODObject->HasField(TEXT("OverrideVertexColors"))) continue;
 			
 			TSharedPtr<FJsonObject> OverrideVertexColorsObject = CurrentLODObject->GetObjectField(TEXT("OverrideVertexColors"));
+
+			if (!OverrideVertexColorsObject->HasField(TEXT("Data"))) continue;
 
 			int32 NumVertices = OverrideVertexColorsObject->GetIntegerField(TEXT("NumVertices"));
 			const TArray<TSharedPtr<FJsonValue>> DataArray = OverrideVertexColorsObject->GetArrayField(TEXT("Data"));

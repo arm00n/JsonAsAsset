@@ -63,12 +63,18 @@ void FFallbackStructSerializer::Deserialize(UScriptStruct* Struct, void* StructD
 	for (FProperty* Property = Struct->PropertyLink; Property; Property = Property->PropertyLinkNext) {
 		const FString PropertyName = Property->GetName();
 
-		if (PropertySerializer->ShouldSerializeProperty(Property) && JsonValue->HasField(PropertyName)) {
+		if (PropertySerializer->ShouldSerializeProperty(Property)) {
 			void* PropertyValue = Property->ContainerPtrToValuePtr<void>(StructData);
-			const TSharedPtr<FJsonValue> ValueObject = JsonValue->Values.FindChecked(PropertyName);
 
-			if (ValueObject.IsValid()) {
-				PropertySerializer->DeserializePropertyValue(Property, ValueObject.ToSharedRef(), PropertyValue);
+			bool HasHandledProperty = PassthroughPropertyHandler(Property, PropertyName, PropertyValue, JsonValue, PropertySerializer);
+
+			if (!HasHandledProperty && JsonValue->HasField(PropertyName)) {
+				const TSharedPtr<FJsonValue> ValueObject = JsonValue->Values.FindChecked(PropertyName);
+
+				if (Property->ArrayDim == 1 || ValueObject->Type == EJson::Array)
+				{
+					PropertySerializer->DeserializePropertyValue(Property, ValueObject.ToSharedRef(), PropertyValue);
+				}
 			}
 		}
 	}
@@ -109,7 +115,6 @@ void UPropertySerializer::DeserializePropertyValue(FProperty* Property, const TS
 
 	if (Property->ArrayDim != 1) {
 		const TArray<TSharedPtr<FJsonValue>>& ArrayElements = JsonValue->AsArray();
-		check(ArrayElements.Num() == Property->ArrayDim);
 
 		for (int32 ArrayIndex = 0; ArrayIndex < Property->ArrayDim; ArrayIndex++) {
 			uint8* ArrayPropertyValue = (uint8*)Value + Property->ElementSize * ArrayIndex;
@@ -270,7 +275,7 @@ void UPropertySerializer::DeserializePropertyValueInner(FProperty* Property, con
 				}
 			}
 
-			if (Object != nullptr && !Cast<UActorComponent>(Object.Get()))
+			if ((Object != nullptr) && !Cast<UActorComponent>(Object.Get()))
 			{
 				ObjectProperty->SetObjectPropertyValue(Value, Object);
 			}
