@@ -4,7 +4,7 @@
 
 #include "Math/Color.h"
 
-class FMathUtilities {
+class JSONASASSET_API FMathUtilities {
 public:
 	static FVector ObjectToVector(const FJsonObject* Object);
 

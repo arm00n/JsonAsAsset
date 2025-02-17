@@ -234,7 +234,7 @@ bool FAssetUtilities::Construct_TypeTexture(const FString& Path, const FString& 
 		const TSharedRef<IHttpRequest, ESPMode::ThreadSafe> HttpRequest = HttpModule->CreateRequest();
 #endif
 
-		HttpRequest->SetURL(Settings->Url + "/api/v1/export?path=" + RealPath);
+		HttpRequest->SetURL(Settings->LocalFetchUrl + "/api/v1/export?path=" + RealPath);
 		HttpRequest->SetHeader("content-type", "application/octet-stream");
 		HttpRequest->SetVerb(TEXT("GET"));
 
@@ -367,7 +367,7 @@ void FAssetUtilities::CreatePlugin(FString PluginName)
 #undef LOCTEXT_NAMESPACE
 }
 
-const TSharedPtr<FJsonObject> FAssetUtilities::API_RequestExports(const FString& Path)
+const TSharedPtr<FJsonObject> FAssetUtilities::API_RequestExports(const FString& Path, FString FetchPath)
 {
 	FHttpModule* HttpModule = &FHttpModule::Get();
 
@@ -388,7 +388,7 @@ const TSharedPtr<FJsonObject> FAssetUtilities::API_RequestExports(const FString&
 #else
 	const TSharedRef<IHttpRequest, ESPMode::ThreadSafe> NewRequest = HttpModule->CreateRequest();
 #endif
-	NewRequest->SetURL(Settings->Url + "/api/v1/export?raw=true&path=" + Path);
+	NewRequest->SetURL(Settings->LocalFetchUrl + FetchPath + Path);
 	NewRequest->SetVerb(TEXT("GET"));
 
 #if ENGINE_MAJOR_VERSION >= 5

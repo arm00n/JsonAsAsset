@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "AssetUtilities.h"
 #include "Framework/Notifications/NotificationManager.h"
 #include "Widgets/Notifications/SNotificationList.h"
 #include "AssetRegistry/AssetRegistryModule.h"
@@ -73,6 +74,13 @@ T* GetSelectedAsset() {
 	return CastedAsset;
 }
 
+inline TSharedPtr<FJsonObject> FindExport(TSharedPtr<FJsonObject> Export, const TArray<TSharedPtr<FJsonValue>> File)
+{
+	FString string_int; Export->GetStringField("ObjectPath").Split(".", nullptr, &string_int);
+	
+	return File[FCString::Atoi(*string_int)]->AsObject();
+}
+
 inline void SpawnPrompt(FString Title, FString Text) {
 	FText DialogTitle = FText::FromString(Title);
 	FText DialogMessage = FText::FromString(Text);
@@ -125,6 +133,45 @@ inline TArray<FAssetData> GetAssetsInSelectedFolder()
 	}
 
 	return AssetDataList;
+}
+
+inline TArray<TSharedPtr<FJsonValue>> RequestExports(const FString Path)
+{
+	TArray<TSharedPtr<FJsonValue>> Exports = {};
+
+	const TSharedPtr<FJsonObject> Response = FAssetUtilities::API_RequestExports(Path);
+	if (Response == nullptr || Path.IsEmpty()) return Exports;
+
+	if (Response->HasField(TEXT("errored"))) {
+		UE_LOG(LogJson, Log, TEXT("Error from response \"%s\""), *Path);
+		return Exports;
+	}
+
+	Exports = Response->GetArrayField(TEXT("jsonOutput"));
+	
+	return Exports;
+}
+
+inline TSharedPtr<FJsonObject> RequestExport(FString FetchPath = "/api/v1/export?raw=true&path=", const FString Path = "")
+{
+	static TMap<FString, TSharedPtr<FJsonObject>> ExportCache;
+
+	if (Path.IsEmpty()) return TSharedPtr<FJsonObject>();
+
+	// Check cache first
+	if (TSharedPtr<FJsonObject>* CachedResponse = ExportCache.Find(Path))
+	{
+		return *CachedResponse;
+	}
+
+	// Fetch from API
+	TSharedPtr<FJsonObject> Response = FAssetUtilities::API_RequestExports(Path, FetchPath);
+	if (Response)
+	{
+		ExportCache.Add(Path, Response);
+	}
+
+	return Response;
 }
 
 inline bool IsProcessRunning(const FString& ProcessName) {
@@ -325,6 +372,16 @@ inline auto ProcessJsonArrayField(const TSharedPtr<FJsonObject>& ObjectField, co
 			if (const TSharedPtr<FJsonObject> JsonItem = JsonValue->AsObject()) {
 				ProcessObjectFunction(JsonItem);
 			}
+		}
+	}
+}
+
+inline auto ProcessExports(const TArray<TSharedPtr<FJsonValue>>& Exports,
+						   const TFunction<void(const TSharedPtr<FJsonObject>&)>& ProcessObjectFunction) -> void
+{
+	for (const auto& Json : Exports) {
+		if (const TSharedPtr<FJsonObject> JsonObject = Json->AsObject()) {
+			ProcessObjectFunction(JsonObject);
 		}
 	}
 }

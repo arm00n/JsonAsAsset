@@ -3,10 +3,8 @@
 #pragma once
 
 #include "AppStyleCompatibility.h"
-#include "ContentBrowserModule.h"
-#include "IContentBrowserSingleton.h"
 
-class FAssetUtilities {
+class JSONASASSET_API FAssetUtilities {
 public:
 	/*
 	* Creates a UPackage to create assets in the Content Browser.
@@ -26,5 +24,5 @@ public:
 	// Creates a plugin in the name (may result in bugs if inputted wrong)
 	static void CreatePlugin(FString PluginName);
 
-	static const TSharedPtr<FJsonObject> API_RequestExports(const FString& Path);
+	static const TSharedPtr<FJsonObject> API_RequestExports(const FString& Path, FString FetchPath = "/api/v1/export?raw=true&path=");
 };

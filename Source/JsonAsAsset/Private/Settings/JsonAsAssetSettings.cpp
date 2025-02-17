@@ -1,6 +1,6 @@
 // Copyright JAA Contributors 2024-2025
 
-#include "JsonAsAssetSettings.h"
+#include "Settings/JsonAsAssetSettings.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/SBoxPanel.h"
 #include "Modules/LocalFetchModule.h"
@@ -9,7 +9,7 @@
 
 UJsonAsAssetSettings::UJsonAsAssetSettings():
 	// Default Initializers
-	bEnableLocalFetch(false), UnrealVersion(), bChangeURL(false)
+	bEnableLocalFetch(false), UnrealVersion()
 {
 	CategoryName = TEXT("Plugins");
 	SectionName = TEXT("JsonAsAsset");

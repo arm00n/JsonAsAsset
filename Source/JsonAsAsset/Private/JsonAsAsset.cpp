@@ -96,7 +96,7 @@ void FJsonAsAssetModule::PluginButtonClicked() {
 			LocalFetchNotificationPtr.Reset();
 		}
 
-		bool bIsLocalHost = Settings->Url.StartsWith("http://localhost");
+		bool bIsLocalHost = Settings->LocalFetchUrl.StartsWith("http://localhost");
 
 		if (!IsProcessRunning("LocalFetch.exe") && bIsLocalHost) {
 			FNotificationInfo Info(LOCTEXT("JsonAsAssetNotificationTitle", "Local Fetch API"));
