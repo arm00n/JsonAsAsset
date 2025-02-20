@@ -23,9 +23,9 @@ bool IMaterialFunctionImporter::ImportData() {
 	FString Description;
 	bool bExposeToLibrary;
 	
-	if (JsonObject->GetObjectField(TEXT("Properties"))->TryGetStringField("Description", Description)) MaterialFunction->Description = Description;
-	if (JsonObject->GetObjectField(TEXT("Properties"))->TryGetBoolField("bExposeToLibrary", bExposeToLibrary)) MaterialFunction->bExposeToLibrary = bExposeToLibrary;
-	if (JsonObject->GetObjectField(TEXT("Properties"))->TryGetBoolField("bPrefixParameterNames", bPrefixParameterNames)) MaterialFunction->bPrefixParameterNames = bPrefixParameterNames;
+	if (JsonObject->GetObjectField(TEXT("Properties"))->TryGetStringField(TEXT("Description"), Description)) MaterialFunction->Description = Description;
+	if (JsonObject->GetObjectField(TEXT("Properties"))->TryGetBoolField(TEXT("bExposeToLibrary"), bExposeToLibrary)) MaterialFunction->bExposeToLibrary = bExposeToLibrary;
+	if (JsonObject->GetObjectField(TEXT("Properties"))->TryGetBoolField(TEXT("bPrefixParameterNames"), bPrefixParameterNames)) MaterialFunction->bPrefixParameterNames = bPrefixParameterNames;
 
 	// Define editor only data from the JSON
 	TMap<FName, FExportData> Exports;

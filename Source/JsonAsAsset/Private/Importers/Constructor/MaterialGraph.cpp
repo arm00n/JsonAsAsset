@@ -129,7 +129,7 @@ void IMaterialGraph::PropagateExpressions(UObject* Parent, TArray<FName>& Expres
 		//  | to determine if it's in a subgraph or not.
 		if (bCheckOuter) {
 			FString Outer;
-			if (Type->Json->TryGetStringField("Outer", Outer) && Outer != Parent->GetName()) // Not the same as parent
+			if (Type->Json->TryGetStringField(TEXT("Outer"), Outer) && Outer != Parent->GetName()) // Not the same as parent
 				continue;
 		}
 
@@ -139,7 +139,7 @@ void IMaterialGraph::PropagateExpressions(UObject* Parent, TArray<FName>& Expres
 
 			const TSharedPtr<FJsonObject>* MaterialFunctionPtr;
 			
-			if (Properties->TryGetObjectField("MaterialFunction", MaterialFunctionPtr)) {
+			if (Properties->TryGetObjectField(TEXT("MaterialFunction"), MaterialFunctionPtr)) {
 				// For UE4, we fallback to TWeakObjectPtr
 #if ENGINE_MAJOR_VERSION == 4
 				TObjectPtr<UMaterialFunctionInterface> MaterialFunctionObjectPtr;
@@ -175,7 +175,7 @@ void IMaterialGraph::PropagateExpressions(UObject* Parent, TArray<FName>& Expres
 
 			const TArray<TSharedPtr<FJsonValue>>* InputsPtr;
 			
-			if (Type->Json->TryGetArrayField("Inputs", InputsPtr)) {
+			if (Type->Json->TryGetArrayField(TEXT("Inputs"), InputsPtr)) {
 				int i = 0;
 				for (const TSharedPtr<FJsonValue> InputValue : *InputsPtr) {
 					FJsonObject* InputObject = InputValue->AsObject().Get();
@@ -192,7 +192,7 @@ void IMaterialGraph::PropagateExpressions(UObject* Parent, TArray<FName>& Expres
 
 			const TArray<TSharedPtr<FJsonValue>>* InputsPtr;
 			
-			if (Type->Json->TryGetArrayField("Inputs", InputsPtr)) {
+			if (Type->Json->TryGetArrayField(TEXT("Inputs"), InputsPtr)) {
 				int i = 0;
 				for (const TSharedPtr<FJsonValue> InputValue : *InputsPtr) {
 					FJsonObject* InputObject = InputValue->AsObject().Get();
@@ -209,7 +209,7 @@ void IMaterialGraph::PropagateExpressions(UObject* Parent, TArray<FName>& Expres
 
 			const TArray<TSharedPtr<FJsonValue>>* InputsPtr;
 			
-			if (Type->Json->TryGetArrayField("Inputs", InputsPtr)) {
+			if (Type->Json->TryGetArrayField(TEXT("Inputs"), InputsPtr)) {
 				int i = 0;
 				for (const TSharedPtr<FJsonValue> InputValue : *InputsPtr) {
 					FJsonObject* InputObject = InputValue->AsObject().Get();
@@ -264,7 +264,7 @@ void IMaterialGraph::MaterialGraphNode_AddComment(UObject* Parent, UMaterialExpr
 void IMaterialGraph::MaterialGraphNode_ConstructComments(UObject* Parent, const TSharedPtr<FJsonObject>& Json, TMap<FName, FExportData>& Exports) {
 	const TArray<TSharedPtr<FJsonValue>>* StringExpressionComments;
 	
-	if (Json->TryGetArrayField("EditorComments", StringExpressionComments))
+	if (Json->TryGetArrayField(TEXT("EditorComments"), StringExpressionComments))
 		// Iterate through comments
 		for (const TSharedPtr<FJsonValue> ExpressionComment : *StringExpressionComments) {
 			if (ExpressionComment->IsNull()) continue; // just in-case
@@ -308,7 +308,7 @@ void IMaterialGraph::MaterialGraphNode_ExpressionWrapper(UObject* Parent, UMater
 	if (UMaterialExpressionTextureBase* TextureBase = Cast<UMaterialExpressionTextureBase>(Expression)) {
 		const TSharedPtr<FJsonObject>* TexturePtr;
 		
-		if (Json->TryGetObjectField("Texture", TexturePtr)) {
+		if (Json->TryGetObjectField(TEXT("Texture"), TexturePtr)) {
 #if ENGINE_MAJOR_VERSION >= 5
 			LoadObject(TexturePtr, TextureBase->Texture);
 #else
@@ -392,46 +392,46 @@ FExpressionInput IMaterialGraph::PopulateExpressionInput(const FJsonObject* Json
 
 	// Each Mask input/output
 	int OutputIndex;
-	if (JsonProperties->TryGetNumberField("OutputIndex", OutputIndex)) Input.OutputIndex = OutputIndex;
+	if (JsonProperties->TryGetNumberField(TEXT("OutputIndex"), OutputIndex)) Input.OutputIndex = OutputIndex;
 	FString InputName;
-	if (JsonProperties->TryGetStringField("InputName", InputName)) Input.InputName = FName(InputName);
+	if (JsonProperties->TryGetStringField(TEXT("InputName"), InputName)) Input.InputName = FName(InputName);
 	int Mask;
-	if (JsonProperties->TryGetNumberField("Mask", Mask)) Input.Mask = Mask;
+	if (JsonProperties->TryGetNumberField(TEXT("Mask"), Mask)) Input.Mask = Mask;
 	int MaskR;
-	if (JsonProperties->TryGetNumberField("MaskR", MaskR)) Input.MaskR = MaskR;
+	if (JsonProperties->TryGetNumberField(TEXT("MaskR"), MaskR)) Input.MaskR = MaskR;
 	int MaskG;
-	if (JsonProperties->TryGetNumberField("MaskG", MaskG)) Input.MaskG = MaskG;
+	if (JsonProperties->TryGetNumberField(TEXT("MaskG"), MaskG)) Input.MaskG = MaskG;
 	int MaskB;
-	if (JsonProperties->TryGetNumberField("MaskB", MaskB)) Input.MaskB = MaskB;
+	if (JsonProperties->TryGetNumberField(TEXT("MaskB"), MaskB)) Input.MaskB = MaskB;
 	int MaskA;
-	if (JsonProperties->TryGetNumberField("MaskA", MaskA)) Input.MaskA = MaskA;
+	if (JsonProperties->TryGetNumberField(TEXT("MaskA"), MaskA)) Input.MaskA = MaskA;
 
 	if (Type == "Color") {
 		if (FColorMaterialInput* ColorInput = reinterpret_cast<FColorMaterialInput*>(&Input)) {
 			bool UseConstant;
-			if (JsonProperties->TryGetBoolField("UseConstant", UseConstant)) ColorInput->UseConstant = UseConstant;
+			if (JsonProperties->TryGetBoolField(TEXT("UseConstant"), UseConstant)) ColorInput->UseConstant = UseConstant;
 			const TSharedPtr<FJsonObject>* Constant;
-			if (JsonProperties->TryGetObjectField("Constant", Constant)) ColorInput->Constant = FMathUtilities::ObjectToLinearColor(Constant->Get()).ToFColor(true);
+			if (JsonProperties->TryGetObjectField(TEXT("Constant"), Constant)) ColorInput->Constant = FMathUtilities::ObjectToLinearColor(Constant->Get()).ToFColor(true);
 			Input = FExpressionInput(*ColorInput);
 		}
 	} else if (Type == "Scalar") {
 		if (FScalarMaterialInput* ScalarInput = reinterpret_cast<FScalarMaterialInput*>(&Input)) {
 			bool UseConstant;
-			if (JsonProperties->TryGetBoolField("UseConstant", UseConstant)) ScalarInput->UseConstant = UseConstant;
+			if (JsonProperties->TryGetBoolField(TEXT("UseConstant"), UseConstant)) ScalarInput->UseConstant = UseConstant;
 #if ENGINE_MAJOR_VERSION >= 5
 			float Constant;
 #else
 			double Constant;
 #endif
-			if (JsonProperties->TryGetNumberField("Constant", Constant)) ScalarInput->Constant = Constant;
+			if (JsonProperties->TryGetNumberField(TEXT("Constant"), Constant)) ScalarInput->Constant = Constant;
 			Input = FExpressionInput(*ScalarInput);
 		}
 	} else if (Type == "Vector") {
 		if (FVectorMaterialInput* VectorInput = reinterpret_cast<FVectorMaterialInput*>(&Input)) {
 			bool UseConstant;
-			if (JsonProperties->TryGetBoolField("UseConstant", UseConstant)) VectorInput->UseConstant = UseConstant;
+			if (JsonProperties->TryGetBoolField(TEXT("UseConstant"), UseConstant)) VectorInput->UseConstant = UseConstant;
 			const TSharedPtr<FJsonObject>* Constant;
-			if (JsonProperties->TryGetObjectField("Constant", Constant)) VectorInput->Constant = FMathUtilities::ObjectToVector3f(Constant->Get());
+			if (JsonProperties->TryGetObjectField(TEXT("Constant"), Constant)) VectorInput->Constant = FMathUtilities::ObjectToVector3f(Constant->Get());
 			Input = FExpressionInput(*VectorInput);
 		}
 	}
@@ -443,17 +443,17 @@ FExpressionOutput IMaterialGraph::PopulateExpressionOutput(const FJsonObject* Js
 	FExpressionOutput Output;
 
 	FString OutputName;
-	if (JsonProperties->TryGetStringField("OutputName", OutputName)) Output.OutputName = FName(OutputName);
+	if (JsonProperties->TryGetStringField(TEXT("OutputName"), OutputName)) Output.OutputName = FName(OutputName);
 	int Mask;
-	if (JsonProperties->TryGetNumberField("Mask", Mask)) Output.Mask = Mask;
+	if (JsonProperties->TryGetNumberField(TEXT("Mask"), Mask)) Output.Mask = Mask;
 	int MaskR;
-	if (JsonProperties->TryGetNumberField("MaskR", MaskR)) Output.MaskR = MaskR;
+	if (JsonProperties->TryGetNumberField(TEXT("MaskR"), MaskR)) Output.MaskR = MaskR;
 	int MaskG;
-	if (JsonProperties->TryGetNumberField("MaskG", MaskG)) Output.MaskG = MaskG;
+	if (JsonProperties->TryGetNumberField(TEXT("MaskG"), MaskG)) Output.MaskG = MaskG;
 	int MaskB;
-	if (JsonProperties->TryGetNumberField("MaskB", MaskB)) Output.MaskB = MaskB;
+	if (JsonProperties->TryGetNumberField(TEXT("MaskB"), MaskB)) Output.MaskB = MaskB;
 	int MaskA;
-	if (JsonProperties->TryGetNumberField("MaskA", MaskA)) Output.MaskA = MaskA;
+	if (JsonProperties->TryGetNumberField(TEXT("MaskA"), MaskA)) Output.MaskA = MaskA;
 
 	return Output;
 }
@@ -468,7 +468,7 @@ FName IMaterialGraph::GetExpressionName(const FJsonObject* JsonProperties, FStri
 
 	const TSharedPtr<FJsonObject> ExpressionObject = ExpressionField->AsObject();
 	FString ObjectName;
-	if (ExpressionObject->TryGetStringField("ObjectName", ObjectName)) {
+	if (ExpressionObject->TryGetStringField(TEXT("ObjectName"), ObjectName)) {
 		return GetExportNameOfSubobject(ObjectName);
 	}
 

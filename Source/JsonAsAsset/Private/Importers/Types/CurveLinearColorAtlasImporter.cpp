@@ -29,25 +29,25 @@ bool ICurveLinearColorAtlasImporter::ImportData() {
 	Object->UpdateResource();
 
 	bool bHasAnyDirtyTextures = false;
-	if (Properties->TryGetBoolField("bHasAnyDirtyTextures", bHasAnyDirtyTextures))
+	if (Properties->TryGetBoolField(TEXT("bHasAnyDirtyTextures"), bHasAnyDirtyTextures))
 	{
 		Object->bHasAnyDirtyTextures = bHasAnyDirtyTextures;
 	}
 
 	bool bIsDirty = false;
-	if (Properties->TryGetBoolField("bIsDirty", bIsDirty))
+	if (Properties->TryGetBoolField(TEXT("bIsDirty"), bIsDirty))
 	{
 		Object->bIsDirty = bIsDirty;
 	}
 
 	bool bShowDebugColorsForNullGradients = false;
-	if (Properties->TryGetBoolField("bShowDebugColorsForNullGradients", bShowDebugColorsForNullGradients))
+	if (Properties->TryGetBoolField(TEXT("bShowDebugColorsForNullGradients"), bShowDebugColorsForNullGradients))
 	{
 		Object->bShowDebugColorsForNullGradients = bShowDebugColorsForNullGradients;
 	}
 
 	bool bSquareResolution = false;
-	if (Properties->TryGetBoolField("bSquareResolution", bSquareResolution))
+	if (Properties->TryGetBoolField(TEXT("bSquareResolution"), bSquareResolution))
 	{
 		Object->bSquareResolution = bSquareResolution;
 	}
@@ -60,12 +60,12 @@ bool ICurveLinearColorAtlasImporter::ImportData() {
 	double TextureHeight = 0.0f;
 #endif
 	
-	if (Properties->TryGetNumberField("TextureSize", TextureSize))
+	if (Properties->TryGetNumberField(TEXT("TextureSize"), TextureSize))
 	{
 		Object->TextureSize = TextureSize;
 	}
 
-	if (Properties->TryGetNumberField("TextureHeight", TextureHeight))
+	if (Properties->TryGetNumberField(TEXT("TextureHeight"), TextureHeight))
 	{
 		Object->TextureHeight = TextureHeight;
 	}

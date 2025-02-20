@@ -69,8 +69,8 @@ bool IAnimationBaseImporter::ImportData() {
 	// Some CUE4Parse versions have different named objects for curves
 	const TSharedPtr<FJsonObject>* RawCurveData;
 	
-	if (Properties->TryGetObjectField("RawCurveData", RawCurveData)) FloatCurves = Properties->GetObjectField(TEXT("RawCurveData"))->GetArrayField(TEXT("FloatCurves"));
-	else if (JsonObject->TryGetObjectField("CompressedCurveData", RawCurveData)) FloatCurves = JsonObject->GetObjectField(TEXT("CompressedCurveData"))->GetArrayField(TEXT("FloatCurves"));
+	if (Properties->TryGetObjectField(TEXT("RawCurveData"), RawCurveData)) FloatCurves = Properties->GetObjectField(TEXT("RawCurveData"))->GetArrayField(TEXT("FloatCurves"));
+	else if (JsonObject->TryGetObjectField(TEXT("CompressedCurveData"), RawCurveData)) FloatCurves = JsonObject->GetObjectField(TEXT("CompressedCurveData"))->GetArrayField(TEXT("FloatCurves"));
 
 	for (TSharedPtr<FJsonValue> FloatCurveObject : FloatCurves)
 	{
@@ -188,7 +188,7 @@ bool IAnimationBaseImporter::ImportData() {
 
 	const TArray<TSharedPtr<FJsonValue>>* AuthoredSyncMarkers1;
 	
-	if (Properties->TryGetArrayField("AuthoredSyncMarkers", AuthoredSyncMarkers1) && CastedAnimSequence)
+	if (Properties->TryGetArrayField(TEXT("AuthoredSyncMarkers"), AuthoredSyncMarkers1) && CastedAnimSequence)
 	{
 		TArray<TSharedPtr<FJsonValue>> AuthoredSyncMarkers = Properties->GetArrayField(TEXT("AuthoredSyncMarkers"));
 

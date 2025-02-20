@@ -22,7 +22,7 @@ bool ICurveTableImporter::ImportData() {
 	ECurveTableMode CurveTableMode = ECurveTableMode::RichCurves; {
 		FString CurveMode;
 		
-		if (JsonObject->TryGetStringField("CurveTableMode", CurveMode))
+		if (JsonObject->TryGetStringField(TEXT("CurveTableMode"), CurveMode))
 			CurveTableMode = static_cast<ECurveTableMode>(StaticEnum<ECurveTableMode>()->GetValueByNameString(CurveMode));
 
 		DerivedCurveTable->ChangeTableMode(CurveTableMode);
@@ -41,7 +41,7 @@ bool ICurveTableImporter::ImportData() {
 			}
 
 			const TArray<TSharedPtr<FJsonValue>>* KeysPtr;
-			if (CurveData->TryGetArrayField("Keys", KeysPtr))
+			if (CurveData->TryGetArrayField(TEXT("Keys"), KeysPtr))
 				for (const TSharedPtr<FJsonValue> KeyPtr : *KeysPtr) {
 					TSharedPtr<FJsonObject> Key = KeyPtr->AsObject(); {
 						NewRichCurve.AddKey(Key->GetNumberField(TEXT("Time")), Key->GetNumberField(TEXT("Value")));
@@ -79,7 +79,7 @@ bool ICurveTableImporter::ImportData() {
 
 			const TArray<TSharedPtr<FJsonValue>>* KeysPtr;
 			
-			if (CurveData->TryGetArrayField("Keys", KeysPtr))
+			if (CurveData->TryGetArrayField(TEXT("Keys"), KeysPtr))
 				for (const TSharedPtr<FJsonValue> KeyPtr : *KeysPtr) {
 					TSharedPtr<FJsonObject> Key = KeyPtr->AsObject(); {
 						NewSimpleCurve.AddKey(Key->GetNumberField(TEXT("Time")), Key->GetNumberField(TEXT("Value")));

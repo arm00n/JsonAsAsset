@@ -783,10 +783,10 @@ void FJsonAsAssetModule::ImportConvexCollision()
 							FString TypeValue;
 
 							// Check if the "Type" field exists and matches "BodySetup"
-							if (JsonObject->TryGetStringField("Type", TypeValue) && TypeValue == "BodySetup") {
+							if (JsonObject->TryGetStringField(TEXT("Type"), TypeValue) && TypeValue == "BodySetup") {
 								// Check for "Class" with value "UScriptClass'BodySetup'"
 								FString ClassValue;
-								if (JsonObject->TryGetStringField("Class", ClassValue) && ClassValue == "UScriptClass'BodySetup'") {
+								if (JsonObject->TryGetStringField(TEXT("Class"), ClassValue) && ClassValue == "UScriptClass'BodySetup'") {
 									// Navigate to "Properties"
 									TSharedPtr<FJsonObject> PropertiesObject = JsonObject->GetObjectField(TEXT("Properties"));
 									if (PropertiesObject.IsValid()) {

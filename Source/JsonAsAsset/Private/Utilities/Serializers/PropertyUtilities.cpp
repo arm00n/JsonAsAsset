@@ -290,7 +290,7 @@ void UPropertySerializer::DeserializePropertyValueInner(FProperty* Property, con
 
 						if (Export->HasField(TEXT("LODData")))
 						{
-							Properties->SetArrayField("LODData", Export->GetArrayField(TEXT("LODData")));
+							Properties->SetArrayField(TEXT("LODData"), Export->GetArrayField(TEXT("LODData")));
 						}
 						
 						ObjectSerializer->DeserializeObjectProperties(Properties, Object);
@@ -387,8 +387,8 @@ void UPropertySerializer::DeserializePropertyValueInner(FProperty* Property, con
 			FGuid GUID = FGuid(OutString); // Create GUID from String
 
 			TSharedRef<FJsonObject> SharedObject = MakeShareable(new FJsonObject());
-			SharedObject->SetNumberField("A", GUID.A); SharedObject->SetNumberField("B", GUID.B);
-			SharedObject->SetNumberField("C", GUID.C); SharedObject->SetNumberField("D", GUID.D);
+			SharedObject->SetNumberField(TEXT("A"), GUID.A); SharedObject->SetNumberField(TEXT("B"), GUID.B);
+			SharedObject->SetNumberField(TEXT("C"), GUID.C); SharedObject->SetNumberField(TEXT("D"), GUID.D);
 
 			const TSharedRef<FJsonValue> NewValue = MakeShareable(new FJsonValueObject(SharedObject));
 			NewJsonValue = NewValue;

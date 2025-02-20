@@ -10,7 +10,7 @@ bool ITemplatedImporter<AssetType>::ImportData() {
 	try {
 		// Make Properties if it doesn't exist
 		if (!JsonObject->HasField(TEXT("Properties"))) {
-			JsonObject->SetObjectField("Properties", TSharedPtr<FJsonObject>());
+			JsonObject->SetObjectField(TEXT("Properties"), TSharedPtr<FJsonObject>());
 		}
 		
 		TSharedPtr<FJsonObject> Properties = JsonObject->GetObjectField(TEXT("Properties"));

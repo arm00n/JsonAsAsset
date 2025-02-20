@@ -31,10 +31,10 @@ void IMaterialImporter::ComposeExpressionPinBase(UMaterialExpressionPinBase* Pin
 	Pin->MaterialExpressionEditorY = Expression->GetNumberField(TEXT("MaterialExpressionEditorY"));
 
 	FString MaterialExpressionGuid;
-	if (Expression->TryGetStringField("MaterialExpressionGuid", MaterialExpressionGuid)) Pin->MaterialExpressionGuid = FGuid(MaterialExpressionGuid);
+	if (Expression->TryGetStringField(TEXT("MaterialExpressionGuid"), MaterialExpressionGuid)) Pin->MaterialExpressionGuid = FGuid(MaterialExpressionGuid);
 
 	const TArray<TSharedPtr<FJsonValue>>* ReroutePins;
-	if (Expression->TryGetArrayField("ReroutePins", ReroutePins)) {
+	if (Expression->TryGetArrayField(TEXT("ReroutePins"), ReroutePins)) {
 		for (const TSharedPtr<FJsonValue> ReroutePin : *ReroutePins) {
 			if (ReroutePin->IsNull()) continue;
 			TSharedPtr<FJsonObject> ReroutePinObject = ReroutePin->AsObject();
@@ -48,7 +48,7 @@ void IMaterialImporter::ComposeExpressionPinBase(UMaterialExpressionPinBase* Pin
 
 	// Set Pin Direction
 	FString PinDirection;
-	if (Expression->TryGetStringField("PinDirection", PinDirection)) {
+	if (Expression->TryGetStringField(TEXT("PinDirection"), PinDirection)) {
 		EEdGraphPinDirection Enum_PinDirection = EGPD_Input;
 
 		if (PinDirection.EndsWith("EGPD_Input")) Enum_PinDirection = EGPD_Input;
@@ -58,7 +58,7 @@ void IMaterialImporter::ComposeExpressionPinBase(UMaterialExpressionPinBase* Pin
 	}
 
 	const TArray<TSharedPtr<FJsonValue>>* OutputsPtr;
-	if (Expression->TryGetArrayField("Outputs", OutputsPtr)) {
+	if (Expression->TryGetArrayField(TEXT("Outputs"), OutputsPtr)) {
 		TArray<FExpressionOutput> Outputs;
 		for (const TSharedPtr<FJsonValue> OutputValue : *OutputsPtr) {
 			TSharedPtr<FJsonObject> OutputObject = OutputValue->AsObject();
@@ -142,7 +142,7 @@ bool IMaterialImporter::ImportData() {
 		// CustomizedUVs defined here
 		const TArray<TSharedPtr<FJsonValue>>* InputsPtr;
 		
-		if (EdProps->TryGetArrayField("CustomizedUVs", InputsPtr)) {
+		if (EdProps->TryGetArrayField(TEXT("CustomizedUVs"), InputsPtr)) {
 			int i = 0;
 			for (const TSharedPtr<FJsonValue> InputValue : *InputsPtr) {
 				FJsonObject* InputObject = InputValue->AsObject().Get();
@@ -162,7 +162,7 @@ bool IMaterialImporter::ImportData() {
 	}
 
 	const TArray<TSharedPtr<FJsonValue>>* StringParameterGroupData;
-	if (EdProps->TryGetArrayField("ParameterGroupData", StringParameterGroupData)) {
+	if (EdProps->TryGetArrayField(TEXT("ParameterGroupData"), StringParameterGroupData)) {
 		TArray<FParameterGroupData> ParameterGroupData;
 
 		for (const TSharedPtr<FJsonValue> ParameterGroupDataObject : *StringParameterGroupData) {
@@ -170,9 +170,9 @@ bool IMaterialImporter::ImportData() {
 			FParameterGroupData GroupData;
 
 			FString GroupName;
-			if (ParameterGroupDataObject->AsObject()->TryGetStringField("GroupName", GroupName)) GroupData.GroupName = GroupName;
+			if (ParameterGroupDataObject->AsObject()->TryGetStringField(TEXT("GroupName"), GroupName)) GroupData.GroupName = GroupName;
 			int GroupSortPriority;
-			if (ParameterGroupDataObject->AsObject()->TryGetNumberField("GroupSortPriority", GroupSortPriority)) GroupData.GroupSortPriority = GroupSortPriority;
+			if (ParameterGroupDataObject->AsObject()->TryGetNumberField(TEXT("GroupSortPriority"), GroupSortPriority)) GroupData.GroupSortPriority = GroupSortPriority;
 
 			ParameterGroupData.Add(GroupData);
 		}
@@ -213,7 +213,7 @@ bool IMaterialImporter::ImportData() {
 
 			// Set SubgraphExpression
 			const TSharedPtr<FJsonObject>* SubgraphExpressionPtr = nullptr;
-			if (GraphProperties->TryGetObjectField("SubgraphExpression", SubgraphExpressionPtr) && SubgraphExpressionPtr != nullptr) {
+			if (GraphProperties->TryGetObjectField(TEXT("SubgraphExpression"), SubgraphExpressionPtr) && SubgraphExpressionPtr != nullptr) {
 				FJsonObject* SubgraphExpressionObject = SubgraphExpressionPtr->Get();
 				FName ExportName = GetExportNameOfSubobject(SubgraphExpressionObject->GetStringField(TEXT("ObjectName")));
 
@@ -296,14 +296,14 @@ bool IMaterialImporter::ImportData() {
 				// Setup Input/Output Expressions
 				{
 					const TSharedPtr<FJsonObject>* InputExpressions;
-					if (SubgraphExpression->TryGetObjectField("InputExpressions", InputExpressions)) {
+					if (SubgraphExpression->TryGetObjectField(TEXT("InputExpressions"), InputExpressions)) {
 						TSharedPtr<FJsonObject> InputExpression = TSharedPtr<FJsonObject>(InputExpressions->Get());
 
 						ComposeExpressionPinBase(CompositeExpression->InputExpressions, CreatedExpressionMap, InputExpression, Exports);
 					}
 
 					const TSharedPtr<FJsonObject>* OutputExpressions;
-					if (SubgraphExpression->TryGetObjectField("OutputExpressions", OutputExpressions)) {
+					if (SubgraphExpression->TryGetObjectField(TEXT("OutputExpressions"), OutputExpressions)) {
 						TSharedPtr<FJsonObject> OutputExpression = TSharedPtr<FJsonObject>(OutputExpressions->Get());
 
 						ComposeExpressionPinBase(CompositeExpression->OutputExpressions, CreatedExpressionMap, OutputExpression, Exports);
@@ -349,10 +349,10 @@ bool IMaterialImporter::ImportData() {
 
 	const TSharedPtr<FJsonObject>* ShadingModelsPtr;
 	
-	if (Properties->TryGetObjectField("ShadingModels", ShadingModelsPtr)) {
+	if (Properties->TryGetObjectField(TEXT("ShadingModels"), ShadingModelsPtr)) {
 		int ShadingModelField;
 		
-		if (ShadingModelsPtr->Get()->TryGetNumberField("ShadingModelField", ShadingModelField)) {
+		if (ShadingModelsPtr->Get()->TryGetNumberField(TEXT("ShadingModelField"), ShadingModelField)) {
 #if ENGINE_MAJOR_VERSION >= 5
 			Material->GetShadingModels().SetShadingModelField(ShadingModelField);
 #else
@@ -368,7 +368,7 @@ bool IMaterialImporter::ImportData() {
 	GetObjectSerializer()->DeserializeObjectProperties(SerializerProperties, Material);
 
 	FString ShadingModel;
-	if (Properties->TryGetStringField("ShadingModel", ShadingModel) && ShadingModel != "EMaterialShadingModel::MSM_FromMaterialExpression")
+	if (Properties->TryGetStringField(TEXT("ShadingModel"), ShadingModel) && ShadingModel != "EMaterialShadingModel::MSM_FromMaterialExpression")
 		Material->SetShadingModel(static_cast<EMaterialShadingModel>(StaticEnum<EMaterialShadingModel>()->GetValueByNameString(ShadingModel)));
 
 	Material->ForceRecompileForRendering();
@@ -399,13 +399,13 @@ TArray<TSharedPtr<FJsonValue>> IMaterialImporter::FilterGraphNodesBySubgraphExpr
 		const TSharedPtr<FJsonObject> Properties = TSharedPtr<FJsonObject>(ValueObject->GetObjectField(TEXT("Properties")));
 
 		const TSharedPtr<FJsonObject>* MaterialExpression;
-		if (Properties->TryGetObjectField("MaterialExpression", MaterialExpression)) {
+		if (Properties->TryGetObjectField(TEXT("MaterialExpression"), MaterialExpression)) {
 			TSharedPtr<FJsonValue> ExpValue = GetExportByObjectPath(*MaterialExpression);
 			TSharedPtr<FJsonObject> Expression = TSharedPtr<FJsonObject>(ExpValue->AsObject());
 			const TSharedPtr<FJsonObject> _Properties = TSharedPtr<FJsonObject>(Expression->GetObjectField(TEXT("Properties")));
 
 			const TSharedPtr<FJsonObject>* _SubgraphExpression;
-			if (_Properties->TryGetObjectField("SubgraphExpression", _SubgraphExpression)) {
+			if (_Properties->TryGetObjectField(TEXT("SubgraphExpression"), _SubgraphExpression)) {
 				if (Outer == GetExportNameOfSubobject(_SubgraphExpression->Get()->GetStringField(TEXT("ObjectName"))).ToString()) {
 					ReturnValue.Add(ExpValue);
 				}

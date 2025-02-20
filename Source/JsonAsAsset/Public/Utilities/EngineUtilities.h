@@ -76,7 +76,7 @@ T* GetSelectedAsset() {
 
 inline TSharedPtr<FJsonObject> FindExport(TSharedPtr<FJsonObject> Export, const TArray<TSharedPtr<FJsonValue>> File)
 {
-	FString string_int; Export->GetStringField("ObjectPath").Split(".", nullptr, &string_int);
+	FString string_int; Export->GetStringField(TEXT("ObjectPath")).Split(".", nullptr, &string_int);
 	
 	return File[FCString::Atoi(*string_int)]->AsObject();
 }
@@ -255,9 +255,9 @@ inline bool IsProperExportData(const TSharedPtr<FJsonObject>& JsonObject)
 {
 	// Property checks
 	if (!JsonObject.IsValid() ||
-		!JsonObject->HasField("Type") ||
-		!JsonObject->HasField("Name") ||
-		!JsonObject->HasField("Properties")
+		!JsonObject->HasField(TEXT("Type")) ||
+		!JsonObject->HasField(TEXT("Name")) ||
+		!JsonObject->HasField(TEXT("Properties"))
 	) return false;
 
 	return true;
@@ -277,7 +277,7 @@ inline bool DeserializeJSON(const FString& FilePath, TArray<TSharedPtr<FJsonValu
 
 			TSharedPtr<FJsonObject> JsonObject;
 			if (FJsonSerializer::Deserialize(JsonReader, JsonObject)) {
-				JsonParsed = JsonObject->GetArrayField("data");
+				JsonParsed = JsonObject->GetArrayField(TEXT("data"));
 			
 				return true;
 			}
