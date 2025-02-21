@@ -12,6 +12,7 @@
 #include "Dom/JsonObject.h"
 #include "HttpModule.h"
 #include "Modules/LocalFetchModule.h"
+#include "Utilities/EngineUtilities.h"
 
 #if ENGINE_MAJOR_VERSION == 4
 #include "DetailCategoryBuilder.h"
@@ -115,7 +116,7 @@ void FJsonAsAssetSettingsDetails::EditConfiguration(TWeakObjectPtr<UJsonAsAssetS
                 }
             }
 
-        	SaveConfig(PluginSettings);
+        	SavePluginConfig(PluginSettings);
 
             return FReply::Handled();
         })
@@ -181,7 +182,7 @@ void FJsonAsAssetSettingsDetails::EditEncryption(TWeakObjectPtr<UJsonAsAssetSett
 				}
 			}
 
-			SaveConfig(PluginSettings);
+			SavePluginConfig(PluginSettings);
 
 			FString LocalExportDirectory = PluginSettings->ExportDirectory.Path;
 
@@ -240,7 +241,7 @@ void FJsonAsAssetSettingsDetails::EditEncryption(TWeakObjectPtr<UJsonAsAssetSett
 
 							UJsonAsAssetSettings* PluginSettings = GetMutableDefault<UJsonAsAssetSettings>();
 							
-							FJsonAsAssetSettingsDetails::SaveConfig(PluginSettings);
+							SavePluginConfig(PluginSettings);
 						}
 					};
 
@@ -251,7 +252,7 @@ void FJsonAsAssetSettingsDetails::EditEncryption(TWeakObjectPtr<UJsonAsAssetSett
 					MappingsRequest->OnProcessRequestComplete().BindLambda(OnRequestComplete);
 					MappingsRequest->ProcessRequest();
 
-					SaveConfig(PluginSettings);
+					SavePluginConfig(PluginSettings);
 				}
 			}
 
@@ -261,20 +262,6 @@ void FJsonAsAssetSettingsDetails::EditEncryption(TWeakObjectPtr<UJsonAsAssetSett
 			return Settings->bEnableLocalFetch;
 		})
 	];
-}
-
-void FJsonAsAssetSettingsDetails::SaveConfig(UJsonAsAssetSettings* Settings)
-{
-	Settings->SaveConfig();
-	
-#if ENGINE_MAJOR_VERSION >= 5
-	Settings->TryUpdateDefaultConfigFile();
-#else
-	Settings->UpdateDefaultConfigFile();
-	Settings->ReloadConfig(nullptr, nullptr, UE4::LCPF_PropagateToInstances);
-#endif
-        	
-	Settings->LoadConfig();
 }
 
 #undef LOCTEXT_NAMESPACE

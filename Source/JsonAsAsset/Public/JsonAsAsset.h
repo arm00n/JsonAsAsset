@@ -35,7 +35,7 @@ private:
     void ImportConvexCollision();
 
     bool bActionRequired = false;
-    const UJsonAsAssetSettings* Settings = nullptr;
+    UJsonAsAssetSettings* Settings = nullptr;
 
 #if ENGINE_MAJOR_VERSION == 4
     void AddToolbarExtension(FToolBarBuilder& Builder);

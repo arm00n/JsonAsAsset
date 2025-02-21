@@ -57,38 +57,19 @@
 #endif
 
 void FJsonAsAssetModule::PluginButtonClicked() {
-	Settings = GetDefault<UJsonAsAssetSettings>();
+	Settings = GetMutableDefault<UJsonAsAssetSettings>();
+
+	const FString ExportDirectoryPath = Settings->ExportDirectory.Path;
 	
-	if (Settings->ExportDirectory.Path.IsEmpty())
+	if (ExportDirectoryPath.IsEmpty())
 		return;
 
-	// Invalid Export Directory
-	if (Settings->ExportDirectory.Path.Contains("\\")) {
-		FNotificationInfo Info(LOCTEXT("JsonAsAssetNotificationTitle", "Export Directory Invalid"));
-#if ENGINE_MAJOR_VERSION >= 5
-		Info.SubText = LOCTEXT("JsonAsAssetNotificationText",
-			"Please fix your export directory in the plugin settings, as it is invalid and contains the character \"\\\"."
-		);
-#endif
-
-		Info.HyperlinkText = LOCTEXT("UnrealSoftwareRequirements", "JsonAsAsset Plugin Settings");
-		Info.Hyperlink = FSimpleDelegate::CreateStatic([]() {
-			// Send user to plugin settings
-			FModuleManager::LoadModuleChecked<ISettingsModule>("Settings")
-				.ShowViewer("Editor", "Plugins", "JsonAsAsset");
-		});
-
-		Info.bFireAndForget = true;
-		Info.FadeOutDuration = 2.0f;
-		Info.ExpireDuration = 3.0f;
-		Info.bUseLargeFont = false;
-		Info.bUseThrobber = false;
-		Info.Image = FJsonAsAssetStyle::Get().GetBrush("JsonAsAsset.Logo");
-
-		LocalFetchNotificationPtr = FSlateNotificationManager::Get().AddNotification(Info);
-		LocalFetchNotificationPtr.Pin()->SetCompletionState(SNotificationItem::CS_Fail);
-
-		return;
+	/* Invalid Export Directory */
+	if (ExportDirectoryPath.Contains("\\")) {
+		/* Fix up export directory */
+		Settings->ExportDirectory.Path = ExportDirectoryPath.Replace(TEXT("\\"), TEXT("/"));
+		
+		SavePluginConfig(Settings);
 	}
 
 	if (Settings->bEnableLocalFetch) {
@@ -103,17 +84,18 @@ void FJsonAsAssetModule::PluginButtonClicked() {
 		bool bIsLocalHost = Settings->LocalFetchUrl.StartsWith("http://localhost");
 
 		if (!IsProcessRunning("LocalFetch.exe") && bIsLocalHost) {
-			FNotificationInfo Info(LOCTEXT("JsonAsAssetNotificationTitle", "Local Fetch API"));
+			FNotificationInfo Info(LOCTEXT("JsonAsAssetNotificationTitle", "Local Fetch API Required"));
 #if ENGINE_MAJOR_VERSION >= 5
 			Info.SubText = LOCTEXT("JsonAsAssetNotificationText",
-				"Please start the Local Fetch API to use JsonAsAsset with no issues, if you need any assistance figuring out Local Fetch and the settings, please take a look at the documentation:"
+				"Start the Local Fetch API to use JsonAsAsset seamlessly. "
+				"For guidance on Local Fetch settings, check the documentation."
 			);
 #endif
 
-			Info.HyperlinkText = LOCTEXT("UnrealSoftwareRequirements", "JsonAsAsset Docs");
+			Info.HyperlinkText = LOCTEXT("JsonAsAssetDocumentationLink", "Documentation");
 			Info.Hyperlink = FSimpleDelegate::CreateStatic([]() {
-				FString TheURL = "https://github.com/JsonAsAsset/JsonAsAsset";
-				FPlatformProcess::LaunchURL(*TheURL, nullptr, nullptr);
+				const FString URL = "https://github.com/JsonAsAsset/JsonAsAsset";
+				FPlatformProcess::LaunchURL(*URL, nullptr, nullptr);
 			});
 
 			Info.bFireAndForget = false;
@@ -199,56 +181,61 @@ void FJsonAsAssetModule::StartupModule() {
     UToolMenus::RegisterStartupCallback(FSimpleMulticastDelegate::FDelegate::CreateRaw(this, &FJsonAsAssetModule::RegisterMenus));
 
     // Check for export directory in settings
-    Settings = GetDefault<UJsonAsAssetSettings>();
+    Settings = GetMutableDefault<UJsonAsAssetSettings>();
 	
-    if (Settings->ExportDirectory.Path.IsEmpty()) {
-        const FText TitleText = LOCTEXT("JsonAsAssetNotificationTitle", "Missing export directory for JsonAsAsset");
-        const FText MessageText = LOCTEXT("JsonAsAssetNotificationText",
-            "JsonAsAsset requires an export directory to handle references and to locally check for files to import. "
-            "The plugin may not function properly without this set.\n\nFor more information, please see the documentation for JsonAsAsset."
-        );
+	if (Settings->ExportDirectory.Path.IsEmpty())
+	{
+	    const FText TitleText = LOCTEXT("JsonAsAssetNotificationTitle", "Missing Export Directory");
+	    const FText MessageText = LOCTEXT("JsonAsAssetNotificationText",
+	        "JsonAsAsset requires an export directory to handle references and locally check for files to import. "
+	        "The plugin will not function properly without this set.\n\nFor more information, please see the documentation for JsonAsAsset."
+	    );
 
-        FNotificationInfo Info(TitleText);
-#if ENGINE_MAJOR_VERSION >= 5
-        Info.SubText = MessageText;
-#endif
+	    FNotificationInfo Info(TitleText);
+	    
+	#if ENGINE_MAJOR_VERSION >= 5
+	    Info.SubText = MessageText;
+	#else
+	    Info.Text = MessageText;
+	#endif
 
-        // Set up hyperlink for documentation
-        Info.HyperlinkText = LOCTEXT("UnrealSoftwareRequirements", "JsonAsAsset Docs");
-        Info.Hyperlink = FSimpleDelegate::CreateStatic([]() { 
-            FString TheURL = "https://github.com/JsonAsAsset/JsonAsAsset";
-            FPlatformProcess::LaunchURL(*TheURL, nullptr, nullptr); 
-        });
+	    // Set up hyperlink for documentation
+	    Info.HyperlinkText = LOCTEXT("JsonAsAssetDocumentation", "Documentation");
+	    Info.Hyperlink = FSimpleDelegate::CreateStatic([]() { 
+	        const FString URL = "https://github.com/JsonAsAsset/JsonAsAsset";
+	        FPlatformProcess::LaunchURL(*URL, nullptr, nullptr); 
+	    });
 
-        // Notification settings
-        Info.bFireAndForget = false;
-        Info.FadeOutDuration = 3.0f;
-        Info.ExpireDuration = 0.0f;
-        Info.bUseLargeFont = false;
-        Info.bUseThrobber = false;
+	    // Notification settings
+	    Info.bFireAndForget = false;
+	    Info.FadeOutDuration = 3.0f;
+	    Info.ExpireDuration = 0.0f;
+	    Info.bUseLargeFont = false;
+	    Info.bUseThrobber = false;
 
-        // Add button to open plugin settings
-        Info.ButtonDetails.Add(
-            FNotificationButtonInfo(
-                LOCTEXT("OpenPluginSettings", "Open Settings"),
-                FText::GetEmpty(),
-                FSimpleDelegate::CreateStatic([]() {
-                    TSharedPtr<SNotificationItem> NotificationItem = ImportantNotificationPtr.Pin();
-                    if (NotificationItem.IsValid()) {
-                        NotificationItem->Fadeout();
-                        ImportantNotificationPtr.Reset();
-                    }
+	    // Add button to open plugin settings
+	    Info.ButtonDetails.Add(
+	        FNotificationButtonInfo(
+	            LOCTEXT("OpenPluginSettings", "Open Settings"),
+	            FText::GetEmpty(),
+	            FSimpleDelegate::CreateStatic([]() {
+	                TSharedPtr<SNotificationItem> NotificationItem = ImportantNotificationPtr.Pin();
+	                if (NotificationItem.IsValid())
+	                {
+	                    NotificationItem->Fadeout();
+	                    ImportantNotificationPtr.Reset();
+	                }
 
-                    // Send user to plugin settings
-                    FModuleManager::LoadModuleChecked<ISettingsModule>("Settings")
-                        .ShowViewer("Editor", "Plugins", "JsonAsAsset");
-                })
-            )
-        );
+	                // Navigate to plugin settings
+	                FModuleManager::LoadModuleChecked<ISettingsModule>("Settings")
+	                    .ShowViewer("Editor", "Plugins", "JsonAsAsset");
+	            })
+	        )
+	    );
 
-        ImportantNotificationPtr = FSlateNotificationManager::Get().AddNotification(Info);
-        ImportantNotificationPtr.Pin()->SetCompletionState(SNotificationItem::CS_Pending);
-    }
+	    ImportantNotificationPtr = FSlateNotificationManager::Get().AddNotification(Info);
+	    ImportantNotificationPtr.Pin()->SetCompletionState(SNotificationItem::CS_Pending);
+	}
 
     // Set up message log for JsonAsAsset
     {
@@ -363,12 +350,15 @@ void FJsonAsAssetModule::AddToolbarExtension(FToolBarBuilder& Builder)
 #endif
 
 TSharedRef<SWidget> FJsonAsAssetModule::CreateToolbarDropdown() {
-	TSharedPtr<IPlugin> Plugin = IPluginManager::Get().FindPlugin("JsonAsAsset");
-	Settings = GetDefault<UJsonAsAssetSettings>();
+	const TSharedPtr<IPlugin> Plugin = IPluginManager::Get().FindPlugin("JsonAsAsset");
+	Settings = GetMutableDefault<UJsonAsAssetSettings>();
 
 	FMenuBuilder MenuBuilder(false, nullptr);
-	MenuBuilder.BeginSection("JsonAsAssetSection", FText::FromString("JSON Tools v" + Plugin->GetDescriptor().VersionName));
-	{
+	
+	MenuBuilder.BeginSection(
+		"JsonAsAssetSection", 
+		FText::Format(LOCTEXT("JsonToolsVersion", "JSON Tools v{0}"), FText::FromString(Plugin->GetDescriptor().VersionName))
+	); {
 		MenuBuilder.AddSubMenu(
 			LOCTEXT("JsonAsAssetAssetTypesMenu", "Asset Types"),
 			LOCTEXT("JsonAsAssetAssetTypesMenuToolTip", "List of supported assets for JsonAsAsset"),
@@ -401,8 +391,8 @@ TSharedRef<SWidget> FJsonAsAssetModule::CreateToolbarDropdown() {
 		);
 
 		MenuBuilder.AddMenuEntry(
-			LOCTEXT("JsonAsAssetDocumentationButton", "Documentation"),
-			LOCTEXT("JsonAsAssetDocumentationButtonTooltip", "Documentation for JsonAsAsset"),
+		LOCTEXT("JsonAsAssetDocumentationButton", "Documentation"),
+		LOCTEXT("JsonAsAssetDocumentationButtonTooltip", "View JsonAsAsset documentation"),
 			FSlateIcon(FAppStyle::GetAppStyleSetName(), "Icons.Documentation"),
 			FUIAction(
 				FExecuteAction::CreateLambda([this]() {
@@ -471,8 +461,8 @@ TSharedRef<SWidget> FJsonAsAssetModule::CreateToolbarDropdown() {
 			// Export Directory Missing
 			if (Settings->ExportDirectory.Path.IsEmpty())
 				MenuBuilder.AddMenuEntry(
-					LOCTEXT("JsonAsAssetActionRequiredButton", "Export Directory Missing"),
-					LOCTEXT("JsonAsAssetActionRequiredButtonTooltip", "Change your exports directory in JsonAsAsset's Plugin Settings"),
+					LOCTEXT("JsonAsAssetActionRequiredButton", "Missing Export Directory"),
+					LOCTEXT("JsonAsAssetActionRequiredButtonTooltip", "Update the export directory in JsonAsAsset's plugin settings."),
 					FSlateIcon(FAppStyle::GetAppStyleSetName(), "Icons.WarningWithColor"),
 					FUIAction(
 						FExecuteAction::CreateLambda([this]() {
@@ -492,8 +482,8 @@ TSharedRef<SWidget> FJsonAsAssetModule::CreateToolbarDropdown() {
 	MenuBuilder.AddSeparator();
 
 	MenuBuilder.AddMenuEntry(
-		LOCTEXT("JsonAsAssetPluginSettingsButton", "Open Plugin Settings"),
-		LOCTEXT("JsonAsAssetPluginSettingsButtonTooltip", "Brings you to the JsonAsAsset Settings"),
+		LOCTEXT("JsonAsAssetSettingsButton", "Open Plugin Settings"),
+		LOCTEXT("JsonAsAssetSettingsButtonTooltip", "Navigate to the JsonAsAsset plugin settings"),
 		FSlateIcon(FAppStyle::GetAppStyleSetName(), "Icons.Settings"),
 		FUIAction(
 			FExecuteAction::CreateLambda([this]() {
@@ -506,7 +496,7 @@ TSharedRef<SWidget> FJsonAsAssetModule::CreateToolbarDropdown() {
 	);
 	MenuBuilder.AddMenuEntry(
 		LOCTEXT("JsonAsAssetMessageLogButton", "Open Message Log"),
-		LOCTEXT("JsonAsAssetMessageLogButtonTooltip", "Message Log for JsonAsAsset"),
+		LOCTEXT("JsonAsAssetMessageLogButtonTooltip", "View logs of JsonAsAsset"),
 		FSlateIcon(FAppStyle::GetAppStyleSetName(), "MessageLog.TabIcon"),
 		FUIAction(
 			FExecuteAction::CreateLambda([this]() {
@@ -518,6 +508,7 @@ TSharedRef<SWidget> FJsonAsAssetModule::CreateToolbarDropdown() {
 	);
 
 	MenuBuilder.AddSeparator();
+	
 	MenuBuilder.AddMenuEntry(
 		LOCTEXT("JsonAsAssetAboutButton", "About JsonAsAsset"),
 		LOCTEXT("JsonAsAssetAboutButtonTooltip", "More information about JsonAsAsset"),
@@ -527,7 +518,7 @@ TSharedRef<SWidget> FJsonAsAssetModule::CreateToolbarDropdown() {
 				TSharedPtr<SWindow> AboutWindow =
 					SNew(SWindow)
 					.Title(LOCTEXT("AboutJsonAsAsset", "About JsonAsAsset"))
-					.ClientSize(FVector2D(720.f, 175.f))
+					.ClientSize(FVector2D(720.f, 170.f))
 					.SupportsMaximize(false).SupportsMinimize(false)
 					.SizingRule(ESizingRule::FixedSize)
 					[

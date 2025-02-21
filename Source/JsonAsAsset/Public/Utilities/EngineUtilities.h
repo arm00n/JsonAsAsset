@@ -361,6 +361,20 @@ inline TSharedPtr<FJsonObject> KeepPropertiesShared(const TSharedPtr<FJsonObject
 	return RawSharedPtrData;
 }
 
+inline void SavePluginConfig(UDeveloperSettings* EditorSettings)
+{
+	EditorSettings->SaveConfig();
+	
+#if ENGINE_MAJOR_VERSION >= 5
+	EditorSettings->TryUpdateDefaultConfigFile();
+#else
+	EditorSettings->UpdateDefaultConfigFile();
+	EditorSettings->ReloadConfig(nullptr, nullptr, UE4::LCPF_PropagateToInstances);
+#endif
+        	
+	EditorSettings->LoadConfig();
+}
+
 // Simple handler for JsonArray
 inline auto ProcessJsonArrayField(const TSharedPtr<FJsonObject>& ObjectField, const FString& ArrayFieldName,
                                   const TFunction<void(const TSharedPtr<FJsonObject>&)>& ProcessObjectFunction) -> void

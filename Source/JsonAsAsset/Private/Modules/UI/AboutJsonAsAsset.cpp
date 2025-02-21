@@ -22,7 +22,20 @@ void SAboutJsonAsAsset::Construct(const FArguments& InArgs) {
 #pragma warning(push)
 #pragma warning(disable : 4428)
 #endif
-	AboutLines.Add(MakeShareable(new FLineDefinition(LOCTEXT("JsonAsAssetDetails", "JsonAsAsset is a plugin used to convert JSON to uassets inside of the content browser. We will not be liable or responsible for activity you may do with this plugin, nor any loss or damage caused by this plugin."), 9, FLinearColor(1.f, 1.f, 1.f), FMargin(0.f, 2.f))));
+	AboutLines.Add(
+		MakeShareable(
+			new FLineDefinition(
+				LOCTEXT("JsonAsAssetDetails", 
+					"JsonAsAsset is a plugin used to convert JSON to uassets inside the content browser. "
+					"We are not liable or responsible for any activity you may perform with this plugin, "
+					"nor for any loss or damage caused by its usage."
+				),
+				9, 
+				FLinearColor::White, 
+				FMargin(0.f, 2.f)
+			)
+		)
+	);
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif

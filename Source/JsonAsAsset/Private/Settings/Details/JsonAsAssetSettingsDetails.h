@@ -12,7 +12,6 @@ class FJsonAsAssetSettingsDetails : public IDetailCustomization
 {
 public:
 	static TSharedRef<IDetailCustomization> MakeInstance();
-	static void SaveConfig(UJsonAsAssetSettings* Settings);
 
 	// Customization
 	virtual void CustomizeDetails(IDetailLayoutBuilder& DetailBuilder) override;
