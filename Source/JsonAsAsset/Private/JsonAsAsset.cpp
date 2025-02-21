@@ -311,7 +311,7 @@ void FJsonAsAssetModule::RegisterMenus() {
 		FUIAction(),
 		FOnGetContent::CreateRaw(this, &FJsonAsAssetModule::CreateToolbarDropdown),
 		LOCTEXT("JsonAsAssetButtonLabel", "JsonAsAsset"),
-		LOCTEXT("JsonAsAssetButtonTooltip", "Toolbar dropdown for JsonAsAsset"),
+		LOCTEXT("JsonAsAssetButtonTooltip", "Open JsonAsAsset toolbar"),
 		FSlateIcon(),
 		true
 	);
