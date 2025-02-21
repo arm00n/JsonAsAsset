@@ -295,33 +295,41 @@ void FJsonAsAssetModule::ShutdownModule() {
 void FJsonAsAssetModule::RegisterMenus() {
 	FToolMenuOwnerScoped OwnerScoped(this);
 
-	// Extend the Level Editor toolbar
-	UToolMenu* ToolbarMenu = UToolMenus::Get()->ExtendMenu("LevelEditor.LevelEditorToolBar.PlayToolBar");
-	FToolMenuSection& Section = ToolbarMenu->FindOrAddSection("JsonAsAsset");
+	/* Extend the Level Editor toolbar */
+	UToolMenu* Menu = UToolMenus::Get()->ExtendMenu("LevelEditor.LevelEditorToolBar.PlayToolBar");
+	FToolMenuSection& Section = Menu->FindOrAddSection("JsonAsAsset");
 
-	// Retrieve plugin info
+	TSharedPtr<FUICommandList> Actions = MakeShared<FUICommandList>();
+
 	TSharedPtr<IPlugin> Plugin = IPluginManager::Get().FindPlugin("JsonAsAsset");
 
-	// Add combo button to toolbar
-	FToolMenuEntry& Entry = Section.AddEntry(FToolMenuEntry::InitComboButton(
-		"JsonAsAsset",
-		FUIAction(
-			FExecuteAction(),
-			FCanExecuteAction(),
-			FGetActionCheckState()
-		),
-		FOnGetContent::CreateRaw(this, &FJsonAsAssetModule::CreateToolbarDropdown),
+	/* JsonAsAsset Button */
+	FToolMenuEntry PluginActionButtonEntry = FToolMenuEntry::InitToolBarButton(
+		FName("JsonAsAsset"),
+		FToolUIActionChoice(FExecuteAction::CreateRaw(this, &FJsonAsAssetModule::PluginButtonClicked)),
 		FText::FromString(Plugin->GetDescriptor().VersionName),
-		LOCTEXT("JsonAsAsset", "List of actions for JsonAsAsset"),
+		LOCTEXT("JsonAsAsset_Tooltip", "Execute JsonAsAsset"),
 		FSlateIcon(FJsonAsAssetStyle::Get().GetStyleSetName(), FName("JsonAsAsset.Logo")),
-		false,
-		"JsonAsAsset"
-	));
+		EUserInterfaceActionType::Button
+	);
+	
+	PluginActionButtonEntry.StyleNameOverride = "CalloutToolbar";
+	PluginActionButtonEntry.SetCommandList(PluginCommands);
 
-#if ENGINE_MAJOR_VERSION >= 5
-	Entry.StyleNameOverride = "CalloutToolbar";
-#endif
-	Entry.SetCommandList(PluginCommands);
+	Section.AddEntry(PluginActionButtonEntry);
+
+	/* Settings dropdown */
+	FToolMenuEntry PluginMenuEntry = FToolMenuEntry::InitComboButton(
+		"JsonAsAssetMenu",
+		FUIAction(),
+		FOnGetContent::CreateRaw(this, &FJsonAsAssetModule::CreateToolbarDropdown),
+		LOCTEXT("JsonAsAssetButtonLabel", "JsonAsAsset"),
+		LOCTEXT("JsonAsAssetButtonTooltip", "Toolbar dropdown for JsonAsAsset"),
+		FSlateIcon(),
+		true
+	);
+	
+	Section.AddEntry(PluginMenuEntry);
 }
 
 #if ENGINE_MAJOR_VERSION == 4
@@ -405,6 +413,7 @@ TSharedRef<SWidget> FJsonAsAssetModule::CreateToolbarDropdown() {
 			NAME_None
 		);
 
+#if ENGINE_MAJOR_VERSION == 4
 		MenuBuilder.AddMenuEntry(
 			LOCTEXT("JsonAsAssetActionButton", "JsonAsAsset"),
 			LOCTEXT("JsonAsAssetActionButtonTooltip", "Execute JsonAsAsset"),
@@ -419,6 +428,7 @@ TSharedRef<SWidget> FJsonAsAssetModule::CreateToolbarDropdown() {
 			),
 			NAME_None
 		);
+#endif
 
 		if (Settings->AssetSettings.bEnableAssetTools) {
 			MenuBuilder.AddSubMenu(
@@ -440,20 +450,6 @@ TSharedRef<SWidget> FJsonAsAssetModule::CreateToolbarDropdown() {
 							),
 							NAME_None
 						);
-
-						/*InnerMenuBuilder.AddMenuEntry(
-							LOCTEXT("JsonAsAssetAssetToolsClothingAssetExButton", "Import Clothing Assets [Skeletal Mesh]"),
-							LOCTEXT("JsonAsAssetAssetToolsClothingAssetButtonTooltip", "Imports clothing assets from JSON into a selected skeletal mesh in the browser."),
-							FSlateIcon(FEditorStyle::GetStyleSetName(), "DataTableEditor.Paste.Small"),
-
-							FUIAction(
-								FExecuteAction::CreateRaw(this, &FJsonAsAssetModule::ImportClothingAssets),
-								FCanExecuteAction::CreateLambda([this]() {
-									return true;
-								})
-							),
-							NAME_None
-						);*/
 					}
 					InnerMenuBuilder.EndSection();
 				}),
