@@ -18,6 +18,10 @@
 #include "LevelEditor.h"
 #endif
 
+#if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 4
+#include "PhysicsEngine/BodySetup.h"
+#endif
+
 #include "Windows/WindowsHWrapper.h"
 
 #include "Interfaces/IPluginManager.h"

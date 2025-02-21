@@ -4,6 +4,10 @@
 #include "PhysicsEngine/PhysicsConstraintTemplate.h"
 #include "Utilities/EngineUtilities.h"
 
+#if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 4
+#include <PhysicsEngine/PhysicsAsset.h>
+#endif
+
 USkeletalBodySetup* CreateNewBody(UPhysicsAsset* PhysAsset, FName ExportName, FName BoneName)
 {
 	USkeletalBodySetup* NewBodySetup = NewObject<USkeletalBodySetup>(PhysAsset, ExportName, RF_Transactional);
