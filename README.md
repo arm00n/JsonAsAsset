@@ -215,10 +215,10 @@ Thanks go to these wonderful people:
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/Tectors"><img src="https://github.com/Tectors.png" width="100px;" alt="Tector"/><br /><sub><b>Tector</b></sub></a><br/></a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/GMatrixGames"><img src="https://github.com/GMatrixGames.png" width="100px;" alt="GMatrixGames"/><br /><sub><b>GMatrixGames</b></sub></a><br/></a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/zyloxmods"><img src="https://github.com/zyloxmods.png" width="100px;" alt="Zylox"/><br /><sub><b>Zylox</b></sub></a><br/></a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Tevtongermany"><img src="https://github.com/Tevtongermany.png" width="100px;" alt="Tevtongermany"/><br /><sub><b>Tevtongermany</b></sub></a><br/>JsonAsAsset Logo</a></td>
   </tbody>
 </table>
 
 - Thanks to the people who contributed to [UEAssetToolkit](https://github.com/Buckminsterfullerene02/UEAssetToolkit-Fixes)!
+- Logo uses a font by [Brylark](https://ko-fi.com/brylark), support him at his ko-fi!
 
 #### [Would you like to contribute?](https://github.com/JsonAsAsset/JsonAsAsset/blob/main/Source/README.md#key-information-for-contributors-)
