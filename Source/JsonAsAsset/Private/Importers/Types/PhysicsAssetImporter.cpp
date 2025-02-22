@@ -8,6 +8,10 @@
 #include <PhysicsEngine/PhysicsAsset.h>
 #endif
 
+#if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION > 4
+#include "PhysicsEngine/SkeletalBodySetup.h"
+#endif
+
 USkeletalBodySetup* CreateNewBody(UPhysicsAsset* PhysAsset, FName ExportName, FName BoneName)
 {
 	USkeletalBodySetup* NewBodySetup = NewObject<USkeletalBodySetup>(PhysAsset, ExportName, RF_Transactional);
