@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "AssetUtilities.h"
 #include "Framework/Notifications/NotificationManager.h"
 #include "Widgets/Notifications/SNotificationList.h"
 #include "AssetRegistry/AssetRegistryModule.h"
@@ -12,6 +11,7 @@
 #include "DesktopPlatformModule.h"
 #include "ContentBrowserModule.h"
 #include "IDesktopPlatform.h"
+#include "AssetUtilities.h"
 #include "TlHelp32.h"
 #include "Json.h"
 
