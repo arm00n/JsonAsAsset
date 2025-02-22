@@ -74,14 +74,14 @@ T* GetSelectedAsset() {
 	return CastedAsset;
 }
 
-inline TSharedPtr<FJsonObject> FindExport(TSharedPtr<FJsonObject> Export, const TArray<TSharedPtr<FJsonValue>> File)
+inline TSharedPtr<FJsonObject> FindExport(const TSharedPtr<FJsonObject>& Export, const TArray<TSharedPtr<FJsonValue>>& File)
 {
 	FString string_int; Export->GetStringField(TEXT("ObjectPath")).Split(".", nullptr, &string_int);
 	
 	return File[FCString::Atoi(*string_int)]->AsObject();
 }
 
-inline void SpawnPrompt(FString Title, FString Text) {
+inline void SpawnPrompt(const FString& Title, const FString& Text) {
 	FText DialogTitle = FText::FromString(Title);
 	FText DialogMessage = FText::FromString(Text);
 
@@ -135,7 +135,7 @@ inline TArray<FAssetData> GetAssetsInSelectedFolder()
 	return AssetDataList;
 }
 
-inline TArray<TSharedPtr<FJsonValue>> RequestExports(const FString Path)
+inline TArray<TSharedPtr<FJsonValue>> RequestExports(const FString& Path)
 {
 	TArray<TSharedPtr<FJsonValue>> Exports = {};
 
@@ -152,7 +152,7 @@ inline TArray<TSharedPtr<FJsonValue>> RequestExports(const FString Path)
 	return Exports;
 }
 
-inline TSharedPtr<FJsonObject> RequestExport(FString FetchPath = "/api/v1/export?raw=true&path=", const FString Path = "")
+inline TSharedPtr<FJsonObject> RequestExport(const FString& FetchPath = "/api/v1/export?raw=true&path=", const FString& Path = "")
 {
 	static TMap<FString, TSharedPtr<FJsonObject>> ExportCache;
 
@@ -201,7 +201,7 @@ inline bool IsProcessRunning(const FString& ProcessName) {
 	return bIsRunning;
 }
 
-inline TSharedPtr<FJsonObject> GetExport(FJsonObject* PackageIndex, TArray<TSharedPtr<FJsonValue>> AllJsonObjects) {
+inline TSharedPtr<FJsonObject> GetExport(const FJsonObject* PackageIndex, TArray<TSharedPtr<FJsonValue>> AllJsonObjects) {
 	FString ObjectName = PackageIndex->GetStringField(TEXT("ObjectName")); // Class'Asset:ExportName'
 	FString ObjectPath = PackageIndex->GetStringField(TEXT("ObjectPath")); // Path/Asset.Index
 	FString Outer;
@@ -287,7 +287,7 @@ inline bool DeserializeJSON(const FString& FilePath, TArray<TSharedPtr<FJsonValu
 	return false;
 }
 
-inline TArray<FString> OpenFileDialog(FString Title, FString Type) {
+inline TArray<FString> OpenFileDialog(const FString& Title, const FString& Type) {
 	TArray<FString> ReturnValue;
 
 	// Window Handler for Windows
@@ -310,7 +310,7 @@ inline TArray<FString> OpenFileDialog(FString Title, FString Type) {
 	return ReturnValue;
 }
 
-inline TArray<FString> OpenFolderDialog(FString Title) {
+inline TArray<FString> OpenFolderDialog(const FString& Title) {
 	TArray<FString> ReturnValue;
 
 	// Window Handler for Windows

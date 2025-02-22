@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Styling/SlateStyle.h"
 
-// Style for JsonAsAsset
+/* Style of JsonAsAsset */
 class FJsonAsAssetStyle {
 public:
 	static void Initialize();

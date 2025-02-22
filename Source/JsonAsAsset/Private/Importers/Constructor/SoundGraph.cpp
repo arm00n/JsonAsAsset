@@ -191,16 +191,18 @@ void ISoundGraph::ConnectEdGraphNode(UEdGraphNode* NodeToConnect, UEdGraphNode* 
 	NodeToConnect->Pins[0]->MakeLinkTo(NodeToConnectTo->Pins[Pin]);
 }
 
-void ISoundGraph::ConnectSoundNode(USoundNode* NodeToConnect, USoundNode* NodeToConnectTo, int Pin = 1) {
+void ISoundGraph::ConnectSoundNode(const USoundNode* NodeToConnect, const USoundNode* NodeToConnectTo, int Pin = 1) {
 	if (NodeToConnectTo->GetGraphNode()->Pins.IsValidIndex(Pin))
+	{
 		NodeToConnect->GetGraphNode()->Pins[0]->MakeLinkTo(NodeToConnectTo->GetGraphNode()->Pins[Pin]);
+	}
 }
 
-void ISoundGraph::ImportSoundWave(FString URL, FString SavePath, FString AssetPtr, USoundNodeWavePlayer* Node)
+void ISoundGraph::ImportSoundWave(const FString& URL, FString SavePath, FString AssetPtr, USoundNodeWavePlayer* Node) const
 {
 	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> HttpRequest = FHttpModule::Get().CreateRequest();
 	
-	HttpRequest->OnProcessRequestComplete().BindLambda([this, SavePath, AssetPtr, Node](FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+	HttpRequest->OnProcessRequestComplete().BindLambda([this, SavePath, AssetPtr, Node](const FHttpRequestPtr& Request, const FHttpResponsePtr& Response, const bool bWasSuccessful)
 	{
 		OnDownloadSoundWave(Request, Response, bWasSuccessful, SavePath, AssetPtr, Node);
 	});
@@ -210,7 +212,7 @@ void ISoundGraph::ImportSoundWave(FString URL, FString SavePath, FString AssetPt
 	HttpRequest->ProcessRequest();
 }
 
-void ISoundGraph::OnDownloadSoundWave(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful, FString SavePath, FString AssetPtr, USoundNodeWavePlayer* Node)
+void ISoundGraph::OnDownloadSoundWave(FHttpRequestPtr Request, const FHttpResponsePtr& Response, bool bWasSuccessful, FString SavePath, FString AssetPtr, USoundNodeWavePlayer* Node)
 {
 	if (bWasSuccessful && Response.IsValid()) {
 		FFileHelper::SaveArrayToFile(Response->GetContent(), *SavePath);

@@ -77,9 +77,9 @@ public:
 
     /* LoadObject functions ---------------------------------------------------------------------- */
 public:
-    void ImportReference(const FString& File);
-    bool ImportAssetReference(const FString& GamePath);
-    bool ImportExports(TArray<TSharedPtr<FJsonValue>> Exports, FString File, bool bHideNotifications = false);
+    void ImportReference(const FString& File) const;
+    bool ImportAssetReference(const FString& GamePath) const;
+    bool ImportExports(TArray<TSharedPtr<FJsonValue>> Exports, FString File, bool bHideNotifications = false) const;
 
 public:
     TArray<TSharedPtr<FJsonValue>> GetObjectsWithTypeStartingWith(const FString& StartsWithStr);
@@ -88,13 +88,13 @@ public:
     
 protected:
     bool HandleAssetCreation(UObject* Asset) const;
-    void SavePackage();
+    void SavePackage() const;
 
     TMap<FName, FExportData> CreateExports();
 
     // Handle edit changes, and add it to the content browser
     // Shortcut to calling SavePackage and HandleAssetCreation
-    bool OnAssetCreation(UObject* Asset);
+    bool OnAssetCreation(UObject* Asset) const;
 
     static FName GetExportNameOfSubobject(const FString& PackageIndex);
     TArray<TSharedPtr<FJsonValue>> FilterExportsByOuter(const FString& Outer);

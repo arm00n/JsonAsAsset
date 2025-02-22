@@ -63,8 +63,8 @@
 IImporter::IImporter(const FString& FileName, const FString& FilePath, 
 		  const TSharedPtr<FJsonObject>& JsonObject, UPackage* Package, 
 		  UPackage* OutermostPkg, const TArray<TSharedPtr<FJsonValue>>& AllJsonObjects)
-	: FileName(FileName), FilePath(FilePath), JsonObject(JsonObject),
-	  Package(Package), OutermostPkg(OutermostPkg), ParentObject(nullptr), AllJsonObjects(AllJsonObjects)
+	: AllJsonObjects(AllJsonObjects), JsonObject(JsonObject), FileName(FileName),
+	  FilePath(FilePath), Package(Package), OutermostPkg(OutermostPkg), ParentObject(nullptr)
 {
 	PropertySerializer = NewObject<UPropertySerializer>();
 	GObjectSerializer = NewObject<UObjectSerializer>();
@@ -140,7 +140,8 @@ TArray<FString> ImporterAcceptedTypes = {
 
 // Handles the JSON of a file.
 // I want to replace Handle with Import in most of these functions
-bool IImporter::ImportExports(TArray<TSharedPtr<FJsonValue>> Exports, FString File, const bool bHideNotifications) {
+bool IImporter::ImportExports(TArray<TSharedPtr<FJsonValue>> Exports, FString File, const bool bHideNotifications) const
+{
 	TArray<FString> Types;
 	for (const TSharedPtr<FJsonValue>& Obj : Exports) Types.Add(Obj->AsObject()->GetStringField(TEXT("Type")));
 
@@ -457,7 +458,8 @@ TArray<TObjectPtr<T>> IImporter::LoadObject(const TArray<TSharedPtr<FJsonValue>>
 }
 
 // Handles the import of an asset
-bool IImporter::ImportAssetReference(const FString& GamePath) {
+bool IImporter::ImportAssetReference(const FString& GamePath) const
+{
 	const UJsonAsAssetSettings* Settings = GetDefault<UJsonAsAssetSettings>();
 
 	FString UnSanitizedCodeName;
@@ -477,7 +479,8 @@ bool IImporter::ImportAssetReference(const FString& GamePath) {
 }
 
 // Sends off to the ImportExports function once read
-void IImporter::ImportReference(const FString& File) {
+void IImporter::ImportReference(const FString& File) const
+{
 	/* ----  Parse JSON into UE JSON Reader ---- */
 	FString ContentBefore;
 	FFileHelper::LoadFileToString(ContentBefore, *File);
@@ -518,7 +521,8 @@ TMap<FName, FExportData> IImporter::CreateExports() {
 }
 
 // Called before HandleAssetCreation, simply saves the asset if user opted
-void IImporter::SavePackage() {
+void IImporter::SavePackage() const
+{
 	const UJsonAsAssetSettings* Settings = GetDefault<UJsonAsAssetSettings>();
 
 	FSavePackageArgs SaveArgs; {
@@ -546,7 +550,8 @@ void IImporter::SavePackage() {
 	}
 }
 
-bool IImporter::OnAssetCreation(UObject* Asset) {
+bool IImporter::OnAssetCreation(UObject* Asset) const
+{
 	SavePackage();
 	
 	return HandleAssetCreation(Asset);

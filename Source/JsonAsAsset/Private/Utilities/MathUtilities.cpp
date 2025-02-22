@@ -15,6 +15,7 @@ FVector3f FMathUtilities::ObjectToVector3f(const FJsonObject* Object) {
 FVector4f FMathUtilities::ObjectToVector4f(const FJsonObject* Object) {
 	return FVector4f(Object->GetNumberField(TEXT("X")), Object->GetNumberField(TEXT("Y")), Object->GetNumberField(TEXT("Z")));
 }
+
 #else
 FVector FMathUtilities::ObjectToVector3f(const FJsonObject* Object) {
 	return FVector(Object->GetNumberField(TEXT("X")), Object->GetNumberField(TEXT("Y")), Object->GetNumberField(TEXT("Z")));

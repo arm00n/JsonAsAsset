@@ -64,7 +64,7 @@ TMap<FName, UMaterialExpression*> IMaterialGraph::ConstructExpressions(UObject* 
 
 	for (FName Name : ExpressionNames) {
 		FName Type;
-		FJsonObject* SharedRef = NULL;
+		FJsonObject* SharedRef = nullptr;
 		bool bFound = false;
 
 		for (TTuple<FName, FExportData>& Key : Exports) {
@@ -90,7 +90,7 @@ TMap<FName, UMaterialExpression*> IMaterialGraph::ConstructExpressions(UObject* 
 	return CreatedExpressionMap;
 }
 
-FExpressionInput IMaterialGraph::CreateExpressionInput(TSharedPtr<FJsonObject> JsonProperties, TMap<FName, UMaterialExpression*>& CreatedExpressionMap, FString PropertyName) {
+FExpressionInput IMaterialGraph::CreateExpressionInput(const TSharedPtr<FJsonObject>& JsonProperties, TMap<FName, UMaterialExpression*>& CreatedExpressionMap, const FString& PropertyName) {
 	// Find Expression Input by PropertyName
 	const TSharedPtr<FJsonObject>* Ptr;
 	
@@ -109,7 +109,7 @@ FExpressionInput IMaterialGraph::CreateExpressionInput(TSharedPtr<FJsonObject> J
 	return FExpressionInput();
 }
 
-FMaterialAttributesInput IMaterialGraph::CreateMaterialAttributesInput(TSharedPtr<FJsonObject> JsonProperties, TMap<FName, UMaterialExpression*>& CreatedExpressionMap, FString PropertyName) {
+FMaterialAttributesInput IMaterialGraph::CreateMaterialAttributesInput(const TSharedPtr<FJsonObject>& JsonProperties, TMap<FName, UMaterialExpression*>& CreatedExpressionMap, const FString& PropertyName) {
 	FExpressionInput Input = CreateExpressionInput(JsonProperties, CreatedExpressionMap, PropertyName);
 
 	return *reinterpret_cast<FMaterialAttributesInput*>(&Input);
@@ -458,7 +458,7 @@ FExpressionOutput IMaterialGraph::PopulateExpressionOutput(const FJsonObject* Js
 	return Output;
 }
 
-FName IMaterialGraph::GetExpressionName(const FJsonObject* JsonProperties, FString OverrideParameterName) {
+FName IMaterialGraph::GetExpressionName(const FJsonObject* JsonProperties, const FString& OverrideParameterName) {
 	const TSharedPtr<FJsonValue> ExpressionField = JsonProperties->TryGetField(OverrideParameterName);
 
 	if (ExpressionField == nullptr || ExpressionField->IsNull()) {

@@ -18,9 +18,7 @@
 #include "LevelEditor.h"
 #endif
 
-#if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 4
 #include "PhysicsEngine/BodySetup.h"
-#endif
 
 #include "Windows/WindowsHWrapper.h"
 
@@ -35,7 +33,6 @@
 #include <TlHelp32.h>
 
 // Settings
-#include "EditorStyleSet.h"
 #include "Logging/MessageLog.h"
 #include "./Settings/Details/JsonAsAssetSettingsDetails.h"
 
@@ -311,7 +308,7 @@ void FJsonAsAssetModule::RegisterMenus() {
 		FUIAction(),
 		FOnGetContent::CreateRaw(this, &FJsonAsAssetModule::CreateToolbarDropdown),
 		LOCTEXT("JsonAsAssetButtonLabel", "JsonAsAsset"),
-		LOCTEXT("JsonAsAssetButtonTooltip", "Open JsonAsAsset toolbar"),
+		LOCTEXT("JsonAsAssetButtonTooltip", "Open JsonAsAsset Tool-bar"),
 		FSlateIcon(),
 		true
 	);
@@ -430,7 +427,7 @@ TSharedRef<SWidget> FJsonAsAssetModule::CreateToolbarDropdown() {
 						InnerMenuBuilder.AddMenuEntry(
 							LOCTEXT("JsonAsAssetAssetToolsCollisionExButton", "Import Folder Collision Convex"),
 							LOCTEXT("JsonAsAssetAssetToolsButtonTooltip", "Imports convex collision data from a folder of JSON files and applies it to the corresponding assets."),
-							FSlateIcon(FEditorStyle::GetStyleSetName(), "LevelEditor.BspMode"),
+							FSlateIcon(FAppStyle::GetAppStyleSetName(), "LevelEditor.BspMode"),
 
 							FUIAction(
 								FExecuteAction::CreateRaw(this, &FJsonAsAssetModule::ImportConvexCollision),
@@ -539,7 +536,8 @@ TSharedRef<SWidget> FJsonAsAssetModule::CreateToolbarDropdown() {
 	return MenuBuilder.MakeWidget();
 }
 
-void FJsonAsAssetModule::CreateLocalFetchDropdown(FMenuBuilder MenuBuilder) {
+void FJsonAsAssetModule::CreateLocalFetchDropdown(FMenuBuilder MenuBuilder) const
+{
 	// Local Fetch must be enabled, and if there is an action required, don't create Local Fetch's dropdown
 	if (!Settings->bEnableLocalFetch || bActionRequired) {
 		return;
@@ -729,7 +727,7 @@ void FJsonAsAssetModule::CreateLocalFetchDropdown(FMenuBuilder MenuBuilder) {
 	MenuBuilder.EndSection();
 }
 
-void FJsonAsAssetModule::ImportConvexCollision()
+void FJsonAsAssetModule::ImportConvexCollision() const
 {
 	TArray<FAssetData> AssetDataList = GetAssetsInSelectedFolder();
 	TArray<FString> OutFolderNames = OpenFolderDialog("Select a folder for JSON files");
@@ -797,7 +795,7 @@ void FJsonAsAssetModule::ImportConvexCollision()
 												FText::FromString("Imported Convex Collision: " + StaticMeshName),
 												FText::FromString(StaticMeshName),
 												3.5f,
-												FEditorStyle::GetBrush("PhysicsAssetEditor.EnableCollision.Small"),
+												FAppStyle::GetBrush("PhysicsAssetEditor.EnableCollision.Small"),
 												SNotificationItem::CS_Success,
 												false,
 												310.0f

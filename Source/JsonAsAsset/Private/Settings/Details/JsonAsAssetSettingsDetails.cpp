@@ -1,7 +1,8 @@
 // Copyright JAA Contributors 2024-2025
 
-#include "JsonAsAssetSettingsDetails.h"
+#include "Settings/Details/JsonAsAssetSettingsDetails.h"
 #include "Settings/JsonAsAssetSettings.h"
+
 #include "DetailLayoutBuilder.h"
 #include "DetailWidgetRow.h"
 #include "Widgets/Input/SButton.h"
@@ -59,7 +60,7 @@ void FJsonAsAssetSettingsDetails::EditConfiguration(TWeakObjectPtr<UJsonAsAssetS
         // Now we define the value/content of the row
         SNew(SButton)
         .Text(LOCTEXT("UseFModelAppSettings_Text", "FModel Settings"))
-        .ToolTipText(LOCTEXT("UseFModelAppSettings_Tooltip", "Takes AppData/Roaming/FModel/AppSettings.json settings and sets them here"))
+    	.ToolTipText(LOCTEXT("UseFModelAppSettings_Tooltip", "Imports settings from AppData/Roaming/FModel/AppSettings.json"))
         .OnClicked_Lambda([this, Settings]()
         {
             UJsonAsAssetSettings* PluginSettings = GetMutableDefault<UJsonAsAssetSettings>();
@@ -126,7 +127,7 @@ void FJsonAsAssetSettingsDetails::EditConfiguration(TWeakObjectPtr<UJsonAsAssetS
 void FJsonAsAssetSettingsDetails::EditEncryption(TWeakObjectPtr<UJsonAsAssetSettings> Settings,
 	IDetailLayoutBuilder& DetailBuilder)
 {
-		IDetailCategoryBuilder& EncryptionCategory = DetailBuilder.EditCategory("Local Fetch - Encryption", FText::GetEmpty(), ECategoryPriority::Important);
+	IDetailCategoryBuilder& EncryptionCategory = DetailBuilder.EditCategory("Local Fetch - Encryption", FText::GetEmpty(), ECategoryPriority::Important);
 	DetailBuilder.EditCategory("Local Fetch - Director", FText::GetEmpty(), ECategoryPriority::Important);
 
 	EncryptionCategory.AddCustomRow(LOCTEXT("EncryptionKeyFetcher", "EncryptionKeyFetcher"))
@@ -140,7 +141,7 @@ void FJsonAsAssetSettingsDetails::EditEncryption(TWeakObjectPtr<UJsonAsAssetSett
 		.ValueContent()[
 		SNew(SButton)
 		.Text(LOCTEXT("FetchEncryptionKey", "Fortnite Central API"))
-		.ToolTipText(LOCTEXT("FetchEncryptionKey_Tooltip", "Fetches encryption keys from the Fortnite Central API"))
+		.ToolTipText(LOCTEXT("FetchEncryptionKey_Tooltip", "Retrieves encryption keys from the Fortnite Central API"))
 		.OnClicked_Lambda([this, Settings]
 		{
 			UJsonAsAssetSettings* PluginSettings = GetMutableDefault<UJsonAsAssetSettings>();

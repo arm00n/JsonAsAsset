@@ -8,55 +8,53 @@
 #include "Modules/LocalFetchModule.h"
 #include "JsonAsAssetSettings.generated.h"
 
-// Settings for materials
+/* Settings for materials */
 USTRUCT()
 struct FJMaterialImportSettings
 {
 	GENERATED_BODY()
 public:
-	// Constructor to initialize default values
+	/* Constructor to initialize default values */
 	FJMaterialImportSettings()
 		: bSkipResultNodeConnection(false)
 	{}
 
 	/**
-	* When importing/downloading the asset type Material, a error may occur
-	* | Material expression called Compiler->TextureParameter() without implementing UMaterialExpression::GetReferencedTexture properly
-	*
-	* To counter that error, we skip connecting the inputs to the main result
-	* node in the material. If you do use this, import a material, save everything,
-	* restart, and re-import the material without any problems with this turned off/on.
-	*
-	* (or you could just connect them yourself)
-	*/
+	 * Prevents a known error during Material asset import/download:
+	 * "Material expression called Compiler->TextureParameter() without implementing UMaterialExpression::GetReferencedTexture properly."
+	 *
+	 * To avoid this issue, this option skips connecting the inputs to the material's primary result node, potentially fixing the error.
+	 *
+	 * Usage:
+	 *  - If enabled, import the material, save your project, restart the editor, and then re-import the material.
+	 *  - Alternatively, manually connect the inputs to the main result node.
+	 */
 	UPROPERTY(EditAnywhere, Config, Category = "Material Import Settings")
 	bool bSkipResultNodeConnection;
 };
 
-// Settings for textures
+/* Settings for textures */
 USTRUCT()
 struct FJTextureImportSettings
 {
 	GENERATED_BODY()
 public:
-	// Constructor to initialize default values
+	/* Constructor to initialize default values */
 	FJTextureImportSettings()
 		: bDownloadExistingTextures(false)
 	{}
 
 	/**
-	* Added to re-download textures if already present in the Unreal Engine project.
-	* 
-	* Use case: 
-	* If you want to re-import textures if they were changed in a newer version of your Local Fetch build.
-	* 
-	* NOTE: Not needed for normal usage, most normal operations never use this option.
-	*/
+	 * Enables re-downloading of textures even if they already exist in the Unreal Engine project.
+	 *
+	 * Use Case:
+	 * This option is useful when you need to re-import textures that have been updated in a newer version of your Local Fetch build.
+	 */
 	UPROPERTY(EditAnywhere, Config, Category = "Local Fetch - Encryption", meta=(EditCondition="bEnableLocalFetch"), AdvancedDisplay)
 	bool bDownloadExistingTextures;
 };
 
-// Settings for sounds
+/* Settings for sounds */
 USTRUCT()
 struct FJSoundImportSettings
 {
@@ -71,7 +69,7 @@ struct FAssetSettings
 {
 	GENERATED_BODY()
 public:
-	// Constructor to initialize default values
+	/* Constructor to initialize default values */
 	FAssetSettings()
 		: bSavePackagesOnImport(false), bEnableAssetTools(false)
 	{
@@ -96,7 +94,7 @@ public:
 	bool bEnableAssetTools;
 
 	/**
-	* Not needed for normal operations, needed for older versions of game builds.
+	* This property is generally not required for normal operations, but is necessary for compatibility with older versions of game builds.
 	*/
 	UPROPERTY(EditAnywhere, Config, Category = "Asset Settings")
 	FString GameName;
@@ -116,12 +114,9 @@ public:
 #endif
 
 	/**
-	 * Directory path from exporting assets.
-	 * (Output/Exports)
-	 *
-	 * Use the file selector to choose the file location.
-	 * Avoid manually pasting the path.
-	*/
+	 * Specifies the directory path for exported assets.
+	 * (e.g., Output/Exports)
+	 */
 	UPROPERTY(EditAnywhere, Config, Category = "Configuration")
 	FDirectoryPath ExportDirectory;
 	
@@ -129,20 +124,16 @@ public:
 	FAssetSettings AssetSettings;
 
 	/**
-	 * Fetches assets from a local hosted API and imports them directly into your project.
-	 * 
-	 * Ensure all settings are correctly configured before starting Local Fetch. 
-	 * Please refer to the README.md file.
+	 * Retrieves assets from a locally hosted API and imports them directly into your project.
+	 *
+	 * Before initiating the Local Fetch, ensure that all configuration settings are properly set.
+	 * For further instructions, please refer to the README.md file found on GitHub.
 	 */
 	UPROPERTY(EditAnywhere, Config, Category = "Local Fetch")
 	bool bEnableLocalFetch;
 
 	/**
-	 * Location of the Paks folder containing all the assets.
-	 * (Content/Paks)
-	 * 
-	 * Use the file selector to choose the file location.
-	 * Avoid manually pasting the path.
+	 * Specifies the directory path to the Paks folder
 	 */
 	UPROPERTY(EditAnywhere, Config, Category = "Local Fetch - Configuration", meta=(EditCondition="bEnableLocalFetch"))
 	FDirectoryPath ArchiveDirectory;
@@ -150,39 +141,36 @@ public:
 	UPROPERTY(EditAnywhere, Config, Category = "Local Fetch - Configuration", meta=(EditCondition="bEnableLocalFetch"))
 	TEnumAsByte<ECUE4ParseVersion> UnrealVersion;
 
-	UFUNCTION(CallInEditor)
-	static TArray<FString> GetUnrealVersions();
-
-	/*
-	 * Path to the mappings file.
-	 *
-	 * Use the file selector to choose the file location.
-	 * Avoid manually pasting the path.
+	/**
+	 * Specifies the file path to the mappings file.
 	 */
 	UPROPERTY(EditAnywhere, Config, Category = "Local Fetch - Configuration", meta=(EditCondition="bEnableLocalFetch", FilePathFilter="usmap", RelativeToGameDir))
 	FFilePath MappingFilePath;
 
 	/**
-	* Main archive key for encrypted game files.
-	*
-	* Defaults ---------------------------------------------------------------------
-	* AES Key: 0x00000000000000000000000000000000000000000000000000000000000
-	* 
-	* NOTE: This is optional for MOST UE5 games, override this setting if your build is encrypted
-	*/
+	 * Specifies the main archive key used for decrypting encrypted game files.
+	 *
+	 * Default value:
+	 *   AES Key: 0x00000000000000000000000000000000000000000000000000000000000
+	 *
+	 * Note: This key is optional for most Unreal Engine games. Override it only if your build uses encryption.
+	 */
 	UPROPERTY(EditAnywhere, Config, Category = "Local Fetch - Encryption", meta=(EditCondition="bEnableLocalFetch", DisplayName="Archive Key"))
 	FString ArchiveKey = "0x00000000000000000000000000000000000000000000000000000000000";
 
 	/**
-	* Additional Archive keys for encrypted game files.
-	*
-	* NOTE: This is optional for MOST UE5 games, override this setting if your build is encrypted
-	*/
+	 * Specifies additional archive keys used for decrypting encrypted game files.
+	 *
+	 * Note: These keys are optional for most Unreal Engine games. Override them only if your build uses encryption.
+	 */
 	UPROPERTY(EditAnywhere, Config, Category = "Local Fetch - Encryption", meta=(EditCondition="bEnableLocalFetch", DisplayName="Dynamic Keys"))
 	TArray<FAesKey> DynamicKeys;
-
-	// "http://localhost:1500" is default
-	// You really should know what your doing, normally this should never be changed.
+	/**
+	 * Local Fetch URL
+	 *
+	 * Default: "http://localhost:1500"
+	 * Note: This setting is intended for advanced users. It is recommended to leave it unchanged unless you are certain of your requirements.
+	 */
 	UPROPERTY(EditAnywhere, Config, Category = "Local Fetch", meta=(EditCondition="bEnableLocalFetch", DisplayName = "Local Fetch URL"), AdvancedDisplay)
 	FString LocalFetchUrl = "http://localhost:1500";
 };

@@ -367,7 +367,7 @@ void FAssetUtilities::CreatePlugin(FString PluginName)
 #undef LOCTEXT_NAMESPACE
 }
 
-const TSharedPtr<FJsonObject> FAssetUtilities::API_RequestExports(const FString& Path, FString FetchPath)
+TSharedPtr<FJsonObject> FAssetUtilities::API_RequestExports(const FString& Path, const FString& FetchPath)
 {
 	FHttpModule* HttpModule = &FHttpModule::Get();
 

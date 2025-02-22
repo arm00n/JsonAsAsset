@@ -2,7 +2,7 @@
 
 #pragma once
 
-// Structures, Enumerations, used for Local Fetch
+/* Structures, Enumerations, used for Local Fetch */
 #include "LocalFetchModule.generated.h"
 
 /**
@@ -12,6 +12,7 @@
 extern TArray<FString> LocalFetchAcceptedTypes;
 
 // Used for settings and in Local Fetch
+// I wanted to rename "Value" to "Key", because it makes more sense, but it'll break references
 USTRUCT()
 struct FAesKey
 {
@@ -26,7 +27,6 @@ public:
 		Guid = NewGUID;
 	}
 
-	// I wanted to rename "Value" to "Key", because it makes more sense, but it'll break references
 	UPROPERTY(EditAnywhere, Config, Category = "Key", meta = (DisplayName = "Key"))
 	FString Value = "0x00000000000000000000000000000000000000000000000000000000000";
 
@@ -34,8 +34,10 @@ public:
 	FString Guid = "00000000000000000000000000000000";
 };
 
-// Matching CUE4Parse's Unreal Versioning Enum
-// Found at: https://github.com/FabianFG/CUE4Parse/blob/master/CUE4Parse/UE4/Versions/EGame.cs
+/*
+ * Matching CUE4Parse's Unreal Versioning Enum
+ * Found at: https://github.com/FabianFG/CUE4Parse/blob/master/CUE4Parse/UE4/Versions/EGame.cs
+*/
 UENUM()
 enum ECUE4ParseVersion
 {
@@ -113,6 +115,6 @@ enum ECUE4ParseVersion
 	GAME_UE5_5,
 	GAME_UE5_6,
 
-	// Change this always to the last available enum above
+	/* Change this always to the last available enum above */
 	GAME_UE5_LATEST = GAME_UE5_6
 };

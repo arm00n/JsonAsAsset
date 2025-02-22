@@ -29,15 +29,15 @@ protected:
 
 	// Modifies Graph Nodes (copies over properties from FJsonObject)
 	void PropagateExpressions(UObject* Parent, TArray<FName>& ExpressionNames, TMap<FName, FExportData>& Exports, TMap<FName, UMaterialExpression*>& CreatedExpressionMap, bool bCheckOuter = false, bool bSubgraph = false);
-	void MaterialGraphNode_AddComment(UObject* Parent, UMaterialExpressionComment* Comment);
+	static void MaterialGraphNode_AddComment(UObject* Parent, UMaterialExpressionComment* Comment);
 	// ----------------------------------------------------
 
 	// Functions to Handle Node Connections ------------
-	FExpressionInput PopulateExpressionInput(const FJsonObject* JsonProperties, UMaterialExpression* Expression, const FString& Type = "Default");
-	FExpressionOutput PopulateExpressionOutput(const FJsonObject* JsonProperties);
+	static FExpressionInput PopulateExpressionInput(const FJsonObject* JsonProperties, UMaterialExpression* Expression, const FString& Type = "Default");
+	static FExpressionOutput PopulateExpressionOutput(const FJsonObject* JsonProperties);
 
-	FName GetExpressionName(const FJsonObject* JsonProperties, FString OverrideParameterName = "Expression");
+	static FName GetExpressionName(const FJsonObject* JsonProperties, const FString& OverrideParameterName = "Expression");
 
-	FExpressionInput CreateExpressionInput(TSharedPtr<FJsonObject> JsonProperties, TMap<FName, UMaterialExpression*>& CreatedExpressionMap, FString PropertyName);
-	FMaterialAttributesInput CreateMaterialAttributesInput(TSharedPtr<FJsonObject> JsonProperties, TMap<FName, UMaterialExpression*>& CreatedExpressionMap, FString PropertyName);
+	static FExpressionInput CreateExpressionInput(const TSharedPtr<FJsonObject>& JsonProperties, TMap<FName, UMaterialExpression*>& CreatedExpressionMap, const FString& PropertyName);
+	static FMaterialAttributesInput CreateMaterialAttributesInput(const TSharedPtr<FJsonObject>& JsonProperties, TMap<FName, UMaterialExpression*>& CreatedExpressionMap, const FString& PropertyName);
 };

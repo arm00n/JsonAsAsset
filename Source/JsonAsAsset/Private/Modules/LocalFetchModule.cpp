@@ -4,7 +4,6 @@
 
 /**
  * A list of classes allowed to be used by Local Fetch
- * Defined in CPP
  */
 TArray<FString> LocalFetchAcceptedTypes = {
 	"Texture2D",

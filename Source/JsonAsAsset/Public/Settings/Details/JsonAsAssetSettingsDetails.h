@@ -8,7 +8,7 @@
 class UJsonAsAssetSettings;
 
 // Details For JsonAsAssetSettings
-class FJsonAsAssetSettingsDetails : public IDetailCustomization
+class FJsonAsAssetSettingsDetails final : public IDetailCustomization
 {
 public:
 	static TSharedRef<IDetailCustomization> MakeInstance();
