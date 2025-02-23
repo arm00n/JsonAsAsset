@@ -1,7 +1,3 @@
-[submodule "ExternalSource/CUE4Parse"]
-	path = ExternalSource/CUE4Parse
-	url = https://github.com/FabianFG/CUE4Parse
-
-[submodule "ExternalSource/LocalFetch"]
-	path = ExternalSource/LocalFetch
+[submodule "Dependencies/LocalFetch"]
+	path = Dependencies/LocalFetch
 	url = https://github.com/JsonAsAsset/LocalFetch

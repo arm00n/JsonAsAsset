@@ -11,6 +11,13 @@
  */
 extern TArray<FString> LocalFetchAcceptedTypes;
 
+class LocalFetchModule
+{
+public:
+	static void LaunchLocalFetch();
+	static void CloseLocalFetch();
+};
+
 // Used for settings and in Local Fetch
 // I wanted to rename "Value" to "Key", because it makes more sense, but it'll break references
 USTRUCT()

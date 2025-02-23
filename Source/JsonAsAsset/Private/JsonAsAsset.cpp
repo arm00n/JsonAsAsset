@@ -20,8 +20,6 @@
 
 #include "PhysicsEngine/BodySetup.h"
 
-#include "Windows/WindowsHWrapper.h"
-
 #include "Interfaces/IPluginManager.h"
 #include "Settings/JsonAsAssetSettings.h"
 #include "Widgets/Notifications/SNotificationList.h"
@@ -30,7 +28,6 @@
 #include "ISettingsModule.h"
 #include "MessageLogModule.h"
 #include "Styling/SlateIconFinder.h"
-#include <TlHelp32.h>
 
 // Settings
 #include "Logging/MessageLog.h"
@@ -113,20 +110,7 @@ void FJsonAsAssetModule::PluginButtonClicked() {
 							LocalFetchNotificationPtr.Reset();
 						}
 
-						FString PluginBinariesFolder;
-
-						const TSharedPtr<IPlugin> PluginInfo = IPluginManager::Get().FindPlugin("JsonAsAsset");
-						if (PluginInfo.IsValid()) {
-							const FString PluginBaseDir = PluginInfo->GetBaseDir();
-							PluginBinariesFolder = FPaths::Combine(PluginBaseDir, TEXT("Binaries"));
-
-							if (!FPaths::DirectoryExists(PluginBinariesFolder)) {
-								PluginBinariesFolder = FPaths::Combine(PluginBaseDir, TEXT("JsonAsAsset/Binaries"));
-							}
-						}
-
-						FString FullPath = FPaths::ConvertRelativePathToFull(PluginBinariesFolder + "/Win64/LocalFetch/LocalFetch.exe");
-						FPlatformProcess::LaunchFileInDefaultExternalApplication(*FullPath, TEXT("--urls=http://localhost:1500/"), ELaunchVerb::Open);
+						LocalFetchModule::LaunchLocalFetch();
 					})
 				)
 			);
@@ -287,14 +271,33 @@ void FJsonAsAssetModule::RegisterMenus() {
 
 	TSharedPtr<IPlugin> Plugin = IPluginManager::Get().FindPlugin("JsonAsAsset");
 
+	FUIAction UIAction(
+		FExecuteAction::CreateRaw(this, &FJsonAsAssetModule::PluginButtonClicked),
+		FCanExecuteAction::CreateLambda([this]() { return !Settings->ExportDirectory.Path.IsEmpty(); })
+	);
+
 	/* JsonAsAsset Button */
 	FToolMenuEntry PluginActionButtonEntry = FToolMenuEntry::InitToolBarButton(
 		FName("JsonAsAsset"),
-		FToolUIActionChoice(FExecuteAction::CreateRaw(this, &FJsonAsAssetModule::PluginButtonClicked)),
+		FToolUIActionChoice(UIAction),
 		FText::FromString(Plugin->GetDescriptor().VersionName),
-		LOCTEXT("JsonAsAsset_Tooltip", "Execute JsonAsAsset"),
-		FSlateIcon(FJsonAsAssetStyle::Get().GetStyleSetName(), FName("JsonAsAsset.Logo")),
+		FText::GetEmpty(),
+		TAttribute<FSlateIcon>::Create(
+			TAttribute<FSlateIcon>::FGetter::CreateLambda([this]() -> FSlateIcon {
+				return Settings->ExportDirectory.Path.IsEmpty() 
+					? FSlateIcon(FJsonAsAssetStyle::Get().GetStyleSetName(), FName("JsonAsAsset.WarningLogo"))
+					: FSlateIcon(FJsonAsAssetStyle::Get().GetStyleSetName(), FName("JsonAsAsset.Logo"));
+			})
+		),
 		EUserInterfaceActionType::Button
+	);
+
+	PluginActionButtonEntry.ToolTip = TAttribute<FText>::Create(
+		TAttribute<FText>::FGetter::CreateLambda([this]() -> FText {
+			return Settings->ExportDirectory.Path.IsEmpty()
+				? FText::FromString("The button is disabled because no export directory has been specified. Please set an export directory in the plugin settings.")
+				: LOCTEXT("JsonAsAsset_Tooltip", "Execute JsonAsAsset");
+		})
 	);
 	
 	PluginActionButtonEntry.StyleNameOverride = "CalloutToolbar";
@@ -592,48 +595,8 @@ void FJsonAsAssetModule::CreateLocalFetchDropdown(FMenuBuilder MenuBuilder) cons
 						FSlateIcon(),
 						FUIAction(
 							FExecuteAction::CreateLambda([this]() {
-								FString ProcessName = TEXT("LocalFetch.exe");
-								TCHAR* ProcessNameChar = ProcessName.GetCharArray().GetData();
-
-								DWORD ProcessID = 0;
-								HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-								if (hSnapshot != INVALID_HANDLE_VALUE) {
-									PROCESSENTRY32 ProcessEntry;
-									ProcessEntry.dwSize = sizeof(PROCESSENTRY32);
-
-									if (Process32First(hSnapshot, &ProcessEntry)) {
-										do {
-											if (FCString::Stricmp(ProcessEntry.szExeFile, ProcessNameChar) == 0) {
-												ProcessID = ProcessEntry.th32ProcessID;
-												break;
-											}
-										} while (Process32Next(hSnapshot, &ProcessEntry));
-									}
-									CloseHandle(hSnapshot);
-								}
-
-								if (ProcessID != 0) {
-									HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, false, ProcessID);
-									if (hProcess != nullptr) {
-										TerminateProcess(hProcess, 0);
-										CloseHandle(hProcess);
-									}
-								}
-
-								FString PluginBinariesFolder;
-
-								const TSharedPtr<IPlugin> PluginInfo = IPluginManager::Get().FindPlugin("JsonAsAsset");
-								if (PluginInfo.IsValid()) {
-									const FString PluginBaseDir = PluginInfo->GetBaseDir();
-									PluginBinariesFolder = FPaths::Combine(PluginBaseDir, TEXT("Binaries"));
-
-									if (!FPaths::DirectoryExists(PluginBinariesFolder)) {
-										PluginBinariesFolder = FPaths::Combine(PluginBaseDir, TEXT("JsonAsAsset/Binaries"));
-									}
-								}
-
-								FString FullPath = FPaths::ConvertRelativePathToFull(PluginBinariesFolder + "/Win64/LocalFetch/LocalFetch.exe");
-								FPlatformProcess::LaunchFileInDefaultExternalApplication(*FullPath, TEXT("--urls=http://localhost:1500/"), ELaunchVerb::Open);
+								LocalFetchModule::CloseLocalFetch();
+								LocalFetchModule::LaunchLocalFetch();
 							}),
 							FCanExecuteAction::CreateLambda([this]() {
 								return IsProcessRunning("LocalFetch.exe");
@@ -647,33 +610,7 @@ void FJsonAsAssetModule::CreateLocalFetchDropdown(FMenuBuilder MenuBuilder) cons
 						FSlateIcon(),
 						FUIAction(
 							FExecuteAction::CreateLambda([this]() {
-								FString ProcessName = TEXT("LocalFetch.exe");
-								TCHAR* ProcessNameChar = ProcessName.GetCharArray().GetData();
-
-								DWORD ProcessID = 0;
-								HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-								if (hSnapshot != INVALID_HANDLE_VALUE) {
-									PROCESSENTRY32 ProcessEntry;
-									ProcessEntry.dwSize = sizeof(PROCESSENTRY32);
-
-									if (Process32First(hSnapshot, &ProcessEntry)) {
-										do {
-											if (FCString::Stricmp(ProcessEntry.szExeFile, ProcessNameChar) == 0) {
-												ProcessID = ProcessEntry.th32ProcessID;
-												break;
-											}
-										} while (Process32Next(hSnapshot, &ProcessEntry));
-									}
-									CloseHandle(hSnapshot);
-								}
-
-								if (ProcessID != 0) {
-									HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, false, ProcessID);
-									if (hProcess != nullptr) {
-										TerminateProcess(hProcess, 0);
-										CloseHandle(hProcess);
-									}
-								}
+								LocalFetchModule::CloseLocalFetch();
 							}),
 							FCanExecuteAction::CreateLambda([this]() {
 								return IsProcessRunning("LocalFetch.exe");
@@ -697,20 +634,7 @@ void FJsonAsAssetModule::CreateLocalFetchDropdown(FMenuBuilder MenuBuilder) cons
 									LocalFetchNotificationPtr.Reset();
 								}
 
-								FString PluginBinariesFolder;
-
-								const TSharedPtr<IPlugin> PluginInfo = IPluginManager::Get().FindPlugin("JsonAsAsset");
-								if (PluginInfo.IsValid()) {
-									const FString PluginBaseDir = PluginInfo->GetBaseDir();
-									PluginBinariesFolder = FPaths::Combine(PluginBaseDir, TEXT("Binaries"));
-
-									if (!FPaths::DirectoryExists(PluginBinariesFolder)) {
-										PluginBinariesFolder = FPaths::Combine(PluginBaseDir, TEXT("JsonAsAsset/Binaries"));
-									}
-								}
-
-								FString FullPath = FPaths::ConvertRelativePathToFull(PluginBinariesFolder + "/Win64/LocalFetch/LocalFetch.exe");
-								FPlatformProcess::LaunchFileInDefaultExternalApplication(*FullPath, TEXT("--urls=http://localhost:1500/"), ELaunchVerb::Open);
+								LocalFetchModule::LaunchLocalFetch();
 							}),
 							FCanExecuteAction::CreateLambda([this]() {
 								return !IsProcessRunning("LocalFetch.exe");

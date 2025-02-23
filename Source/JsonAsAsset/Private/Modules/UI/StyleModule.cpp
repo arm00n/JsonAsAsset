@@ -34,6 +34,7 @@ TSharedRef<FSlateStyleSet> FJsonAsAssetStyle::Create() {
 	Style->SetContentRoot(IPluginManager::Get().FindPlugin("JsonAsAsset")->GetBaseDir() / TEXT("Resources"));
 
 	Style->Set("JsonAsAsset.Logo", new IMAGE_BRUSH(TEXT("Icon40"), Icon40x40));
+	Style->Set("JsonAsAsset.WarningLogo", new IMAGE_BRUSH(TEXT("WarningIcon40"), Icon40x40));
 	Style->Set("JsonAsAsset.FModelLogo", new IMAGE_BRUSH(TEXT("FModelButtonIcon"), Icon80x80));
 	Style->Set("JsonAsAsset.GithubLogo", new IMAGE_BRUSH(TEXT("GithubLogo"), Icon40x40));
 

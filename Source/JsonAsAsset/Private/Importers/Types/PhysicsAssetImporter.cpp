@@ -1,12 +1,10 @@
 // Copyright JAA Contributors 2024-2025
 
 #include "Importers/Types/PhysicsAssetImporter.h"
+
+#include "PhysicsEngine/PhysicsAsset.h"
 #include "PhysicsEngine/PhysicsConstraintTemplate.h"
 #include "Utilities/EngineUtilities.h"
-
-#if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 4
-#include <PhysicsEngine/PhysicsAsset.h>
-#endif
 
 #if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION > 4
 #include "PhysicsEngine/SkeletalBodySetup.h"
