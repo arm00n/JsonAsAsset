@@ -217,19 +217,19 @@ void FJsonAsAssetSettingsDetails::EditEncryption(TWeakObjectPtr<UJsonAsAssetSett
 
 				if (!MappingsURLResponse.IsValid()) return FReply::Handled();
 
-				JsonReader = TJsonReaderFactory<>::Create(MappingsURLResponse->GetContentAsString());
-				TArray<TSharedPtr<FJsonValue>> JsonArray;
+				TSharedRef<TJsonReader<>> MappingsJsonReader = TJsonReaderFactory<>::Create(MappingsURLResponse->GetContentAsString());
+				TArray<TSharedPtr<FJsonValue>> MappingsJsonArray;
 				
-				if (FJsonSerializer::Deserialize(JsonReader, JsonArray))
+				if (FJsonSerializer::Deserialize(MappingsJsonReader, MappingsJsonArray))
 				{
-					TSharedPtr<FJsonValue> Value;
+					TSharedPtr<FJsonValue> MappingsValue;
 					{
-						if (JsonArray.IsValidIndex(1)) Value = JsonArray[1];
-						else Value = JsonArray[0];
+						if (MappingsJsonArray.IsValidIndex(1)) MappingsValue = MappingsJsonArray[1];
+						else MappingsValue = MappingsJsonArray[0];
 					}
 
-					if (Value == nullptr) return FReply::Handled();
-					TSharedPtr<FJsonObject> MappingsObject = Value->AsObject();
+					if (MappingsValue == nullptr) return FReply::Handled();
+					TSharedPtr<FJsonObject> MappingsObject = MappingsValue->AsObject();
 
 					FString FileName = MappingsObject->GetStringField(TEXT("fileName"));
 					FString URL = MappingsObject->GetStringField(TEXT("url"));
@@ -241,6 +241,8 @@ void FJsonAsAssetSettingsDetails::EditEncryption(TWeakObjectPtr<UJsonAsAssetSett
 							FFileHelper::SaveArrayToFile(Response->GetContent(), *(DataFolder + "/" + FileName));
 
 							UJsonAsAssetSettings* PluginSettings = GetMutableDefault<UJsonAsAssetSettings>();
+
+							PluginSettings->MappingFilePath.FilePath = DataFolder + "/" + FileName;
 							
 							SavePluginConfig(PluginSettings);
 						}
@@ -252,8 +254,6 @@ void FJsonAsAssetSettingsDetails::EditEncryption(TWeakObjectPtr<UJsonAsAssetSett
 					MappingsRequest->SetURL(URL);
 					MappingsRequest->OnProcessRequestComplete().BindLambda(OnRequestComplete);
 					MappingsRequest->ProcessRequest();
-
-					SavePluginConfig(PluginSettings);
 				}
 			}
 

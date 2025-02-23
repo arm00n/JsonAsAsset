@@ -367,6 +367,7 @@ inline void SavePluginConfig(UDeveloperSettings* EditorSettings)
 	
 #if ENGINE_MAJOR_VERSION >= 5
 	EditorSettings->TryUpdateDefaultConfigFile();
+	EditorSettings->ReloadConfig(nullptr, nullptr, UE::LCPF_PropagateToInstances);
 #else
 	EditorSettings->UpdateDefaultConfigFile();
 	EditorSettings->ReloadConfig(nullptr, nullptr, UE4::LCPF_PropagateToInstances);
