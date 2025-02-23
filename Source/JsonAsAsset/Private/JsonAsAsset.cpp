@@ -300,8 +300,10 @@ void FJsonAsAssetModule::RegisterMenus() {
 		})
 	);
 	
+#if ENGINE_MAJOR_VERSION != 4
 	PluginActionButtonEntry.StyleNameOverride = "CalloutToolbar";
 	PluginActionButtonEntry.SetCommandList(PluginCommands);
+#endif
 
 	Section.AddEntry(PluginActionButtonEntry);
 

@@ -17,6 +17,10 @@ public:
 	static FName GetAppStyleSetName() {
 		return FEditorStyle::GetStyleSetName();
 	}
+
+	static const FSlateBrush* GetBrush(FName PropertyName) {
+		return FEditorStyle::GetBrush(PropertyName);
+	}
 };
 
 template <typename TObjectType>
