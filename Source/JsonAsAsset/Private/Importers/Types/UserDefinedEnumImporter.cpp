@@ -73,8 +73,6 @@ bool IUserDefinedEnumImporter::ImportData()
 
 		// TODO: Add LocalizedString
 
-		FText Text = FInternationalization::ForUseOnlyByLocMacroAndGraphNodeTextLiterals_CreateText(*SourceString, *TextNamespace, *UniqueKey);
-
 		DisplayNames.Add(EnumKey, FInternationalization::ForUseOnlyByLocMacroAndGraphNodeTextLiterals_CreateText(*SourceString, *TextNamespace, *UniqueKey));
 	}
 
