@@ -53,6 +53,7 @@
 #include "Importers/Types/PhysicsAssetImporter.h"
 #include "Engine/SubsurfaceProfile.h"
 #include "Curves/CurveLinearColor.h"
+#include "Importers/Types/UserDefinedEnumImporter.h"
 #include "Logging/MessageLog.h"
 #include "Sound/SoundNode.h"
 // -----------------------------------------------------------------------------------------------
@@ -136,6 +137,10 @@ TArray<FString> ImporterAcceptedTypes = {
 	"", // separator
 
 	"TextureRenderTarget2D"
+	
+	"", // separator
+
+	"UserDefinedEnum"
 };
 
 // Handles the JSON of a file.
@@ -209,6 +214,9 @@ bool IImporter::ImportExports(TArray<TSharedPtr<FJsonValue>> Exports, FString Fi
 				    Importer = new INiagaraParameterCollectionImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg);
  				else if (Type == "DataTable") 
 				    Importer = new IDataTableImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg);
+
+ 				else if (Type == "UserDefinedEnum") 
+ 					Importer = new IUserDefinedEnumImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg);
 
 				else // Data Asset
 					if (bDataAsset)
@@ -525,12 +533,6 @@ void IImporter::SavePackage() const
 {
 	const UJsonAsAssetSettings* Settings = GetDefault<UJsonAsAssetSettings>();
 
-	FSavePackageArgs SaveArgs; {
-		SaveArgs.TopLevelFlags = RF_Public | RF_Standalone;
-		SaveArgs.Error = GError;
-		SaveArgs.SaveFlags = SAVE_NoError;
-	}
-
 	// Ensure the package is valid before proceeding
 	if (Package == nullptr) {
 		UE_LOG(LogTemp, Error, TEXT("Package is null"));
@@ -543,6 +545,12 @@ void IImporter::SavePackage() const
 	// User option to save packages on import
 	if (Settings->AssetSettings.bSavePackagesOnImport) {
 #if ENGINE_MAJOR_VERSION >= 5
+		FSavePackageArgs SaveArgs; {
+			SaveArgs.TopLevelFlags = RF_Public | RF_Standalone;
+			SaveArgs.Error = GError;
+			SaveArgs.SaveFlags = SAVE_NoError;
+		}
+		
 		UPackage::SavePackage(Package, nullptr, *PackageFileName, SaveArgs);
 #else
 		UPackage::SavePackage(Package, nullptr, RF_Standalone, *PackageFileName);

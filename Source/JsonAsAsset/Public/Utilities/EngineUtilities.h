@@ -74,6 +74,12 @@ T* GetSelectedAsset() {
 	return CastedAsset;
 }
 
+template <typename TEnum> 
+TEnum StringToEnum(const FString& StringValue)
+{
+	return StaticEnum<TEnum>() ? static_cast<TEnum>(StaticEnum<TEnum>()->GetValueByNameString(StringValue)) : TEnum();
+}
+
 inline TSharedPtr<FJsonObject> FindExport(const TSharedPtr<FJsonObject>& Export, const TArray<TSharedPtr<FJsonValue>>& File)
 {
 	FString string_int; Export->GetStringField(TEXT("ObjectPath")).Split(".", nullptr, &string_int);

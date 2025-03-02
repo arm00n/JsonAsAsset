@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "CoreMinimal.h"
+
 /* Structures, Enumerations, used for Local Fetch */
 #include "LocalFetchModule.generated.h"
 

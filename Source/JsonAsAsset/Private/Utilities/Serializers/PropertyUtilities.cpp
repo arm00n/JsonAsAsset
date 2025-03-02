@@ -452,7 +452,12 @@ void UPropertySerializer::DeserializePropertyValueInner(FProperty* Property, con
 			// TODO: Somehow add other needed things like Namespace, Key, and LocalizedString 
 			TSharedPtr<FJsonObject> Object = NewJsonValue->AsObject().ToSharedRef();
 
-			TextProperty->SetPropertyValue(Value, FText::FromString(Object->GetStringField(TEXT("SourceString"))));
+			// Retrieve properties
+			FString TextNamespace = Object->GetStringField(TEXT("Namespace"));
+			FString UniqueKey = Object->GetStringField(TEXT("Key"));
+			FString SourceString = Object->GetStringField(TEXT("SourceString"));
+
+			TextProperty->SetPropertyValue(Value, FInternationalization::ForUseOnlyByLocMacroAndGraphNodeTextLiterals_CreateText(*SourceString, *TextNamespace, *UniqueKey));
 		}
 	}
 	else if (const FFieldPathProperty* FieldPathProperty = CastField<const FFieldPathProperty>(Property)) {
