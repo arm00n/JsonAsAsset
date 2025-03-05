@@ -39,12 +39,17 @@ inline bool HandlePackageCreation(UObject* Asset, UPackage* Package) {
  * @return Selected Asset
  */
 template <typename T>
-T* GetSelectedAsset() {
+T* GetSelectedAsset(bool SupressErrors = false) {
 	const FContentBrowserModule& ContentBrowserModule = FModuleManager::LoadModuleChecked<FContentBrowserModule>("ContentBrowser");
 	TArray<FAssetData> SelectedAssets;
 	ContentBrowserModule.Get().GetSelectedAssets(SelectedAssets);
 
 	if (SelectedAssets.Num() == 0) {
+		if (SupressErrors == true)
+		{
+			return nullptr;
+		}
+		
 		GLog->Log("JsonAsAsset: [GetSelectedAsset] None selected, returning nullptr.");
 
 		const FText DialogText = FText::Format(
@@ -60,6 +65,11 @@ T* GetSelectedAsset() {
 	T* CastedAsset = Cast<T>(SelectedAsset);
 
 	if (!CastedAsset) {
+		if (SupressErrors == true)
+		{
+			return nullptr;
+		}
+		
 		GLog->Log("JsonAsAsset: [GetSelectedAsset] Selected asset is not of the required class, returning nullptr.");
 
 		const FText DialogText = FText::Format(

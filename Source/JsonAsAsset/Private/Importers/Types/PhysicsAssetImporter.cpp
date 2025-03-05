@@ -16,7 +16,6 @@ USkeletalBodySetup* CreateNewBody(UPhysicsAsset* PhysAsset, FName ExportName, FN
 	NewBodySetup->BoneName = BoneName;
 
 	PhysAsset->SkeletalBodySetups.Add(NewBodySetup);
-	PhysAsset->UpdateBodySetupIndexMap();
 
 	return NewBodySetup;
 }
@@ -29,37 +28,14 @@ UPhysicsConstraintTemplate* CreateNewConstraint(UPhysicsAsset* PhysAsset, FName 
 	return NewConstraintSetup;
 }
 
-bool IPhysicsAssetImporter::ImportData() {
+bool IPhysicsAssetImporter::ImportData()
+{
 	UPhysicsAsset* PhysicsAsset = NewObject<UPhysicsAsset>(Package, UPhysicsAsset::StaticClass(), *FileName, RF_Public | RF_Standalone);
-
-	/*
-	 * January 4th 2025
-	 * I'm planning this beforehand so I can have a clear mind:
-	 * 
-	 * 1. Import main physics asset's properties
-	 * 2. Read SkeletalBodySetups and create them into an array
-	 * 3. Read ConstraintSetup and create them intro an array
-	 * 
-	 * What I'm baffled about is if this will work in the end, because
-	 * physics assets have a lot of data basically baked into the uasset itself.
-	 * 
-	 * I made a full recreation of a physics asset a long time ago with 1:1 JSON data,
-	 * yet it was completely broken on simulation.
-	 * 
-	 * We'll see.
-	*/
-	
-	/*
-	 * January 12th 2025
-	 * Physics asset import properly, but do not simulate properly.
-	 *
-	 * I'm not quite sure how to fix it, but maybe an idea pops up later on.
-	*/
 
 	TSharedPtr<FJsonObject> Properties = JsonObject->GetObjectField(TEXT("Properties"));
 	TMap<FName, FExportData> Exports = CreateExports();
 	
-	// SkeletalBodySetups
+	/* SkeletalBodySetups ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 	ProcessJsonArrayField(Properties, TEXT("SkeletalBodySetups"), [&](const TSharedPtr<FJsonObject>& ObjectField) {
 		FName ExportName = GetExportNameOfSubobject(ObjectField->GetStringField(TEXT("ObjectName")));
 		FJsonObject* ExportJson = Exports.Find(ExportName)->Json;
@@ -67,65 +43,68 @@ bool IPhysicsAssetImporter::ImportData() {
 		TSharedPtr<FJsonObject> ExportProperties = ExportJson->GetObjectField(TEXT("Properties"));
 		FName BoneName = FName(*ExportProperties->GetStringField(TEXT("BoneName")));
 		
-		UE_LOG(LogTemp, Log, TEXT("Processing Skeletal Body Setup: %s"), *ExportName.ToString());
-
 		USkeletalBodySetup* BodySetup = CreateNewBody(PhysicsAsset, ExportName, BoneName);
 
 		GetObjectSerializer()->DeserializeObjectProperties(ExportProperties, BodySetup);
 	});
 
-	// ConstraintSetup
+	/* For caching. IMPORTANT! DO NOT REMOVE! */
+	PhysicsAsset->UpdateBodySetupIndexMap();
+	PhysicsAsset->UpdateBoundsBodiesArray();
+
+	/* CollisionDisableTable ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+	TArray<TSharedPtr<FJsonValue>> CollisionDisableTable = JsonObject->GetArrayField(TEXT("CollisionDisableTable"));
+
+	for (const TSharedPtr<FJsonValue> TableJSONElement : CollisionDisableTable)
+	{
+		const TSharedPtr<FJsonObject> TableObjectElement = TableJSONElement->AsObject();
+
+		bool MapValue = TableObjectElement->GetBoolField(TEXT("Value"));
+		TArray<TSharedPtr<FJsonValue>> Indices = TableObjectElement->GetObjectField(TEXT("Key"))->GetArrayField(TEXT("Indices"));
+
+		int32 BodyIndexA = Indices[0]->AsNumber();
+		int32 BodyIndexB = Indices[1]->AsNumber();
+
+		/* Add to the CollisionDisableTable */
+		PhysicsAsset->CollisionDisableTable.Add(FRigidBodyIndexPair(BodyIndexA, BodyIndexB), MapValue);
+	}
+
+	/* ConstraintSetup ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 	ProcessJsonArrayField(Properties, TEXT("ConstraintSetup"), [&](const TSharedPtr<FJsonObject>& ObjectField) {
 		FName ExportName = GetExportNameOfSubobject(ObjectField->GetStringField(TEXT("ObjectName")));
 		FJsonObject* ExportJson = Exports.Find(ExportName)->Json;
 
 		TSharedPtr<FJsonObject> ExportProperties = ExportJson->GetObjectField(TEXT("Properties"));
-		UE_LOG(LogTemp, Log, TEXT("Processing Constraint Setup: %s"), *ExportName.ToString());
-
 		UPhysicsConstraintTemplate* PhysicsConstraintTemplate = CreateNewConstraint(PhysicsAsset, ExportName);
 		
 		GetObjectSerializer()->DeserializeObjectProperties(ExportProperties, PhysicsConstraintTemplate);
+
+		/* For caching. IMPORTANT! DO NOT REMOVE! */
+		PhysicsConstraintTemplate->UpdateProfileInstance();
 	});
 
-	// ---------------------------------------------------------
-	// Simple data at end
+	/* Simple data at end ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 	GetObjectSerializer()->DeserializeObjectProperties(RemovePropertiesShared(Properties,
 	{
 		"SkeletalBodySetups",
 		"ConstraintSetup",
-		"BoundsBodies"
+		"BoundsBodies",
+		"ThumbnailInfo"
 	}), PhysicsAsset);
 
-	TArray<TSharedPtr<FJsonValue>> CollisionDisableTable = JsonObject->GetArrayField(TEXT("CollisionDisableTable"));
-
-	for (TSharedPtr<FJsonValue> DisableValue : CollisionDisableTable)
+	/* If the user selected a skeletal mesh in the browser, set it in the physics asset */
+	USkeletalMesh* SkeletalMesh = GetSelectedAsset<USkeletalMesh>(true);
+	
+	if (SkeletalMesh)
 	{
-		TSharedPtr<FJsonObject> DisableObject = DisableValue->AsObject();
-
-		bool MapValue = DisableObject->GetBoolField(TEXT("Value"));
-		TArray<TSharedPtr<FJsonValue>> Indices = DisableObject->GetObjectField(TEXT("Key"))->GetArrayField("Indices");
-
-		FRigidBodyIndexPair RigidBodyIndexPair = FRigidBodyIndexPair();
-
-		RigidBodyIndexPair.Indices[0] = Indices[0]->AsNumber();
-		RigidBodyIndexPair.Indices[1] = Indices[1]->AsNumber();
-
-		PhysicsAsset->CollisionDisableTable.Add(RigidBodyIndexPair, MapValue);
+		PhysicsAsset->PreviewSkeletalMesh = SkeletalMesh;
+		PhysicsAsset->PostEditChange();
 	}
 	
+	/* Finalize ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 	PhysicsAsset->Modify();
-	PhysicsAsset->PostLoad();
 	PhysicsAsset->MarkPackageDirty();
-
-	PhysicsAsset->PostLoad();
-	FPropertyChangedEvent PropertyChangedEvent(nullptr);
-	PhysicsAsset->PostEditChangeProperty(PropertyChangedEvent);
-
-	PhysicsAsset->InvalidateAllPhysicsMeshes();
-	PhysicsAsset->RefreshPhysicsAssetChange();
-	PhysicsAsset->PostEditChange();
 	PhysicsAsset->UpdateBoundsBodiesArray();
-	PhysicsAsset->UpdateBodySetupIndexMap();
-
+	
 	return OnAssetCreation(PhysicsAsset);
 }
