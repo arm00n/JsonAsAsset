@@ -58,7 +58,7 @@ bool IPhysicsAssetImporter::ImportData() {
 
 	TSharedPtr<FJsonObject> Properties = JsonObject->GetObjectField(TEXT("Properties"));
 	TMap<FName, FExportData> Exports = CreateExports();
-
+	
 	// SkeletalBodySetups
 	ProcessJsonArrayField(Properties, TEXT("SkeletalBodySetups"), [&](const TSharedPtr<FJsonObject>& ObjectField) {
 		FName ExportName = GetExportNameOfSubobject(ObjectField->GetStringField(TEXT("ObjectName")));
@@ -70,7 +70,7 @@ bool IPhysicsAssetImporter::ImportData() {
 		UE_LOG(LogTemp, Log, TEXT("Processing Skeletal Body Setup: %s"), *ExportName.ToString());
 
 		USkeletalBodySetup* BodySetup = CreateNewBody(PhysicsAsset, ExportName, BoneName);
-		
+
 		GetObjectSerializer()->DeserializeObjectProperties(ExportProperties, BodySetup);
 	});
 
@@ -96,10 +96,36 @@ bool IPhysicsAssetImporter::ImportData() {
 		"BoundsBodies"
 	}), PhysicsAsset);
 
+	TArray<TSharedPtr<FJsonValue>> CollisionDisableTable = JsonObject->GetArrayField(TEXT("CollisionDisableTable"));
+
+	for (TSharedPtr<FJsonValue> DisableValue : CollisionDisableTable)
+	{
+		TSharedPtr<FJsonObject> DisableObject = DisableValue->AsObject();
+
+		bool MapValue = DisableObject->GetBoolField(TEXT("Value"));
+		TArray<TSharedPtr<FJsonValue>> Indices = DisableObject->GetObjectField(TEXT("Key"))->GetArrayField("Indices");
+
+		FRigidBodyIndexPair RigidBodyIndexPair = FRigidBodyIndexPair();
+
+		RigidBodyIndexPair.Indices[0] = Indices[0]->AsNumber();
+		RigidBodyIndexPair.Indices[1] = Indices[1]->AsNumber();
+
+		PhysicsAsset->CollisionDisableTable.Add(RigidBodyIndexPair, MapValue);
+	}
+	
+	PhysicsAsset->Modify();
+	PhysicsAsset->PostLoad();
+	PhysicsAsset->MarkPackageDirty();
+
+	PhysicsAsset->PostLoad();
+	FPropertyChangedEvent PropertyChangedEvent(nullptr);
+	PhysicsAsset->PostEditChangeProperty(PropertyChangedEvent);
+
+	PhysicsAsset->InvalidateAllPhysicsMeshes();
 	PhysicsAsset->RefreshPhysicsAssetChange();
 	PhysicsAsset->PostEditChange();
 	PhysicsAsset->UpdateBoundsBodiesArray();
 	PhysicsAsset->UpdateBodySetupIndexMap();
-	
+
 	return OnAssetCreation(PhysicsAsset);
 }
