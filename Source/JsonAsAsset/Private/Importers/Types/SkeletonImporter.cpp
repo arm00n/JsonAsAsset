@@ -5,7 +5,6 @@
 #include "Animation/BlendProfile.h"
 #include "Dom/JsonObject.h"
 #include "Engine/SkeletalMeshSocket.h"
-#include "Utilities/AssetUtilities.h"
 #include "Utilities/MathUtilities.h"
 
 bool CSkeletonAssetDerived::AddVirtualBone(const FName SourceBoneName, const FName TargetBoneName, const FName VirtualBoneRootName) {
@@ -28,7 +27,7 @@ bool CSkeletonAssetDerived::AddVirtualBone(const FName SourceBoneName, const FNa
 	return true;
 }
 
-bool ISkeletonImporter::ImportData() {
+bool ISkeletonImporter::Import() {
 	TSharedPtr<FJsonObject> Properties = JsonObject->GetObjectField(TEXT("Properties"));
 	USkeleton* Skeleton = GetSelectedAsset<USkeleton>();
 

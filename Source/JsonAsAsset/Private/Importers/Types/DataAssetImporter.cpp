@@ -3,7 +3,7 @@
 #include "Importers/Types/DataAssetImporter.h"
 #include "Engine/DataAsset.h"
 
-bool IDataAssetImporter::ImportData() {
+bool IDataAssetImporter::Import() {
 	TSharedPtr<FJsonObject> Properties = JsonObject->GetObjectField(TEXT("Properties"));
 
 	UDataAsset* DataAsset = NewObject<UDataAsset>(Package, DataAssetClass, FName(FileName), RF_Public | RF_Standalone);

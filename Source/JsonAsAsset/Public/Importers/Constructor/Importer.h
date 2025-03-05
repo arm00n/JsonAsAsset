@@ -12,7 +12,7 @@
 
 extern TArray<FString> ImporterAcceptedTypes;
 
-// Global handler for converting JSON to assets
+/* Global handler for converting JSON to assets */
 class IImporter {
 public:
     /* Constructors ---------------------------------------------------------------------- */
@@ -20,7 +20,7 @@ public:
         : Package(nullptr), OutermostPkg(nullptr), ParentObject(nullptr),
           PropertySerializer(nullptr), GObjectSerializer(nullptr) {}
 
-    //  Importer Constructor
+    // Importer Constructor
     IImporter(const FString& FileName, const FString& FilePath, 
               const TSharedPtr<FJsonObject>& JsonObject, UPackage* Package, 
               UPackage* OutermostPkg, const TArray<TSharedPtr<FJsonValue>>& AllJsonObjects = {});
@@ -43,7 +43,7 @@ public:
     * Overriden in child classes.
     * Returns false if failed.
     */
-    virtual bool ImportData() {
+    virtual bool Import() {
         return false;
     }
 

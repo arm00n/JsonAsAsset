@@ -4,9 +4,9 @@
 
 #include "Importers/Constructor/Importer.h"
 
-class IUserDefinedEnumImporter : public IImporter {
+class IAnimationBaseImporter : public IImporter {
 public:
-	IUserDefinedEnumImporter(const FString& FileName, const FString& FilePath, const TSharedPtr<FJsonObject>& JsonObject, UPackage* Package, UPackage* OutermostPkg):
+	IAnimationBaseImporter(const FString& FileName, const FString& FilePath, const TSharedPtr<FJsonObject>& JsonObject, UPackage* Package, UPackage* OutermostPkg):
 		IImporter(FileName, FilePath, JsonObject, Package, OutermostPkg) {
 	}
 

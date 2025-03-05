@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "../Constructor/Importer.h"
+#include "Importers/Constructor/Importer.h"
 
 // We use this to set variables in the skeletal asset
 class CSkeletonAssetDerived : public USkeleton {
@@ -16,5 +16,5 @@ public:
 		IImporter(FileName, FilePath, JsonObject, Package, OutermostPkg, JsonObjects) {
 	}
 
-	virtual bool ImportData() override;
+	virtual bool Import() override;
 };

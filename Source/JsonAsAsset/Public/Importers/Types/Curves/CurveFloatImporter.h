@@ -4,9 +4,9 @@
 
 #include "Importers/Constructor/Importer.h"
 
-class IUserDefinedEnumImporter : public IImporter {
+class ICurveFloatImporter : public IImporter {
 public:
-	IUserDefinedEnumImporter(const FString& FileName, const FString& FilePath, const TSharedPtr<FJsonObject>& JsonObject, UPackage* Package, UPackage* OutermostPkg):
+	ICurveFloatImporter(const FString& FileName, const FString& FilePath, const TSharedPtr<FJsonObject>& JsonObject, UPackage* Package, UPackage* OutermostPkg):
 		IImporter(FileName, FilePath, JsonObject, Package, OutermostPkg) {
 	}
 

@@ -30,7 +30,6 @@
 #include "Styling/SlateIconFinder.h"
 
 // Settings
-#include "Logging/MessageLog.h"
 #include "./Settings/Details/JsonAsAssetSettingsDetails.h"
 
 #include "Modules/UI/AboutJsonAsAsset.h"
@@ -517,6 +516,7 @@ TSharedRef<SWidget> FJsonAsAssetModule::CreateToolbarDropdown() {
 		FSlateIcon(FAppStyle::GetAppStyleSetName(), "MessageLog.Action"),
 		FUIAction(
 			FExecuteAction::CreateLambda([this]() {
+#if ENGINE_MAJOR_VERSION > 4
 				TSharedPtr<SWindow> AboutWindow =
 					SNew(SWindow)
 					.Title(LOCTEXT("AboutJsonAsAsset", "About JsonAsAsset"))
@@ -533,6 +533,7 @@ TSharedRef<SWidget> FJsonAsAssetModule::CreateToolbarDropdown() {
 				if (ParentWindow.IsValid())
 					FSlateApplication::Get().AddModalWindow(AboutWindow.ToSharedRef(), ParentWindow.ToSharedRef());
 				else FSlateApplication::Get().AddWindow(AboutWindow.ToSharedRef());
+#endif
 			})
 		),
 		NAME_None

@@ -16,12 +16,13 @@
 
 #include "HttpModule.h"
 #include "AssetRegistry/AssetRegistryModule.h"
-#include "./Importers/Types/TextureImporter.h"
 #include "Interfaces/IHttpResponse.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "Utilities/RemoteUtilities.h"
 #include "PluginUtils.h"
+#include "Importers/Constructor/Importer.h"
+#include "Utilities/Textures/TextureCreatorUtilities.h"
 
 // CreateAssetPackage Implementations ----------------------------------------------------------------------------------------------------------------------
 UPackage* FAssetUtilities::CreateAssetPackage(const FString& FullPath) {
@@ -266,17 +267,16 @@ bool FAssetUtilities::Construct_TypeTexture(const FString& Path, const FString& 
 	UPackage* OutermostPkg = Package->GetOutermost();
 	Package->FullyLoad();
 
-	// Create Importer
-	const ITextureImporter* Importer = new ITextureImporter(AssetName, Path, Response[0]->AsObject(), Package, OutermostPkg);
+	FTextureCreatorUtilities TextureCreator = FTextureCreatorUtilities(AssetName, Path, Package, OutermostPkg);
 
 	if (Type == "Texture2D")
-		Importer->ImportTexture2D(Texture, Data, JsonExport);
+		TextureCreator.CreateTexture2D(Texture, Data, JsonExport);
 	if (Type == "TextureCube")
-		Importer->ImportTextureCube(Texture, Data, JsonExport);
+		TextureCreator.CreateTextureCube(Texture, Data, JsonExport);
 	if (Type == "VolumeTexture")
-		Importer->ImportVolumeTexture(Texture, Data, JsonExport);
+		TextureCreator.CreateVolumeTexture(Texture, Data, JsonExport);
 	if (Type == "TextureRenderTarget2D")
-		Importer->ImportRenderTarget2D(Texture, JsonExport->GetObjectField(TEXT("Properties")));
+		TextureCreator.CreateRenderTarget2D(Texture, JsonExport->GetObjectField(TEXT("Properties")));
 
 	if (Texture == nullptr)
 		return false;

@@ -6,7 +6,7 @@
 template class ITemplatedImporter<UObject>;
 
 template <typename AssetType>
-bool ITemplatedImporter<AssetType>::ImportData() {
+bool ITemplatedImporter<AssetType>::Import() {
 	try {
 		// Make Properties if it doesn't exist
 		if (!JsonObject->HasField(TEXT("Properties"))) {

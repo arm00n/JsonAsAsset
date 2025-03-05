@@ -28,32 +28,36 @@
 #include "Importers/Types/ParticleSystemImporter.h"
 #endif
 
-#include "Importers/Types/CurveFloatImporter.h"
-#include "Importers/Types/CurveVectorImporter.h"
-#include "Importers/Types/CurveLinearColorImporter.h"
-#include "Importers/Types/CurveLinearColorAtlasImporter.h"
-#include "Importers/Types/DataTableImporter.h"
+#include "Importers/Types/Curves/CurveFloatImporter.h"
+#include "Importers/Types/Curves/CurveVectorImporter.h"
+#include "Importers/Types/Curves/CurveLinearColorImporter.h"
+#include "Importers/Types/Curves/CurveLinearColorAtlasImporter.h"
+
+#include "Importers/Types/Materials/MaterialInstanceConstantImporter.h"
+#include "Importers/Types/Materials/MaterialFunctionImporter.h"
+#include "Importers/Types/Materials/MaterialImporter.h"
+
+#include "Importers/Types/Animation/BlendspaceImporter.h"
+#include "Importers/Types/Animation/AnimationBaseImporter.h"
+
+#include "Importers/Types/Tables/DataTableImporter.h"
+#include "Importers/Types/Tables/CurveTableImporter.h"
+
+#include "Importers/Types/Audio/SoundCueImporter.h"
 #include "Importers/Types/SkeletonImporter.h"
-#include "Importers/Types/AnimationBaseImporter.h"
-#include "Importers/Types/MaterialFunctionImporter.h"
-#include "Importers/Types/MaterialImporter.h"
-#include "Importers/Types/NiagaraParameterCollectionImporter.h"
-#include "Importers/Types/MaterialInstanceConstantImporter.h"
+#include "Importers/Types/Niagara/NiagaraParameterCollectionImporter.h"
 #include "Importers/Types/DataAssetImporter.h"
-#include "Importers/Types/CurveTableImporter.h"
-#include "Importers/Types/BlendspaceImporter.h"
+#include "Importers/Types/Physics/PhysicsAssetImporter.h"
+#include "Importers/Types/UserDefinedEnumImporter.h"
 // <---- Importers
 
 // Templated Class
 #include "Importers/Constructor/TemplatedImporter.h"
-#include "Importers/Constructor/SoundGraph.h"
 
 // ----------------------- Templated Engine Classes ----------------------------------------------
 #include "Materials/MaterialParameterCollection.h"
-#include "Importers/Types/PhysicsAssetImporter.h"
 #include "Engine/SubsurfaceProfile.h"
 #include "Curves/CurveLinearColor.h"
-#include "Importers/Types/UserDefinedEnumImporter.h"
 #include "Logging/MessageLog.h"
 #include "Sound/SoundNode.h"
 // -----------------------------------------------------------------------------------------------
@@ -192,7 +196,7 @@ bool IImporter::ImportExports(TArray<TSharedPtr<FJsonValue>> Exports, FString Fi
 					Importer = new IBlendSpaceImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg);
 
 				else if (Type == "SoundCue") 
-					Importer = new ISoundGraph(Name, File, DataObject, LocalPackage, LocalOutermostPkg, Exports);
+					Importer = new ISoundCueImporter(Name, File, DataObject, LocalPackage, LocalOutermostPkg, Exports);
 
 #if JSONASASSET_PARTICLESYSTEM_ALLOW
 				else if (Type == "ParticleSystem") 
@@ -239,7 +243,7 @@ bool IImporter::ImportExports(TArray<TSharedPtr<FJsonValue>> Exports, FString Fi
 
 			if (bHideNotifications) {
 				try {
-					Importer->ImportData();
+					Importer->Import();
 					
 					return true;
 				} catch (const char* Exception) {
@@ -249,7 +253,7 @@ bool IImporter::ImportExports(TArray<TSharedPtr<FJsonValue>> Exports, FString Fi
 				return true;
 			}
 
-			if (Importer != nullptr && Importer->ImportData()) {
+			if (Importer != nullptr && Importer->Import()) {
 				UE_LOG(LogJson, Log, TEXT("Successfully imported \"%s\" as \"%s\""), *Name, *Type);
 				
 				if (!(Type == "AnimSequence" || Type == "AnimMontage"))

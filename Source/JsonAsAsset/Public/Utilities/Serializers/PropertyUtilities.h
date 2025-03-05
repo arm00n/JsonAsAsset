@@ -167,9 +167,9 @@ inline bool PassthroughPropertyHandler(FProperty* Property, const FString& Prope
 			const TSharedRef<FJsonValue> ArrayJsonValue = ArrayJsonElement.ToSharedRef();
 
 			PropertySerializer->DeserializePropertyValueInner(Property, ArrayJsonValue, ArrayPropertyValue);
-
-			return true;
 		}
+
+		return true;
 	}
 
 	return false;

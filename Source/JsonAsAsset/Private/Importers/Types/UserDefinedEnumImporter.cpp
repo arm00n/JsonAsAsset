@@ -5,7 +5,7 @@
 #include "Engine/UserDefinedEnum.h"
 #include "Kismet2/EnumEditorUtils.h"
 
-bool IUserDefinedEnumImporter::ImportData()
+bool IUserDefinedEnumImporter::Import()
 {
 	// Create the UserDefinedEnum
 	UUserDefinedEnum* UserDefinedEnum = NewObject<UUserDefinedEnum>(Package, *FileName, RF_Public | RF_Standalone);
