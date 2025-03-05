@@ -106,6 +106,7 @@ bool IAnimationBaseImporter::Import() {
 #endif
 #if ENGINE_MINOR_VERSION >= 4
 		// Create Curve Identifier
+		Controller.OpenBracket(FText::FromString("Curve Import"));
 		FName CurveName = FName(*DisplayName);
 		FAnimationCurveIdentifier CurveId(CurveName, ERawCurveTrackTypes::RCT_Float);
 
@@ -115,12 +116,12 @@ bool IAnimationBaseImporter::Import() {
 		const FFloatCurve* ExistingCurve = DataModel->FindFloatCurve(CurveId);
 		if (ExistingCurve == nullptr)
 		{
-			Controller.AddCurve(CurveId, CurveTypeFlags, true);
+			Controller.AddCurve(CurveId, CurveTypeFlags);
 		}
 		else 
 		{
 			// Update existing curve flags if needed
-			Controller.SetCurveFlags(CurveId, CurveTypeFlags, true);
+			Controller.SetCurveFlags(CurveId, CurveTypeFlags);
 		}
 #endif
 		// For Unreal Engine 5.3 and above, the smart name's display name is required
@@ -182,6 +183,9 @@ bool IAnimationBaseImporter::Import() {
 			AnimSequenceBase->RawCurveData.FloatCurves.Last().FloatCurve.Keys.Last().InterpMode = RichKey.InterpMode;
 #endif
 		}
+#if ENGINE_MAJOR_VERSION == 5
+		Controller.CloseBracket();
+#endif
 	}
 
 	UAnimSequence* CastedAnimSequence = Cast<UAnimSequence>(AnimSequenceBase);
