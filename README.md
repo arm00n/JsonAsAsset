@@ -73,6 +73,7 @@ Most/all sound classes are supported, however, SoundWave is handled manually in 
  - SkeletalMeshLODSettings
  - Animation (curves, sync markers)
  - Blendspace
+ - PhysicsAsset
 
 ###### Data Asset Types
 - DataAsset
