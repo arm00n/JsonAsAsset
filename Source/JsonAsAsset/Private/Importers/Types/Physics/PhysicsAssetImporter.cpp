@@ -6,9 +6,6 @@
 #include "PhysicsEngine/PhysicsConstraintTemplate.h"
 #include "Utilities/EngineUtilities.h"
 
-#if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION > 4
-#include "PhysicsEngine/SkeletalBodySetup.h"
-#endif
 
 USkeletalBodySetup* IPhysicsAssetImporter::CreateNewBody(UPhysicsAsset* PhysAsset, FName ExportName, FName BoneName)
 {
